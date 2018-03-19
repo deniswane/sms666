@@ -53,32 +53,8 @@
     </div>
 </noscript>
 
-<a href="/" id="home-link">Home</a>
-<ul class="topnav">
-    <li></li>
-
-    <li><select id="formLanguage" onchange="location = this.value;">
-            <option value="">Select language ..</option>
-            <option value="https://www.receive-sms-online.info/">English</option>
-            <option value="https://es.receive-sms-online.info/">Español</option>
-            <option value="https://de.receive-sms-online.info/">Deutsche</option>
-            <option value="https://ar.receive-sms-online.info/">العربية</option>
-            <option value="https://fr.receive-sms-online.info/">Français</option>
-            <option value="https://it.receive-sms-online.info/">Italiano</option>
-            <option value="https://ru.receive-sms-online.info/">Pусский</option>
-            <option value="https://ro.receive-sms-online.info/">Română</option>
-        </select></li>
-    <li><a href="privatenumbers.php">Private numbers</a></li>
-    <li><a href="inactive-numbers.php">Inactive numbers</a></li>
-    <li><a href="contact.php">Contact</a></li>
-    <li><a href="/">Home</a></li>
-    <li class="icon"><a href="javascript:void(0);" onclick="myFunction()">&#9776;</a></li>
-    <li><a target="_blank" href="https://play.google.com/store/apps/details?id=com.smsreceive"><img id="android_img"
-                                                                                                    src="img/android-app_google-play_button.png"
-                                                                                                    alt="Android App"
-                                                                                                    style="height: 35px; margin-top: -12px;"></a>
-    </li>
-</ul>
+{{--<a href="/" id="home-link">Home</a>--}}
+@include('layouts._header')
 <div class="panel">
     <h5><strong>Receive SMS Online</strong><br>
         Receive-SMS-online.info is FREE service for receive SMS messages online, based on REAL SIM and shows you the
@@ -135,10 +111,7 @@
     </div>
 </div>
 
-<div id="bottom_footer" align="center"><a href="/">Receive-sms-online.info</a> | <a href="privacy.php">Privacy
-        Policy</a> | Copyright &copy; 2018 <a target="_blank" href="https://payeer.com"><img
-                style="vertical-align: middle;" src="/img/payeer-logo.png" title="We accept Payeer" width="98"
-                height="42"/></a></div>
+
 <script type="text/javascript">if (top.location != location) top.location.href = location.href;</script>
 <script>
     function myFunction() {

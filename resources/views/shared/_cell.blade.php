@@ -1,10 +1,10 @@
+{{--每个国家号码--}}
 @foreach($numbers as $num)
     <div class="Cell">
         <div>{{$num->country}}<br>
             {{--号码-国家图片-国家--}}
-            <a href="{{ route('phone.detail',$num->phone.'-'.$num->country)}}"><img
-                        src="{{asset('img/flag-uk.png')}}" alt="SMS - {{ $num->country }}"
-                        style="vertical-align: middle;">&nbsp;&nbsp;{{$num->phone}}<br>
+            <a href="{{ route('phone.detail',$num->id) }}">
+                <img src="{{ asset("img/Latvia.jpg") }}" alt="SMS - {{ $num->country }}" style="vertical-align: middle;">&nbsp;&nbsp;{{$num->phone}}<br>
             </a>
             <strong> SMS received:{{ $num->amount }}
                 <section

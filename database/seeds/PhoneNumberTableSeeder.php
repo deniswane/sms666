@@ -11,7 +11,7 @@ class PhoneNumberTableSeeder extends Seeder
      */
     public function run()
     {
-        $phonen = factory(App\Models\PhoneNumber::class)->times(30)->make();
+        $phonen = factory(App\Models\PhoneNumber::class)->times(40)->make();
         App\Models\PhoneNumber::insert($phonen->toArray());
     }
 }

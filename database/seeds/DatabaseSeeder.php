@@ -13,9 +13,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         Model::unguard();
-
         $this->call(PhoneNumberTableSeeder::class);
-
+        $this->call(SmsContentTableSeeder::class);
         Model::reguard();
     }
 }

@@ -7,14 +7,12 @@ use App\Models\PhoneNumber;
 
 class PhonecController extends Controller
 {
-    // 获取首页数据，电话
-    public function home(){
-        $numbers = PhoneNumber::paginate(20);
-        return view('welcome',compact('numbers'));
-    }
-    //
-    public function detailSms($token){
-        echo $token;
+    // 短信内容列表
+    public function detailSms(PhoneNumber $number){
+        $contents = $number->smsContents()
+                           ->orderby('created_at','desc')
+                           ->paginate(30);
+        return view('layouts.detail_sms_content',compact('number','contents'));
     }
 
 }

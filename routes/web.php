@@ -12,6 +12,12 @@
 */
 
 // 号码详情页
-Route::get('/{token}', 'PhonecController@detailSms')->name('phone.detail');
+Route::get('/','StaticPagesController@home') -> name('home');
+Route::get('/private-numbers','StaticPagesController@privateNumbers') -> name('private_numbers');
+Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name('inactive_numbers');
+Route::get('/contact','StaticPagesController@contact') -> name('contact');
 
-Route::get('/','PhonecController@home') -> name('home');
+Route::get('/{number}', 'PhonecController@detailSms') -> name('phone.detail');
+
+
+

@@ -15,8 +15,9 @@ class CreateSmsContentsTable extends Migration
     {
         Schema::create('sms_contents', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('phone');
-            $table->string('content');
+            $table->integer('phone_number_id')->index();
+            $table->text('content');
+            $table->index(['created_at']);
             $table->timestamps();
         });
     }
