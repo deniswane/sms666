@@ -16,7 +16,7 @@
     <title>Receive SMS Online for FREE</title>
     <link href="/favicon.ico" rel="icon" type="image/x-icon">
 
-    <link href="{{ URL::asset('css/app.css') }}" rel="stylesheet" type="text/css"/>
+    {{--<link href="{{ URL::asset('css/app.css') }}" rel="stylesheet" type="text/css"/>--}}
     <link href="{{ URL::asset('css/default.css') }}" rel="stylesheet" type="text/css"/>
 
     <link rel="canonical" href="https://www.receive-sms-online.info">
