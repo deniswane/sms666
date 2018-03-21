@@ -13,9 +13,9 @@
     <meta property="og:image" content="http://www.receive-sms-online.info/img/receive_sms.png"/>
     <title>Receive SMS Online for FREE | NO Registration | Read SMS - 919654766051</title>
     <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
-    <link rel="stylesheet" type="text/css" href="css/default.css">
+    <link href="{{ URL::asset('css/default.css') }}" rel="stylesheet" type="text/css"/>
     <link rel="canonical" href="https://www.receive-sms-online.info">
-    <script type="text/javascript" src="css/policy.php"></script>
+    <script type="text/javascript" src="{{ URL::asset('js/policy.js') }}"></script>
     <script src="jquery.min.js"></script>
 </head>
 <body>

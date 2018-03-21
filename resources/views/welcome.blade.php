@@ -16,8 +16,8 @@
     <title>Receive SMS Online for FREE</title>
     <link href="/favicon.ico" rel="icon" type="image/x-icon">
 
-    {{--<link href="{{ URL::asset('css/app.css') }}" rel="stylesheet" type="text/css"/>--}}
     <link href="{{ URL::asset('css/default.css') }}" rel="stylesheet" type="text/css"/>
+    {{--<link href="{{ asset('css/app.css') }}" rel="stylesheet">--}}
 
     <link rel="canonical" href="https://www.receive-sms-online.info">
     <script type="text/javascript" src="{{ URL::asset('js/policy.js') }}"></script>
@@ -100,7 +100,7 @@
             We do hope you will refer us to your friends so this site will keep growing.<br>
             <br>
             <strong> • Does this site support mobile version on phone ?</strong><br>
-            Yes, on <a href="https://play.google.com/store/apps/details?id=com.smsreceive">Google Play</a> you will find
+            Yes, on <a href="#">Google Play</a> you will find
             our application for mobile phone that support Android OS.<br>
             <br>
             <strong> • Phone number is no longer on site?</strong><br>
