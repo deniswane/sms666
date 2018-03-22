@@ -11,7 +11,7 @@
 |
 */
 
-
+// 登录注册相关路由
 Auth::routes();
 #Route::get('/', 'HomeController@index')->name('home');
 Route::get('/','StaticPagesController@home') -> name('home');
@@ -22,6 +22,9 @@ Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name(
 Route::get('/contact','StaticPagesController@contact') -> name('contact');
 
 Route::get('/signup', 'UsersController@create')->name('signup');
+// 注册确认
+//此方法是 VerifiesUsers Trait 里的方法，他会自动处理验证逻辑
+Route::get('/verification/{token}','Auth\AuthController@getVerification');
 // 号码详情页
 Route::get('/detail/{number}', 'PhonecController@detailSms') -> name('phone.detail');
 

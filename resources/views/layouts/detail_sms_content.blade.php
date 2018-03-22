@@ -16,7 +16,7 @@
     <link href="{{ URL::asset('css/default.css') }}" rel="stylesheet" type="text/css"/>
     <link rel="canonical" href="https://www.receive-sms-online.info">
     <script type="text/javascript" src="{{ URL::asset('js/policy.js') }}"></script>
-    <script src="jquery.min.js"></script>
+    <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
 </head>
 <body>
 {{--@include('shared._social')--}}

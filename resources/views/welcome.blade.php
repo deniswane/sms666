@@ -53,7 +53,6 @@
     </div>
 </noscript>
 
-{{--<a href="/" id="home-link">Home</a>--}}
 @include('layouts._header')
 <div class="panel">
     <h5><strong>Receive SMS Online</strong><br>

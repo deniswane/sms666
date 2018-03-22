@@ -1,7 +1,7 @@
 <ul class="topnav">
     @guest
         <li><a href="{{ route('login') }}">Login</a></li>
-        @else
+        @elseif(Auth::user()->isVerified())
             <li>
                 <a href="{{ route('logout') }}"
                    onclick="event.preventDefault();
@@ -15,6 +15,13 @@
             </li>
             <li><a href="#">
                     {{ Auth::user()->name }}
+                </a></li>
+        @else
+            {{--Note that by default the behaviour of Laravel is to return an
+                authenticated user after the registration step.--}}
+            {{ Auth::logout() }}
+            <li><a href="#">
+                    &nbsp;&nbsp;Please check the mailbox
                 </a></li>
             @endguest
             {{--<li><select id="formLanguage" onchange="location = this.value;">--}}
@@ -33,7 +40,7 @@
             <li><a href="{{route('contact')}}">Contact</a></li>
             <li><a href="{{route('home')}}">Home</a></li>
             <li class="icon"><a href="javascript:void(0);" onclick="myFunction()">&#9776;</a></li>
-            <li><a target="_blank" href="#"><img id="android_img"
+            <li><a href="#"><img id="android_img"
                                                  src="img/android-app_google-play_button.png"
                                                  alt="Android App"
                                                  style="height: 35px; margin-top: -12px;"></a>
