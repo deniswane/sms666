@@ -10,6 +10,7 @@
         "jrean/laravel-user-verification": "^5.0",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
+        "mews/captcha": "~2.0",
         "recca0120/laravel-tracy": "^1.8"
     },
     "require-dev": {
