@@ -2,7 +2,7 @@
 
 use Faker\Generator as Faker;
 
-$factory->define(\App\Models\SmsContent::class, function (Faker $faker) {
+$factory->define(App\Models\SmsContent::class, function (Faker $faker) {
     $date_time = $faker->date . ' ' . $faker->time;
     return [
         'content'    => $faker->text(),
