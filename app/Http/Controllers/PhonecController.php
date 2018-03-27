@@ -12,7 +12,7 @@ class PhonecController extends Controller
         $contents = $number->smsContents()
                            ->orderby('created_at','desc')
                            ->paginate(30);
-        return view('layouts.detail_sms_content',compact('number','contents'));
+        return view('layouts.detail_sms_content_',compact('number','contents'));
     }
 
 }

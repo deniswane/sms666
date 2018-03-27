@@ -14,7 +14,7 @@ class StaticPagesController extends Controller
     // 获取首页数据，电话
     public function home(){
         $numbers = PhoneNumber::paginate(20);
-        return view('welcome',compact('numbers'));
+        return view('welcome_new',compact('numbers'));
     }
 
     public function privateNumbers(){
