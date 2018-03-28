@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta name="description"
           content="Receive SMS online for FREE, without Registration and without use your personal phone number.Numbers from United Kingdom, Romania ,United States,Spain,France,Germany">
     <meta name="keywords"
