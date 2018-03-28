@@ -28,6 +28,11 @@ Route::get('/verification/{token}','Auth\AuthController@getVerification');
 // 号码详情页
 Route::get('/detail/{number}', 'PhonecController@detailSms') -> name('phone.detail');
 
+// 支付链接
+Route::get('/payment/success','PaymentController@success') ->name('success');
+Route::get('/payment/fail','PaymentController@fail') ->name('fail');
+Route::get('/payment/status','PaymentController@status') ->name('status');
+
 
 
 
