@@ -86,14 +86,14 @@ class PaymentController extends Controller {
 //        $this->validate($request, [
 //            'amount' => 'required|digits:true'
 //        ]);
-        echo "准备提交界面".$request->amount;
+        #echo "准备提交界面".$request->amount;
 
-        $m_shop = '';
+        $m_shop = '529805446';
         $m_orderid = '1';
-        $m_amount = number_format(100, 2, '.', '');
+        $m_amount = number_format($request->amount, 2, '.', '');
         $m_curr = 'USD';
-        $m_desc = base64_encode('Test');
-        $m_key = '253445';
+        $m_desc = base64_encode('Hello my name is guo who from China.');
+        $m_key = '5029963';
 
         $arHash = array(
             $m_shop,
@@ -104,7 +104,7 @@ class PaymentController extends Controller {
         );
 
 
-        $arParams = array(
+        /*$arParams = array(
             'success_url' => 'http:///new_success_url',
             //'fail_url' => 'http:///new_fail_url',
             //'status_url' => 'http:///new_status_url',
@@ -121,12 +121,12 @@ class PaymentController extends Controller {
 
         $m_params = urlencode(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, json_encode($arParams), MCRYPT_MODE_ECB)));
 
-        $arHash[] = $m_params;
+        $arHash[] = $m_params;*/
         $arHash[] = $m_key;
 
         $sign = strtoupper(hash('sha256', implode(':', $arHash)));
 
-        return view('layouts.confirm_launch_payment',compact('m_shop','m_orderid','m_amount','m_curr','m_desc','sign'));
+        return view('pay.confirm_launch_payment',compact('m_shop','m_orderid','m_amount','m_curr','m_desc','sign'));
 
     }
 }
