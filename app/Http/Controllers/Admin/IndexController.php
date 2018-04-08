@@ -53,8 +53,8 @@ class IndexController extends Controller
                 ->leftJoin('phone_numbers', 'bals.phone_id', '=', 'phone_numbers.id')
                 ->leftJoin('users', 'bals.user_id', '=', 'users.id')
 
-                ->limit($num)
-                ->offset($offset)
+//                ->limit($num)
+//                ->offset($offset)
                 ->get()
                 ->toArray();
         }

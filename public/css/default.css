@@ -1,3 +1,4 @@
+
 body {
     margin: 0;
     width: 95%;
@@ -908,5 +909,13 @@ a.tooltip span {
 
 .panel #lnk:hover {
     color: #669999;
+}
+
+codeg {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
 }
 
