@@ -18,7 +18,7 @@ class StaticPagesController extends Controller
     }
 
     public function privateNumbers(){
-        echo "privateNumbers";
+        return view('layouts.private_number');
     }
 
     public function inactiveNumbers(){
