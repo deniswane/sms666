@@ -35,7 +35,14 @@ Route::get('/payment/success','PaymentController@success') ->name('success');
 Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
+//admin
 
+Route::get('/admin/index','Admin\IndexController@index') ->name('index');
+
+Route::get('/admin/bal','Admin\IndexController@bal') ->name('admin.bal');
+Route::post('/admin/test','Admin\IndexController@test') ->name('admin.test');
+Route::get('/admin/flush','Admin\IndexController@flush') ->name('flush');
+Route::post('/admin/phone_info','Admin\IndexController@phone_info') ->name('admin.phone_info');
 
 
 
