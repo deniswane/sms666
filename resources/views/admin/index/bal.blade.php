@@ -71,7 +71,6 @@
             table.on('tool(test)', function (obj) {
                 var data = obj.data;
                 if (obj.event === 'setSign') {
-                    console.log(data);
                     $.ajax({
                         headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                         type: 'post',

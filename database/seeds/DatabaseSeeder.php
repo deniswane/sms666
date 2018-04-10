@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SmsContentTableSeeder::class);
         $this->call(BalsTableSeeder::class);
         $this->call(UsersTableSeeder::class);
+        $this->call(AdminsTableSeeder::class);
         Model::reguard();
     }
 }

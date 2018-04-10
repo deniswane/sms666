@@ -2,19 +2,34 @@
 
 namespace App\Http\Controllers\Admin;
 
-
-
+use App\Models\Admin;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class IndexController extends Controller
 {
+    public function __construct() {
+
+        $this->middleware('admin', [
+            'except' => ['show', 'create', 'store']
+        ]);
+
+    }
     //首页控制台
     public function index(Request $request)
     {
-    return view('admin.index.bal');
+//       var_dump($request->user('admin'));
+//        $user = Auth::guard('admin')->user()->name;
+//        var_dump($user);
+//
+//        die;;
+//        Session()->flush();
+//        var_dump($admin->name);die;
+        return view('admin.index.bal');
     }
     public function bal(Request $request)
     {
@@ -53,8 +68,8 @@ class IndexController extends Controller
                 ->leftJoin('phone_numbers', 'bals.phone_id', '=', 'phone_numbers.id')
                 ->leftJoin('users', 'bals.user_id', '=', 'users.id')
 
-//                ->limit($num)
-//                ->offset($offset)
+                ->limit($num)
+                ->offset($offset)
                 ->get()
                 ->toArray();
         }
@@ -87,7 +102,8 @@ class IndexController extends Controller
     public function flush()
     {
         Cache::flush();
-        return Y::success('缓存已清除');
+
+        return response()->json(['code'=>200,'msg'=>'成功']);
     }
 //今天到上个月的今天 没用
     private function getdays()
