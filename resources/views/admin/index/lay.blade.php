@@ -5,20 +5,19 @@
     <title>@yield('title','后台管理')</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    {{--<meta name="csrf-token" content="{{ csrf_token() }}">--}}
     <link rel="stylesheet" href="/static/admin/layui/css/layui.css">
     <link rel="stylesheet" href="/static/admin/plugins/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/admin/css/style.css">
     <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/admin/layui/layui.js"></script>
-    {{--@yield('style')--}}
+
 </head>
 
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin" layui-layout="{{ session('menu_status','open') }}">
     <div class="layui-header">
         <div class="layui-logo">
-            <span>{{ env('APP_NAME') }} 管理系统</span>
+            <span>管理系统</span>
         </div>
         <!-- 头部区域 -->
         <ul class="layui-nav layui-layout-left">
@@ -32,32 +31,37 @@
                     <i class="layui-icon layui-icon-refresh"></i>
                 </a>
             </li>
-            @role('super admin')
-            <li class="layui-nav-item" lay-unselect>
-                <a href="{{route('flush')}}" class="ajax-post" title="清空缓存">
-                    <i class="fa fa-magic"></i>
-                </a>
+
+            <li class="layui-nav-item" lay-unselect onclick="flush()">
+                <a href="" title="清空缓存" >
+                    <i class="layui-icon">&#xe61d;</i></a>
             </li>
-            @endrole
+
         </ul>
         <ul class="layui-nav  layui-layout-right">
-            <li class="layui-nav-item" lay-unselect="">
-                <a lay-href="app/message/" layadmin-event="message">
-                    <i class="layui-icon layui-icon-notice"></i>
-                    <span class="layui-badge-dot"></span>
-                </a>
-            </li>
+
             <li class="layui-nav-item" lay-unselect>
-                {{--<a href="javascript:;" class="user"><img src="" class="layui-nav-img"> <i class="layui-icon layui-icon-more-vertical"></i></a>--}}
+                <a href="javascript:;" class="user">{{Auth::guard('admin')->user()->name}}<i class="layui-icon layui-icon-more-vertical"></i></a>
                 <dl class="layui-nav-child">
-                    <dd><a href=""><i class="fa  fa-user"></i> 个人信息</a></dd>
+                    <dd><a href="{{ route('me') }}"><i class="fa  fa-user"></i> 更改密码</a></dd>
                     <hr>
-                    <dd><a href=""><i class="fa fa-sign-out"></i> 退出</a></dd>
+                    <dd><a href="{{route('admin.logout')}}"><i class="fa fa-sign-out"></i> 退出</a></dd>
                 </dl>
             </li>
         </ul>
+        {{--<ul class="layui-nav  layui-layout-right">--}}
+            {{--<li class="layui-nav-item" >--}}
+                {{--<a href="/" >网站首页</a>--}}
+            {{--</li>--}}
+            {{--<li class="layui-nav-item">--}}
+                {{--<a href="javascript:;" >退出</a>--}}
+            {{--</li>--}}
+        {{--</ul>--}}
+        <ul class="layui-nav  layui-layout-right">
+
+        </ul>
     </div>
-    {{--@php $__NAV__ = Auth::user()->getNav();@endphp--}}
+
     <div class="aside">
         <div class="aside-scroll">
             <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
@@ -66,7 +70,6 @@
                 <li>
                     <a href="{{route('admin.bal')}}"><i class="fa fa-code"></i> 客户余额</a>
                 </li>
-                {{--<li><a href="{{route('admin.info')}}"><i class="fa fa-code"></i> 消息记录</a></li>--}}{{--@endrole--}}
             </ul>
         </div>
     </div>
@@ -88,11 +91,24 @@
     </div>
 </div>
 
-{{--<script type="text/javascript">--}}
-    {{--layui.config({--}}
-        {{--base: '/static/admin/js/'--}}
-    {{--}).use('lea');--}}
-{{--</script>--}}
+<script type="text/javascript">
+    layui.config({
+        base: '/static/admin/js/'
+    }).use('lea');
+    function flush() {
+        $.ajax({
+            type: 'get',
+            url: "{{route('flush')}}",
+            cache: false,
+            success: function (data) {
+                layer.alert('清楚缓存成功', {icon: 6});
+            }
+        });
+    }
+    $('#refresh').click(function () {
+        window.location.reload()
+    })
+</script>
 @yield('script')
 </body>
 

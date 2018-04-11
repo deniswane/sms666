@@ -8,6 +8,7 @@ use App\Models\PhoneNumber;
 class StaticPagesController extends Controller
 {
     public function __construct() {
+
         $this->middleware('auth',['only' => ['privateNumbers']]);
     }
 
