@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PhoneNumber;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller {
     public function getPhoneNumber() {
@@ -29,6 +30,7 @@ class ApiController extends Controller {
         $phone = $request->phone;
         // 验证token(对应账号有没有钱)
         // 拿手机号的最新短信
+        $price =DB::table('prices')->find(1);
         $user = User::where('token', $token)
             ->get();
         if ($user[0]->balance > 1) {
@@ -37,7 +39,7 @@ class ApiController extends Controller {
                 ->orderBy('created_at', 'desc')
                 ->take(1)
                 ->get();
-            $user[0]->balance = $user[0]->balance - PRICE;
+            $user[0]->balance = $user[0]->balance - $price['price'];
             $user[0]->updated_at = date('Y-m-d H:i:s');
             $user[0]->save();
             $result = array('msg' => $content[0]

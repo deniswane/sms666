@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Admin;
-use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use App\Library\Y;
 
 class IndexController extends Controller
 {
@@ -22,20 +22,42 @@ class IndexController extends Controller
     //首页控制台
     public function index(Request $request)
     {
-//       var_dump($request->user('admin'));
-//        $user = Auth::guard('admin')->user()->name;
-//        var_dump($user);
-//
-//        die;;
-//        Session()->flush();
-//        var_dump($admin->name);die;
         return view('admin.index.bal');
     }
     public function bal(Request $request)
     {
         return view('admin.index.bal');
     }
+    //设置钱
+    public function set_money(Request $request)
 
+    {
+
+        if ($request->isMethod('post')) {
+            $post = $request->post();
+            $validator = Validator::make($post, [
+                'prices' => 'numeric|required',
+            ]);
+
+            if ($validator->fails()) {
+                return Y::error($validator->errors());
+            }
+            $data=[
+                'price' =>$post['prices'],
+                'updated_at' =>date('Y-m-d H:i:s',time()),
+            ]   ;
+
+            if (Admin\Prices::where('id', '1')->update($data) > 0) {
+                return Y::success('修改成功');
+
+            }
+            return Y::error('修改失败');
+        }  else {
+            $price =  DB::table('prices')->find(1);
+            return view('admin.index.set_money',['price'=>$price]);
+        }
+
+    }
     //ajax分页及搜索
     public function test(Request $request)
     {
@@ -49,25 +71,29 @@ class IndexController extends Controller
         $offset = ($page - 1) * $num;
 
         if($user_name){
-            $user_id =DB::table('users')->where('name',$user_name)->value('id');
-            $nums = DB::table('bals')->where('user_id',$user_id)->count();
-            $datas = DB::table('bals')
-                ->select('phone_numbers.phone','users.name','bals.id','bals.num','bals.updated_at','bals.created_at')
-                ->leftJoin('phone_numbers', 'bals.phone_id', '=', 'phone_numbers.id')
-                ->leftJoin('users', 'bals.user_id', '=', 'users.id')
+
+            $nums = DB::table('users')->where('name',$user_name)->count();
+            $datas = DB::table('users')
+                ->select('name','email','balance','updated_at','created_at')
                 ->limit($num)
-                ->where('user_id',$user_id)
+                ->where('name',$user_name)
                 ->offset($offset)
                 ->get()
                 ->toArray();
         }else{
-            $nums = DB::table('bals')->count();
-
-            $datas = DB::table('bals')
-                ->select('phone_numbers.phone','users.name','bals.id','bals.num','bals.updated_at','bals.created_at')
-                ->leftJoin('phone_numbers', 'bals.phone_id', '=', 'phone_numbers.id')
-                ->leftJoin('users', 'bals.user_id', '=', 'users.id')
-
+            $nums = DB::table('users')->count();
+//
+//            $datas = DB::table('bals')
+//                ->select('phone_numbers.phone','users.name','bals.id','bals.num','bals.updated_at','bals.created_at')
+//                ->leftJoin('phone_numbers', 'bals.phone_id', '=', 'phone_numbers.id')
+//                ->leftJoin('users', 'bals.user_id', '=', 'users.id')
+//
+//                ->limit($num)
+//                ->offset($offset)
+//                ->get()
+//                ->toArray();
+            $datas = DB::table('users')
+                ->select('name','email','balance','updated_at','created_at')
                 ->limit($num)
                 ->offset($offset)
                 ->get()

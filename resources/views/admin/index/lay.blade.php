@@ -69,6 +69,7 @@
 
                 <li>
                     <a href="{{route('admin.bal')}}"><i class="fa fa-code"></i> 客户余额</a>
+                    <a href="{{route('admin.set_money')}}"><i class="fa fa-code"></i> 设置请求费用</a>
                 </li>
             </ul>
         </div>

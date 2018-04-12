@@ -22,6 +22,7 @@ Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name(
 Route::get('/contact','StaticPagesController@contact') -> name('contact');
 
 Route::get('/signup', 'UsersController@create')->name('signup');
+//Route::any('/signup', 'UsersController@create')->name('signup');
 // 注册确认
 //此方法是 VerifiesUsers Trait 里的方法，他会自动处理验证逻辑
 Route::get('/verification/{token}','Auth\AuthController@getVerification');
@@ -39,16 +40,8 @@ Route::get('/payment/status','PaymentController@status') ->name('status');
 Route::get('/manager/api/getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
 Route::get('/manager/api/getSmsContent','ApiController@getSmsContent') ->name('get.content');
 
-//admin
 
-//Route::get('/admin/index','Admin\IndexController@index') ->name('index');
-//
-//Route::get('/admin/bal','Admin\IndexController@bal') ->name('admin.bal');
-//Route::post('/admin/test','Admin\IndexController@test') ->name('admin.test');
-//Route::get('/admin/flush','Admin\IndexController@flush') ->name('flush');
-//Route::post('/admin/phone_info','Admin\IndexController@phone_info') ->name('admin.phone_info');
-//
-//后台管理员
+
 Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
 {
     $router->get('logout', 'LoginController@logout')->name('admin.logout');
@@ -57,6 +50,8 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
     $router->post('test', 'IndexController@test')->name('admin.test');
     $router->get('flush', 'IndexController@flush') ->name('flush');
     $router->post('phone_info', 'IndexController@phone_info')->name('admin.phone_info');
+    $router->any('set_money', 'IndexController@set_money')->name('admin.set_money');
+
 });
 //登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
