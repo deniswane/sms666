@@ -20,8 +20,6 @@ class RedirectIfAuthenticated
         if (Auth::guard($guard)->check()) {
             $url = $guard ? 'admin/index':'/';
             return redirect($url);
-//            return redirect('/');
-//            return redirect('/home');
         }
 
         return $next($request);

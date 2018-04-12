@@ -35,29 +35,19 @@ Route::get('/payment/success','PaymentController@success') ->name('success');
 Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
-//admin
-
-//Route::get('/admin/index','Admin\IndexController@index') ->name('index');
-//
-//Route::get('/admin/bal','Admin\IndexController@bal') ->name('admin.bal');
-//Route::post('/admin/test','Admin\IndexController@test') ->name('admin.test');
-//Route::get('/admin/flush','Admin\IndexController@flush') ->name('flush');
-//Route::post('/admin/phone_info','Admin\IndexController@phone_info') ->name('admin.phone_info');
-//
 //后台管理员
 Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
 {
-    $router->get('login', 'LoginController@showLogin')->name('admin.login');
-    $router->post('login', 'LoginController@login');
     $router->get('logout', 'LoginController@logout')->name('admin.logout');
-    $router->get('index', 'IndexController@index');
-
+    $router->get('index', 'IndexController@index')->name('admin.index');
     $router->get('bal', 'IndexController@bal')->name('admin.bal');
     $router->post('test', 'IndexController@test')->name('admin.test');
     $router->get('flush', 'IndexController@flush') ->name('flush');
     $router->post('phone_info', 'IndexController@phone_info')->name('admin.phone_info');
 });
+//登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
+Route::any('admin/login', 'Admin\LoginController@login')->name('admin.login');
 
 
 
