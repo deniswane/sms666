@@ -12,6 +12,6 @@ class AdminsTableSeeder extends Seeder
     public function run()
     {
         $admin = factory(App\Models\Admin::class)->times(5)->make();
-        App\Models\Admin::insert($admin->toArray());
+        App\Models\Admin::insert($admin->makeVisible(['password', 'remember_token'])->toArray());
     }
 }

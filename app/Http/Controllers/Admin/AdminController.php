@@ -39,7 +39,8 @@ class AdminController extends Controller
             $data['updated_at'] = date('Y:m:d H:i:s', time());
 
             if (Admin::where('id', $post['user_id'])->update($data) > 0) {
-                return Y::success('修改成功');
+                Auth::guard('admin')->logout();
+                return Y::success('修改成功', [], route('admin.login'));
             }
             return Y::error('修改失败');
         } else {

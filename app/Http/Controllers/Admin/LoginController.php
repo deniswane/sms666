@@ -1,52 +1,51 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
-
-    use App\Http\Controllers\Controller;
-    use Illuminate\Foundation\Auth\AuthenticatesUsers;
-    use Illuminate\Support\Facades\Auth;
-    use App\Library\Y;
-    class LoginController extends Controller
+use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use App\Library\Y;
+class LoginController extends Controller
 {
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login / registration.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/admin/index';
-
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
-    {
+    {    config('locale','zh-CN');
         $this->middleware('guest:admin', ['except' => 'logout']);
     }
 
-    /**
-     * 重写登录视图页面
-     */
-    public function showLogin()
+    //登陆
+    public function login(Request $request)
     {
-        return view('admin.login.index');
-    }
+        if ($request->isMethod('post')) {
+            $post      = $request->only(['name', 'password']);
+            $validator = Validator::make($post, [
+                'name' => 'required',
+                'password' => 'required'
 
+            ]);
+            if ($validator->fails()) {
+                return Y::error($validator->errors());
+            }
+            if (Auth::guard('admin')->attempt($post, boolval($request->post('remember', '')))) {
+                return Y::success('登录成功', [], route('admin.index'));
+            }
+            return Y::error('用户验证失败');
+            return view('admin.login.index');
+        } else {
+            return view('admin.login.index');
+        }
+    }
+    //退出
     public function logout()
     {
         Auth::guard('admin')->logout();
         return redirect('admin/login');
 
     }
-    /**
-     * 自定义认证驱动
-     * @return mixed
-     */
+    //自定义认证驱动
     protected function guard()
     {
         return auth()->guard('admin');

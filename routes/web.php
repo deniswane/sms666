@@ -51,17 +51,16 @@ Route::get('/manager/api/getSmsContent','ApiController@getSmsContent') ->name('g
 //后台管理员
 Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
 {
-    $router->get('login', 'LoginController@showLogin')->name('admin.login');
-    $router->post('login', 'LoginController@login');
     $router->get('logout', 'LoginController@logout')->name('admin.logout');
-    $router->get('index', 'IndexController@index');
-
+    $router->get('index', 'IndexController@index')->name('admin.index');
     $router->get('bal', 'IndexController@bal')->name('admin.bal');
     $router->post('test', 'IndexController@test')->name('admin.test');
     $router->get('flush', 'IndexController@flush') ->name('flush');
     $router->post('phone_info', 'IndexController@phone_info')->name('admin.phone_info');
 });
+//登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
+Route::any('admin/login', 'Admin\LoginController@login')->name('admin.login');
 
 
 
