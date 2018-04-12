@@ -11,7 +11,7 @@ class AdminsTableSeeder extends Seeder
      */
     public function run()
     {
-        $admin = factory(App\Admin::class)->times(5)->make();
-        App\Admin::insert($admin->toArray());
+        $admin = factory(App\Models\Admin::class)->times(5)->make();
+        App\Models\Admin::insert($admin->toArray());
     }
 }

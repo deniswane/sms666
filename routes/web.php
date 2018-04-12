@@ -35,6 +35,10 @@ Route::get('/payment/success','PaymentController@success') ->name('success');
 Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
+// 接口
+Route::get('/manager/api/getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
+Route::get('/manager/api/getSmsContent','ApiController@getSmsContent') ->name('get.content');
+
 //admin
 
 //Route::get('/admin/index','Admin\IndexController@index') ->name('index');
