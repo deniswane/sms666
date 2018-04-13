@@ -14,7 +14,7 @@ class AddUserTokenToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('token')->index();
+            $table->string('token')->index()->default('');
         });
     }
 
