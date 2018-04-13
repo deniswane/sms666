@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePricesTable extends Migration
+class CreateIsHaveNewestSmsContentFlag extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,10 @@ class CreatePricesTable extends Migration
      */
     public function up()
     {
-        Schema::create('config', function (Blueprint $table) {
+        Schema::create('newest_sms_content', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('prices');
+            $table->string('phone');
+            $table->boolean('is_changed');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ class CreatePricesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('config');
+        Schema::dropIfExists('newest_sms_content');
     }
 }

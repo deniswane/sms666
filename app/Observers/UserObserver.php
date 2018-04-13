@@ -1,4 +1,7 @@
 <?php
+namespace App\Observers;
+use App\Models\User;
+
 /**
  * Created by PhpStorm.
  * User: admin
@@ -8,7 +11,7 @@
 
 class UserObserver {
 
-    public function saved(\App\Models\User $user){
+    public function saved(User $user){
         $user->token = md5($user->email.random_int(1,999));
     }
 }

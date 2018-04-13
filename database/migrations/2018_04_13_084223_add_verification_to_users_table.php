@@ -4,17 +4,16 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddUserTokenToUsersTable extends Migration
-{
+class AddVerificationToUsersTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('token')->index()->default('')->nullable();
+            $table->smallInteger('verified')->default(0);
+            $table->string('verification_token')->default('');
         });
     }
 
@@ -23,10 +22,10 @@ class AddUserTokenToUsersTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('token');
+            $table->dropColumn('verified');
+            $table->dropColumn('verification_token');
         });
     }
 }
