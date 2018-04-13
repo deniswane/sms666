@@ -35,33 +35,34 @@
                 , cols: [[
                     {title: '序号', align: 'center', width: 80, sort: true, templet: '#indexTpl'}
                     , {field: 'name', align: 'center', title: '用户名'}
-                    , {field: 'email', align: 'center', title: '邮箱', event: 'setSign', style: 'cursor: pointer;'}
+                    , {field: 'email', align: 'center', title: '邮箱'}
+//                    , {field: 'email', align: 'center', title: '邮箱', event: 'setSign', style: 'cursor: pointer;'}
                     , {field: 'balance', align: 'center', title: '剩余次数', sort: true}
                     , {field: 'updated_at', align: 'center', title: '更新时间'} //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
                     , {field: 'created_at', align: 'center', title: '注册时间'}
                 ]]
             });
             //监听单元格事件
-            table.on('tool(test)', function (obj) {
-                var data = obj.data;
-                if (obj.event === 'setSign') {
-                    $.ajax({
-                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                        type: 'post',
-                        url: "{{route('admin.phone_info')}}",
-                        cache: false,
-                        data: {phone:data.phone},
-                        success: function (data) {
-                            console.log(data)
-                            layer.open({
-                                title: '最后信息'
-                                , content: data
-                            });
-                        },
-                    });
+            {{--table.on('tool(test)', function (obj) {--}}
+                {{--var data = obj.data;--}}
+                {{--if (obj.event === 'setSign') {--}}
+                    {{--$.ajax({--}}
+                        {{--headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},--}}
+                        {{--type: 'post',--}}
+                        {{--url: "{{route('admin.phone_info')}}",--}}
+                        {{--cache: false,--}}
+                        {{--data: {phone:data.phone},--}}
+                        {{--success: function (data) {--}}
+                            {{--console.log(data)--}}
+                            {{--layer.open({--}}
+                                {{--title: '最后信息'--}}
+                                {{--, content: data--}}
+                            {{--});--}}
+                        {{--},--}}
+                    {{--});--}}
 
-                }
-            });
+                {{--}--}}
+            {{--});--}}
             //表格重载
             var $ = layui.$, active = {
                 reload: function () {
