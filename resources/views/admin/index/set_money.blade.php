@@ -15,14 +15,14 @@
                             <div class="layui-form-item">
                                 <label for="prices" class="layui-form-label">请设置</label>
                                 <div class="layui-input-inline">
-                                    <input type="text" name="prices"  value="{{$price['price']}}" autocomplete="off" lay-verify="number" class="layui-input">
+                                    <input type="text" name="prices"  value="{{$price->price}}" autocomplete="off" lay-verify="number" class="layui-input">
                                 </div>
                             </div>
 
                             <div class="layui-form-item">
                                 <label class="layui-form-label">更新时间</label>
                                 <div class="layui-input-inline">
-                                    <input type="text" value="{{$price['updated_at']}}" class="layui-input" disabled="disabled">
+                                    <input type="text" value="{{$price->updated_at}}" class="layui-input" disabled="disabled">
                                 </div>
                             </div>
                             <div class="layui-form-item">

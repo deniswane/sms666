@@ -3,27 +3,36 @@
     @guest
         <li><a href="{{ route('login') }}">Login</a></li>
         @elseif(Auth::user()->isVerified())
-            <li>
-                <a href="{{ route('logout') }}"
-                   onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                    Logout
-                </a>
 
+            <li>
+                <a id="hover" href="{{ route('logout') }}"
+                   onclick="event.preventDefault();
+                   document.getElementById('logout-form').submit();">Logout
+                </a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     {{ csrf_field() }}
                 </form>
+
             </li>
-            <li><a href="#">
-                    {{ Auth::user()->name }}
-                </a></li>
+
+            <li ><a id="" href="#">{{ Auth::user()->name }}</a></li>
         @else
-            {{--Note that by default the behaviour of Laravel is to return an
-                authenticated user after the registration step.--}}
+
             {{ Auth::logout() }}
-            <li><a href="#">
-                    &nbsp;&nbsp;Please check the mailbox
-                </a></li>
+        <li><a href="{{ route('login') }}">Login</a></li>
+
+        <script>
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.alert('Please login to your mailbox to complete the activation and registration !', {
+                    title:'msg',
+                    btn:'ok',
+                    icon: 6,
+                    skin: 'layer-ext-moon'
+                })
+            });
+
+        </script>
             @endguest
             {{--<li><select id="formLanguage" onchange="location = this.value;">--}}
             {{--<option value="">Select language ..</option>--}}

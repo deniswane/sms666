@@ -13,7 +13,7 @@ class AddVerificationToUsersTable extends Migration {
     public function up() {
         Schema::table('users', function (Blueprint $table) {
             $table->smallInteger('verified')->default(0);
-            $table->string('verification_token')->default('');
+            $table->string('verification_token')->default('')->nullable();
         });
     }
 

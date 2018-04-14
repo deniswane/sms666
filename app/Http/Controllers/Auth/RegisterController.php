@@ -29,11 +29,12 @@ class RegisterController extends Controller
     use VerifiesUsers;
 
     // 验证失败后的跳转地址
-    public $redirectIfVerificationFails = '/emails/verification-result/failure';
+    public $redirectIfVerificationFails = '/emails/verification_result?error=1';
     // 检测到用户已经验证过后的跳转地址
-    public $redirectIfVerified = '/';
+    public $redirectIfVerified = '/emails/verification_result?error=2';
     // 验证成功后的跳转地址
-    public $redirectAfterVerification = '/';
+    public $redirectAfterVerification = '/emails/verification_result?error=2';
+//    public $redirectAfterVerification ="";
 
     /**
      * Where to redirect users after registration.
@@ -104,11 +105,16 @@ class RegisterController extends Controller
 
         UserVerification::generate($user);
 
-        UserVerification::send($user, 'confirm email');
+       UserVerification::send($user, 'confirm email');
+
 
         return $this->registered($request, $user)
             ?: redirect($this->redirectPath());
     }
 
+    public function setresult()
+    {
+        return view('emails.verification_result');
+    }
 
 }

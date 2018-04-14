@@ -25,7 +25,9 @@ Route::get('/signup', 'UsersController@create')->name('signup');
 //Route::any('/signup', 'UsersController@create')->name('signup');
 // 注册确认
 //此方法是 VerifiesUsers Trait 里的方法，他会自动处理验证逻辑
-Route::get('/verification/{token}','Auth\AuthController@getVerification');
+Route::get('/verification/{token}','Auth\RegisterController@getVerification');
+Route::get('/emails/verification_result','StaticPagesController@setresult');
+//Route::get('/emails/verification_result','Auth\RegisterController@setresult');
 // 号码详情页
 Route::get('/detail/{number}', 'PhonecController@detailSms') -> name('phone.detail');
 

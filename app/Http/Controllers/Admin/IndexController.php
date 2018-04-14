@@ -47,13 +47,13 @@ class IndexController extends Controller
                 'updated_at' =>date('Y-m-d H:i:s',time()),
             ]   ;
 
-            if (Admin\Prices::where('id', '1')->update($data) > 0) {
+            if (Admin\Config::where('id', '1')->update($data) > 0) {
                 return Y::success('修改成功');
 
             }
             return Y::error('修改失败');
         }  else {
-            $price =  DB::table('prices')->find(1);
+            $price =  DB::table('configs')->find(1);
             return view('admin.index.set_money',['price'=>$price]);
         }
 

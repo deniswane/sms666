@@ -29,4 +29,10 @@ class StaticPagesController extends Controller
     public function contact(){
         echo "contact";
     }
+
+    public function setresult(Request $request)
+    {
+        $error=$request->error;
+        return view('emails.verification_result',['error'=>$error]);
+    }
 }
