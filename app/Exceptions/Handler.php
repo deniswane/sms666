@@ -48,18 +48,20 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-//        if ($exception instanceof   \Illuminate\Auth\Access\AuthorizationException) {
-//            Session()->flush();
-////            die;
-//            return response()->view('errors.403', [], 403);
-//        }
-//        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
-//            return response()->view('errors.403', [], 403);
-//        }
+        if ($exception instanceof   \Illuminate\Auth\Access\AuthorizationException) {
 
-//        if ($exception instanceof   \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-//            return response()->view('errors.404', [], 404);
-//        }
+            return response()->view('errors.403', [], 403);
+        }
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
+            return response()->view('errors.403', [], 403);
+        }
+
+        if ($exception instanceof   \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            return response()->view('errors.404', [], 404);
+        }
+        if ($exception instanceof   \Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->view('errors.404', [], 404);
+        }
         return parent::render($request, $exception);
     }
 }

@@ -11,4 +11,5 @@ class PhoneNumber extends Model
     public function smsContents() {
         return $this->hasMany(SmsContent::class,'phone_number_id','id');
     }
+
 }

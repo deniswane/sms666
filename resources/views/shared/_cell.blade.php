@@ -5,8 +5,13 @@
             <div>{{$num->country}}<br>
                 {{--号码-国家图片-国家--}}
                 <a href="{{ route('phone.detail',$num->id) }}">
-                    <img src="{{ asset("img/Latvia.jpg") }}" alt="SMS - {{ $num->country }}"
-                         style="vertical-align: middle;">&nbsp;&nbsp;{{$num->phone}}<br>
+                    {{--<img src="{{ asset("img/flags/aodili.gif") }}" alt="SMS - {{ $num->country }}"--}}
+                    <img src="{{ $num->src }}" alt=""
+                         style="vertical-align: middle;">&nbsp;&nbsp;
+                    @php
+                    echo preg_replace("/[^\.]{1,3}$/","****",$num->phone);
+                    @endphp
+                    </br>
                 </a>
                 <strong> SMS received:{{ $num->amount }}
                     <section
