@@ -46,7 +46,7 @@
             {{--<option value="https://ro.receive-sms-online.info/">Română</option>--}}
             {{--</select></li>--}}
             <li><a href="javascript:void(0)" onclick="myTab()">Private numbers</a></li>
-            <li><a href="{{route('inactive_numbers')}}">Inactive numbers</a></li>
+            {{--<li><a href="{{route('inactive_numbers')}}">Inactive numbers</a></li>--}}
             <li><a href="{{route('contact')}}">Contact</a></li>
             <li><a href="{{route('home')}}">Home</a></li>
             <li class="icon"><a href="javascript:void(0);" onclick="myFunction()">&#9776;</a></li>
@@ -68,14 +68,16 @@
     });
     function myTab() {
         layer.tab({
-            area: ['600px', '300px'],
+            area: ['400px', '300px'],
             tab: [{
                 title: 'API',
-                content: '<p><strong>正式版接口地址</strong><br/><codeg>http://wz.tkc8.com/manage/api/check?token=您的令牌&url=域名</codeg><br/><strong>接口返回json</strong><br/><codeg>' +
-                '{"code":9900,"msg":"获取成功"}</codeg><br/><br/><codeg>{"code":139,"msg":"用户没有权限"}<codeg/><table></table></p>'
+                content: '<p><strong>address</strong><br/><codeg>http://wz.tkc8.com/manager/api/getPhoneNumber</codeg><br/><codeg>http://wz.tkc8.com/manager/api/getSmsContent?token=Your token&phone=The number you want</codeg><br/><strong>response</strong><br/><codeg>' +
+                '{"code":200,"msg":"success"}</codeg><br/><codeg>{"code":101,"msg":"Not sufficient funds"}<codeg/><br/>' +
+                '<codeg>{"code":401,"msg":"No new text messages"}<codeg/><br/>' +
+                '<codeg>{"code":103,"msg":"The frequency is too fast"}<codeg/><br/><table></table></p>'
             }, {
                 title: 'price',
-                content: '价格价格价格价格价格价格价格价格价格价格价格价格价格'
+                content: 'pricepricepricepricepricepriceprice'
             }]
         });
     }
