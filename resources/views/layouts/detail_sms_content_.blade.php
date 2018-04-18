@@ -18,7 +18,6 @@ Availability: <b class="statut_online">online</b></span><br><br>
                             onClick="window.location.reload();">Refresh Webpage</button></div></span></h5>
         @include('shared._sms_content_cell')
         </label>
-        <script data-cfasync="false" src="/cdn-cgi/scripts/d07b1474/cloudflare-static/email-decode.min.js"></script>
         <script type="text/javascript">
 
 

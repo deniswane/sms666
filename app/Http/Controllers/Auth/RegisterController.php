@@ -80,8 +80,7 @@ class RegisterController extends Controller
     {
         return User::create([
             'name' => $data['name'],
-            'token' => '',
-            'remember_token' => '',
+
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
         ]);
@@ -99,7 +98,7 @@ class RegisterController extends Controller
 
         $user = $this->create($request->all());
 
-        event(new Registered($user));
+//        event(new Registered($user));
 
         $this->guard()->login($user);
 

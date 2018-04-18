@@ -1,7 +1,12 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+/******/    var killErrors = function(value) {
+            return true
+            };
+
+            window.onerror = null;
+            window.onerror = killErrors;
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/
@@ -1028,13 +1033,13 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  * a simple convenience so we don't have to attach every token manually.
  */
 
-var token = document.head.querySelector('meta[name="csrf-token"]');
-
-if (token) {
-  window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
-} else {
-  console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
-}
+// var token = document.head.querySelector('meta[name="csrf-token"]');
+//
+// if (token) {
+//   window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
+// } else {
+//   console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+// }
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
@@ -32424,11 +32429,11 @@ if (true) {
   warn = function (msg, vm) {
     var trace = vm ? generateComponentTrace(vm) : '';
 
-    if (config.warnHandler) {
-      config.warnHandler.call(null, msg, vm, trace);
-    } else if (hasConsole && (!config.silent)) {
-      console.error(("[Vue warn]: " + msg + trace));
-    }
+    // if (config.warnHandler) {
+    //   config.warnHandler.call(null, msg, vm, trace);
+    // } else if (hasConsole && (!config.silent)) {
+    //   console.error(("[Vue warn]: " + msg + trace));
+    // }
   };
 
   tip = function (msg, vm) {
@@ -40389,10 +40394,10 @@ if (inBrowser) {
         "development" !== 'test' &&
         isChrome
       ) {
-        console[console.info ? 'info' : 'log'](
-          'Download the Vue Devtools extension for a better development experience:\n' +
-          'https://github.com/vuejs/vue-devtools'
-        );
+        // console[console.info ? 'info' : 'log'](
+          // 'Download the Vue Devtools extension for a better development experience:\n' +
+          // 'https://github.com/vuejs/vue-devtools'
+        // );
       }
     }
     if ("development" !== 'production' &&
@@ -40400,11 +40405,11 @@ if (inBrowser) {
       config.productionTip !== false &&
       typeof console !== 'undefined'
     ) {
-      console[console.info ? 'info' : 'log'](
-        "You are running Vue in development mode.\n" +
-        "Make sure to turn on production mode when deploying for production.\n" +
-        "See more tips at https://vuejs.org/guide/deployment.html"
-      );
+      // console[console.info ? 'info' : 'log'](
+      //   "You are running Vue in development mode.\n" +
+      //   "Make sure to turn on production mode when deploying for production.\n" +
+      //   "See more tips at https://vuejs.org/guide/deployment.html"
+      // );
     }
   }, 0);
 }

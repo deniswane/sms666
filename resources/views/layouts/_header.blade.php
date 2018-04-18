@@ -46,12 +46,12 @@
             {{--<option value="https://ro.receive-sms-online.info/">Română</option>--}}
             {{--</select></li>--}}
             <li><a href="javascript:void(0)" onclick="myTab()">Private numbers</a></li>
-            <li><a href="{{route('inactive_numbers')}}">Inactive numbers</a></li>
-            <li><a href="{{route('contact')}}">Contact</a></li>
+            {{--<li><a href="{{route('inactive_numbers')}}">Inactive numbers</a></li>--}}
+            {{--<li><a href="{{route('contact')}}">Contact</a></li>--}}
             <li><a href="{{route('home')}}">Home</a></li>
             <li class="icon"><a href="javascript:void(0);" onclick="myFunction()">&#9776;</a></li>
             <li><a href="#"><img id="android_img"
-                                 src="img/android-app_google-play_button.png"
+                                 src="/img/android-app_google-play_button.png"
                                  alt="Android App"
                                  style="height: 35px; margin-top: -12px;"></a>
             </li>
