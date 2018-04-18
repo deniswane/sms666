@@ -17,7 +17,7 @@ class ApiController extends Controller {
         $phone_count = PhoneNumber::all()->count();
         $random = random_int(1, $phone_count);
         $phone = PhoneNumber::findOrFail($random)->phone;
-        echo json_encode(array('msg' => $phone));
+        echo json_encode(array('code'=>200,'msg' => $phone));
     }
 
     public function getSmsContent(Request $request) {
@@ -25,7 +25,7 @@ class ApiController extends Controller {
 
         if (isset($_SESSION['last_request_time']) && time() - $_SESSION['last_request_time'] < 1) {
             $_SESSION['last_request_time'] = time();
-            echo json_encode(array('msg' => 'The frequency is too fast'));
+            echo json_encode(array('code'=>103,'msg' => 'The frequency is too fast'));
             exit;
         }
         // 标识
@@ -34,33 +34,34 @@ class ApiController extends Controller {
         $phone = $request->phone;
         // 验证token(对应账号有没有钱)
         // 拿手机号的最新短信
-        $price = DB::table('prices')->find(1);
-        $users = User::where('token', $token)
-            ->get();
-        if ($users[0]->balance > 1) {
+        $price = DB::table('config')->find(1);
+        $user = User::where('token', $token)
+            ->first();
+        if ($user->balance > 1) {
             // 短信是否有更新
-            $phone_statuses = DB::select('select * from newest_sms_content where phone = ?', [$phone]);
-            if ($phone_statuses[0]->is_changed) {
+            $phone_statuse = DB::table('newest_sms_content')->where('phone', $phone)->first();
+            if ($phone_statuse->is_changed) {
                 $phoneNumber = PhoneNumber::where('phone', $phone)->firstOrFail();
                 $content = $phoneNumber->smsContents()
                     ->orderBy('created_at', 'desc')
                     ->take(1)
                     ->get();
-                $users[0]->balance = $users[0]->balance - $price['price'];
-                $users[0]->updated_at = date('Y-m-d H:i:s');
-                $users[0]->save();
-                $result = array('msg' => $content[0]
+                $user->balance = $user->balance - $price->prices;
+                $user->updated_at = date('Y-m-d H:i:s');
+                $user->save();
+                $result = array('code' => 200,'msg' => $content[0]
                     ->content);
-                // 没有最新短信标记
-                $phone_statuses[0]->is_changed = false;
-                $phone_statuses[0]->save();
+                // 取出后更改标记
+                DB::table('newest_sms_content')
+                    ->where('phone', $phone)
+                    ->update(['is_changed' => false]);
                 echo json_encode($result);
             } else {
-                echo json_encode(array('msg' => 'or No new text messages'));
+                echo json_encode(array('code' =>401,'msg' => 'No new text messages'));
             }
 
         } else {
-            echo json_encode(array('msg' => 'Not sufficient funds'));
+            echo json_encode(array('code' =>101,'msg' => 'Not sufficient funds'));
         }
     }
 }
