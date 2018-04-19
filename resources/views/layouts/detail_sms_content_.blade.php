@@ -2,17 +2,28 @@
 @section('title', 'Detail')
 @section('content')
     <div class="panel">
-        <h4 style="text-align:center;"> List of SMS messages received for phone number : <strong>919654766051 :
-                India </strong></h4>
+        <h4 style="text-align:center;"> List of SMS messages received for phone number : <strong>
+                @php
+                    echo preg_replace("/[^\.]{1,3}$/","****",$number->phone);
+                @endphp
+                :
+                {{$number->country}} </strong></h4>
 
         <h5>
-<span class="alert-box [secondary radius round]"> - Refresh the page to see the new SMS messages.<br>
+<span class="alert-box [secondary radius round]">
 - Message will appear on this page within seconds after we receive.<br>
 - Received messages are displayed as such, does not change anything.<br>
 - We do not send response to incoming SMS.<br>
 - This is the list of the last 200 messages received on this number.<br>
-<span class="text-right">SMS received today: 1475<br>
-Time of use: 48 days<br>
+<span class="text-right">SMS received today:
+    @php
+      echo  rand(1,$number->amount);
+    @endphp<br>
+Time of use:
+    @php
+        echo  rand(1,60);
+    @endphp
+     days<br>
 Availability: <b class="statut_online">online</b></span><br><br>
 <div align="center"><button class="autorefresh"
                             onClick="window.location.reload();">Refresh Webpage</button></div></span></h5>

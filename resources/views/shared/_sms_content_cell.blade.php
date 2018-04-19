@@ -14,7 +14,11 @@
         </tr>
         @foreach($contents as $con)
             <tr>
-                <td data-label="From   :">Kwoook</td>
+                <td data-label="From   :">
+                    @php
+                        echo preg_match('/\d/is', $con->from) ? preg_replace("/[^\.]{1,3}$/","xxxx",$con->from) :preg_match('/\d/is', $con->from)  ;
+                    @endphp
+                </td>
                 <td id="divhid1" data-label="Message:">{{$con->content}}</td>
                 <td data-label="Added:">{{$con->created_at->diffForHumans()}}</td>
             </tr>
