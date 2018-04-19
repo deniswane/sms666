@@ -22,12 +22,6 @@ class ApiController extends Controller {
 
     public function getSmsContent(Request $request) {
         // 1秒内访问 拒绝
-
-        if (isset($_SESSION['last_request_time']) && time() - $_SESSION['last_request_time'] < 1) {
-            $_SESSION['last_request_time'] = time();
-            echo json_encode(array('code'=>103,'msg' => 'The frequency is too fast'));
-            exit;
-        }
         // 标识
         $token = $request->token;
         // 手机号
