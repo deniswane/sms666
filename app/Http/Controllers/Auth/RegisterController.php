@@ -103,7 +103,6 @@ class RegisterController extends Controller
         $this->guard()->login($user);
 
         UserVerification::generate($user);
-
        UserVerification::send($user, 'confirm email');
 
 

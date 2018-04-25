@@ -21,7 +21,6 @@ class RedirectIfAuthenticated
             $url = $guard ? 'admin/index':'/';
             return redirect($url);
         }
-
         return $next($request);
     }
 }
