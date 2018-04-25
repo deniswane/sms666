@@ -42,7 +42,7 @@ return [
     |
     */
 
-    'port' => env('MAIL_PORT', 25),
+    'port' => env('MAIL_PORT', 465),
 
     /*
     |--------------------------------------------------------------------------
@@ -71,7 +71,7 @@ return [
     |
     */
 
-    'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+    'encryption' => env('MAIL_ENCRYPTION', 'ssl'),
 
     /*
     |--------------------------------------------------------------------------
@@ -86,7 +86,7 @@ return [
 
     'username' => env('MAIL_USERNAME','947848875@qq.com'),
 
-    'password' => env('MAIL_PASSWORD','ytufcmauaykybdhf'),
+    'password' => env('MAIL_PASSWORD','sadrqxetigadbfbc'),
 
     /*
     |--------------------------------------------------------------------------
