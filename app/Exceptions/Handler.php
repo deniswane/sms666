@@ -62,6 +62,9 @@ class Handler extends ExceptionHandler
         if ($exception instanceof   \Illuminate\Database\Eloquent\ModelNotFoundException) {
             return response()->view('errors.404', [], 404);
         }
+        if ($exception instanceof  \Symfony\Component\HttpKernel\Exception\HttpException) {
+            return response()->json(['code'=>103,'msg'=>'The frequency is too fast']);
+        }
         return parent::render($request, $exception);
     }
 }
