@@ -73,7 +73,7 @@
             area: ['400px', '300px'],
             tab: [{
                 title: 'API',
-                content: '<p><strong>address</strong><br/><codeg>http://wz.tkc8.com/manager/api/getPhoneNumber</codeg><br/><codeg>http://wz.tkc8.com/manager/api/getSmsContent?token=Your token&phone=The number you want</codeg><br/><strong>response</strong><br/><codeg>' +
+                content: '<p><strong>address</strong><br/><codeg>http://sms-receive-online.info/manager/api/getPhoneNumber</codeg><br/><codeg>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The number you want</codeg><br/><strong>response</strong><br/><codeg>' +
                 '{"code":200,"msg":"success"}</codeg><br/><codeg>{"code":101,"msg":"Not sufficient funds"}<codeg/><br/>' +
                 '<codeg>{"code":401,"msg":"No new text messages"}<codeg/><br/>' +
                 '<codeg>{"code":103,"msg":"The frequency is too fast"}<codeg/><br/><table></table></p>'

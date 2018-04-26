@@ -94,9 +94,15 @@ class RegisterController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function register(Request $request) {
+        $u = User::where('email',$request->email)->first();
+        // 如果未通过验证，直接删除重新注册
+        if($u && !$u->verified){
+            $u->delete();
+        }
         $this->validator($request->all())->validate();
 
         $user = $this->create($request->all());
+
 
 //        event(new Registered($user));
 
