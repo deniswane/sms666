@@ -45,8 +45,6 @@ Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3'], function 
 });
 
 
-
-
 Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
 {
     $router->get('logout', 'LoginController@logout')->name('admin.logout');

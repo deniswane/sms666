@@ -57,7 +57,7 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', '947848875@qq.com'),
-        'name' => env('MAIL_USERNAME', '947848875@qq.com'),
+        'name' => env('MAIL_USERNAME', 'sms-receive-online'),
     ],
 
     /*
