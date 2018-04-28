@@ -39,7 +39,7 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:30'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });

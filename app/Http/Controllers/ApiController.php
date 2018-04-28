@@ -6,6 +6,7 @@ use App\Models\PhoneNumber;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class ApiController
@@ -18,12 +19,15 @@ class ApiController extends Controller {
         $user = User::where('token', $token)
             ->first();
         if($user){
-            dump($user);
             $phone_count = PhoneNumber::all()->count();
             $random = random_int(1, $phone_count);
             $phone = PhoneNumber::findOrFail($random)->phone;
+
+            $ip=$request->getClientIp();
+            Log::write('info', 'get_phone:',['email'=>$user->email,'ip'=>$ip,'phone'=>$phone]);
             echo json_encode(array('code'=>200,'msg' => $phone));
         }else{
+
             echo json_encode(array('code' =>105,'msg' => "Sorry, sir. You have no right to visit"));
         }
     }
@@ -43,13 +47,14 @@ class ApiController extends Controller {
         if ($user->balance > 1) {
             // 短信是否有更新
             $phone_statuse = DB::table('newest_sms_content')->where('phone', $phone)->first();
+//            dd($phone_statuse->is_changed);
             if ($phone_statuse->is_changed) {
                 $phoneNumber = PhoneNumber::where('phone', $phone)->firstOrFail();
                 $content = $phoneNumber->smsContents()
                     ->orderBy('created_at', 'desc')
                     ->take(1)
                     ->get();
-                $user->balance = $user->balance - $price->prices;
+                $user->balance = $user->balance - $price->price;
                 $user->updated_at = date('Y-m-d H:i:s');
                 $user->save();
                 $result = array('code' => 200, 'msg' => $content[0]
@@ -58,6 +63,10 @@ class ApiController extends Controller {
                 DB::table('newest_sms_content')
                     ->where('phone', $phone)
                     ->update(['is_changed' => false]);
+
+                $ip=$request->getClientIp();
+                Log::write('info', 'get_content:',['email'=>$user->email,'ip'=>$ip,'balance'=>$user->balance]);
+
                 echo json_encode($result);
             } else {
                 echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
@@ -66,5 +75,7 @@ class ApiController extends Controller {
         } else {
             echo json_encode(array('code' =>101,'msg' => 'Not sufficient funds'));
         }
+        //meiqian
+//        dd($phone_statuse->is_changed);
     }
 }

@@ -10,6 +10,10 @@
 | the IoC container for the system binding all of the various parts.
 |
 */
+//require '../vendor/autoload.php';
+//use Monolog\Logger;
+//use Monolog\Handler\StreamHandler;
+//use Monolog\Handler\SwiftMailerHandler;
 
 require __DIR__.'/helpers.php';
 
@@ -43,7 +47,34 @@ $app->singleton(
     App\Exceptions\Handler::class
 );
 
+//log
 
+$app->configureMonologUsing(function($monolog) {
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_debug.log'), Monolog\Logger::DEBUG, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_info.log') , Monolog\Logger::INFO,false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, false, true)));
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_notice.log') , Monolog\Logger::NOTICE, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_warning.log') , Monolog\Logger::WARNING, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_error.log') , Monolog\Logger::ERROR, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_critical.log') , Monolog\Logger::CRITICAL, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_alert.log') , Monolog\Logger::ALERT, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+
+    $monolog->pushHandler((new Monolog\Handler\StreamHandler(storage_path('logs/laravel_emergency.log') , Monolog\Logger::EMERGENCY, false))
+        ->setFormatter(new Monolog\Formatter\LineFormatter(null, null, true, true)));
+
+});
 /*
 |--------------------------------------------------------------------------
 | Return The Application

@@ -34,27 +34,49 @@ class IndexController extends Controller
     {
 
         if ($request->isMethod('post')) {
+
             $post = $request->post();
-            $validator = Validator::make($post, [
-                'prices' => 'numeric|required',
-            ]);
+            if(isset($post['prices'])){
+                $validator = Validator::make($post, [
+                    'prices' => 'numeric|required',
+                ]);
 
-            if ($validator->fails()) {
-                return Y::error($validator->errors());
+                if ($validator->fails()) {
+                    return Y::error($validator->errors());
+                }
+                $data=[
+                    'price' =>$post['prices'],
+                    'created_at' =>date('Y-m-d H:i:s',time()),
+                ]   ;
+
+            }else{
+                $validator = Validator::make($post, [
+                    'price_min' => 'numeric|required',
+                    'price_max' => 'numeric|required',
+                    'num_min' => 'numeric|required',
+                    'num_max' => 'numeric|required',
+                ]);
+
+                if ($validator->fails()) {
+                    return Y::error($validator->errors());
+                }
+                $data=[
+                    'price_i' =>$post['price_min'],
+                    'price_a' =>$post['price_max'],
+                    'num_a' =>$post['num_max'],
+                    'num_i' =>$post['num_min'],
+                    'num_updated_at' =>date('Y-m-d H:i:s',time()),
+                ];
             }
-            $data=[
-                'price' =>$post['prices'],
-                'updated_at' =>date('Y-m-d H:i:s',time()),
-            ]   ;
-
             if (Admin\Config::where('id', '1')->update($data) > 0) {
+
                 return Y::success('修改成功');
 
             }
             return Y::error('修改失败');
         }  else {
-            $price =  DB::table('configs')->find(1);
-            return view('admin.index.set_money',['price'=>$price]);
+            $price =  DB::table('configs')->select('price','price_i','price_a','num_a','num_i')->find(1);
+            return view('admin.index.set_money',['price'=>$price])->__toString();
         }
 
     }
@@ -82,16 +104,6 @@ class IndexController extends Controller
                 ->toArray();
         }else{
             $nums = DB::table('users')->count();
-//
-//            $datas = DB::table('bals')
-//                ->select('phone_numbers.phone','users.name','bals.id','bals.num','bals.updated_at','bals.created_at')
-//                ->leftJoin('phone_numbers', 'bals.phone_id', '=', 'phone_numbers.id')
-//                ->leftJoin('users', 'bals.user_id', '=', 'users.id')
-//
-//                ->limit($num)
-//                ->offset($offset)
-//                ->get()
-//                ->toArray();
             $datas = DB::table('users')
                 ->select('name','email','balance','updated_at','created_at')
                 ->limit($num)
@@ -108,22 +120,6 @@ class IndexController extends Controller
         ]);
 
     }
-    //点击手机号返回最新的消息
-    public function phone_info(Request $request)
-    {
-        $phone = $request->phone;
-        if($phone){
-            $phone_id=(Db::table('phone_numbers')->where('phone',$phone)->value('id'))*1;
-            $info   = DB::table('sms_contents')->select('content')->where('phone_number_id',$phone_id)->orderBy('updated_at','desc')->limit(1)->first();
-            if($info){
-                return $info['content'];
-            }else{
-                return "暂时没有信息";
-            }
-        }else{
-            return "暂时没有信息";
-        }
-    }
     //清空缓存
     public function flush()
     {
@@ -131,38 +127,5 @@ class IndexController extends Controller
 
         return response()->json(['code'=>200,'msg'=>'成功']);
     }
-//今天到上个月的今天 没用
-    private function getdays()
-    {
-        $day= $this->last_month_today(time());//上个月的今天
-        $month = date('m'); //取当前月份
-        $month = $month==1 ? $month = 12: $month-1;
 
-        $year = date('Y');
-        $daynum = cal_days_in_month(CAL_GREGORIAN, $month, $year); //根据当月的年月份值，得到该月的天数
-        $days = date("d");
-        $arr=array();
-        for($j=$day;$j<=$daynum;$j++){
-            if(date('m') == 1){
-                $arr[]="12-".$j;
-            }else{
-                $arr[]=(date("m")-1)."-".$j;
-            }
-
-        }
-        for($i=1;$i<=$days;$i++){
-            $arr[]=date("m")."-".$i;
-        }
-
-        var_dump($arr);
-    }
-
-    private   function last_month_today($time){
-        $last_month_time = mktime(date("G", $time), date("i", $time),
-            date("s", $time), date("n", $time), 0, date("Y", $time));
-        $last_month_t =  date("t", $last_month_time);
-        $day = $last_month_t < date("j", $time) ? date("t", $last_month_time) : date( "d", $time);
-        return $day;
-
-    }
 }
