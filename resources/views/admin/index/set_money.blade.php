@@ -2,7 +2,7 @@
 @section('content')
     <div class="panel panel-default panel-intro">
         <div class="panel-body">
-            <div class="layui-tab layui-tab-brief" lay-filter="user">
+            <div class="layui-tab layui-tab-brief" >
                 <ul class="layui-tab-title" id="LAY_mine">
                     <li class="layui-this" lay-id="info">设置单次请求价格</li>
                     <li >设置多次价格</li>
