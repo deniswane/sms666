@@ -11,7 +11,7 @@
     <meta property="og:title"
           content="Receive SMS Online for FREE | NO Registration UK,Romania,USA,Spain,France,Germany,Russia">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="http://www.receive-sms-online.info/">
+    <meta property="og:url" content="http://www.sms-receive-online.info/">
     <meta property="og:image" content="http://www.receive-sms-online.info/img/receive_sms.png">
     <meta name="msvalidate.01" content="CB3DC9D646F1A44B5CE15B6B1D3074F7">
     <title>@yield('title', 'Receive SMS Online')</title>
