@@ -1,5 +1,5 @@
 @extends('admin.index.lay')
-<meta name="csrf-token" content="{{ csrf_token() }}">
+{{--<meta name="csrf-token" content="{{ csrf_token() }}">--}}
 @section('title','用户余额')
 @section('content')
 
@@ -16,7 +16,6 @@
 
             var table = layui.table;
             table.render({
-
                 //请求后台获取数据
                 request: {
                     pageName: 'curr' //页码的参数名称，默认：page
@@ -33,11 +32,12 @@
                 ,where:{'_token':"{{ csrf_token() }}"}
              ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
                 , cols: [[
-                    {title: '序号', align: 'center', width: 80, sort: true, templet: '#indexTpl'}
+                    {title: '序号', align: 'center', width: 80,  templet: '#indexTpl'}
                     , {field: 'name', align: 'center', title: '用户名'}
                     , {field: 'email', align: 'center', title: '邮箱'}
-//                    , {field: 'email', align: 'center', title: '邮箱', event: 'setSign', style: 'cursor: pointer;'}
-                    , {field: 'balance', align: 'center', title: '剩余次数', sort: true}
+                    , {field: 'balance', align: 'center', title: '余额', sort: true}
+                    , {field: 'daliy_amount', align: 'center', title: '今日请求次数', sort: true}
+                    , {field: 'amounts', align: 'center', title: '总的请求次数', sort: true}
                     , {field: 'updated_at', align: 'center', title: '更新时间'} //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
                     , {field: 'created_at', align: 'center', title: '注册时间'}
                 ]]

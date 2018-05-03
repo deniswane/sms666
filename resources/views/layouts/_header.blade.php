@@ -56,6 +56,7 @@
 <!-- Scripts -->
 <script src="{{ asset('js/app.js') }}"></script>
 <script>
+
     //JavaScript代码区域
     layui.use('layer', function () {
         var layer = layui.layer;
@@ -63,23 +64,37 @@
     });
 
     function myTab() {
-        layer.tab({
-            area: ['500px', '400px'],
-            tab: [{
-                title: 'API',
-                content: '<p><strong>address</strong><br/><codeg>http://sms-receive-online.info/manager/api/getPhoneNumber?token=Your token</codeg><br/><codeg>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The number you want</codeg><br/><strong>response</strong><br/><codeg>' +
-                '{"code":200,"msg":"success"}</codeg><br/><codeg>{"code":101,"msg":"Not sufficient funds"}<codeg/><br/>' +
-                '<codeg>{"code":401,"msg":"No new text messages"}<codeg/><br/>' +
-                '<codeg>{"code":103,"msg":"The frequency is too fast"}<codeg/><br/>' +
-                '<codeg>{"code":105,"msg":"Sorry, sir. You have no right to visit"}<codeg/><br/><table></table></p>'
-            }, {
-                title: 'Price',
-                content: "<p><strong>price</strong><br/><codeg>{{$prices->price_i}}元 " +
-                "{{$prices->num_i}}次</codeg></br><codeg>{{$prices->price_a}}元 {{$prices->num_a}}次</codeg>" +
-                "<p><strong>Your token</strong><br/>" +
-                "@guest<codeg> Please register and log in</codeg> @else<codeg>{{ Auth::user()->token}}</codeg> @endguest"
-            }]
+
+        $.ajax({
+            type: 'get',
+            url: "{{route('getprice')}}",
+            data:'',
+            cache: false,
+            success: function (data) {
+                layer.tab({
+                    area: ['600px', '400px'],
+                    tab: [{
+                        title: 'API',
+                        content: '<p "><strong style="font-size: 18px;">address</strong><br/>1.get phone number :</br>http://sms-receive-online.info/manager/api/getPhoneNumber?token=Your token<br/>'+
+                        '2.get content :</br>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The number you want<br/><strong style="font-size: 18px;">response</strong><br/>' +
+                        '{"code":200,"msg":"success"}<br/>{"code":101,"msg":"Not sufficient funds"}<br/>' +
+                        '{"code":401,"msg":"No new text messages"}<br/>' +
+                        '{"code":103,"msg":"The frequency is too fast"}<br/>' +
+                        '{"code":105,"msg":"Sorry, sir. You have no right to visit"}<br/><table></table></p>'
+                    }, {
+                        title: 'Price',
+                        content: "<p ><strong style='font-size: 18px;'>Price</strong><br/> "+data.price_i+
+                        "元 /"+data.num_i+"次</br>"+data.price_a+"元 /"+data.num_a+"次"+
+                        "<p><strong <strong style='font-size: 18px;'>Your token</strong><br/>"+
+                        "@guest Please register and log in @else{{ Auth::user()->token}} @endguest"
+                    }]
+                });
+            },
+            error:function(){
+            }
         });
+
+
     }
 
 </script>

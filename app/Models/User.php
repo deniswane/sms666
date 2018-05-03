@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\DB;
 use Jrean\UserVerification\Traits\UserVerification;
 
 class User extends Authenticatable
@@ -38,8 +39,12 @@ class User extends Authenticatable
     public static function boot(){
         parent::boot();
         static ::creating(function ($user){
-
             $user->token =md5(uniqid().$user->email) ;
+        });
+        static ::created(function ($user){
+            $dayEnd = date('Y:m:d H-i-s',strtotime(date('Y-m-d', time()))+86400);
+
+            DB::table('page_views')->insert(['user_id'=>$user->id,'daliy_amount'=>0,'amounts'=>0,'expiration_time'=>$dayEnd]);
         });
     }
 

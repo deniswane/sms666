@@ -34,6 +34,7 @@ Route::get('/emails/verification_result','StaticPagesController@setresult');
 //Route::get('/emails/verification_result','Auth\RegisterController@setresult');
 // 号码详情页
 Route::get('/detail/{number}', 'PhonecController@detailSms') -> name('phone.detail');
+Route::get('/getprice', 'StaticPagesController@getprice') -> name('getprice');
 
 // 支付链接
 Route::view('/payment/recharge','pay/recharge');
@@ -43,7 +44,7 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:50'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });

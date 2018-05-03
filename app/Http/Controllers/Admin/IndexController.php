@@ -96,7 +96,8 @@ class IndexController extends Controller
 
             $nums = DB::table('users')->where('name',$user_name)->count();
             $datas = DB::table('users')
-                ->select('name','email','balance','updated_at','created_at')
+                ->select('name','email','balance','expiration_time','daliy_amount','amounts','updated_at','created_at')
+                ->leftjoin('page_views','users.id','=','page_views.user_id')
                 ->limit($num)
                 ->where('name',$user_name)
                 ->offset($offset)
@@ -105,11 +106,24 @@ class IndexController extends Controller
         }else{
             $nums = DB::table('users')->count();
             $datas = DB::table('users')
-                ->select('name','email','balance','updated_at','created_at')
+                ->select('name','email','balance','daliy_amount','expiration_time','amounts','updated_at','created_at')
+                ->leftjoin('page_views','users.id','=','page_views.user_id')
                 ->limit($num)
                 ->offset($offset)
                 ->get()
                 ->toArray();
+        }
+
+        foreach ($datas as $value){
+            if ($value->expiration_time){
+                if(time()-strtotime($value->expiration_time)>=0){
+                    $value->daliy_amount = 0;
+                }
+            }else{
+                $value->daliy_amount = 0;
+                $value->amounts = 0;
+            }
+
         }
 
         return response()->json([

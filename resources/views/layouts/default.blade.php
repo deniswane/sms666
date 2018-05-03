@@ -29,15 +29,6 @@
             does not support JavaScript!<br>Without JavaScript, this web page will not be displayed correctly!
         </div>
     </noscript>
-    <style>
-        codeg {
-            padding: 2px 4px;
-            font-size: 90%;
-            color: #c7254e;
-            background-color: #f9f2f4;
-            border-radius: 4px;
-        }
-    </style>
 </head>
 <body>
     @include('layouts._header')
