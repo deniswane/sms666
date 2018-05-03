@@ -15,7 +15,7 @@ class CreateConfigsTable extends Migration
     {
         Schema::create('configs', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('price');
+            $table->float('price',6,2);
             $table->timestamps();
         });
     }

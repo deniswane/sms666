@@ -90,7 +90,7 @@ class Y
         } else {
             $res->data = new \stdClass();
         }
-        $code = $res->code >= 200 && $res->code <= 500 ? $res->code : 200;
+        $code = $res->code >= 200 && $res->code < 500 ? $res->code : 200;
         return response()->json($res, $code);
     }
 }

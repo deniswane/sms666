@@ -2,8 +2,12 @@
 
 namespace App\Exceptions;
 
+use Mail;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use App\Mail\ExceptionOccured;
+use Symfony\Component\Debug\Exception\FlattenException;
+use Symfony\Component\Debug\ExceptionHandler as SymfonyExceptionHandler;
 
 class Handler extends ExceptionHandler
 {
@@ -36,6 +40,9 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
+        if ($this->shouldReport($exception)) {
+            $this->sendEmail($exception);
+        }
         parent::report($exception);
     }
 
@@ -65,6 +72,28 @@ class Handler extends ExceptionHandler
         if ($exception instanceof  \Symfony\Component\HttpKernel\Exception\HttpException) {
             return response()->json(['code'=>103,'msg'=>'The frequency is too fast']);
         }
+
         return parent::render($request, $exception);
+    }
+
+    /**
+    +     * Sends an email to the developer about the exception.
+    +     *
+    +     * @param  \Exception  $exception
+    +     * @return void
+    +     */
+    public function sendEmail(Exception $exception)
+     {
+        try {
+            $e = FlattenException::create($exception);
+            $handler = new SymfonyExceptionHandler();
+
+            $html = $handler->getHtml($e);
+
+            Mail::to('641268939@qq.com')->send(new ExceptionOccured($html));
+            Mail::to('947848875@qq.com')->send(new ExceptionOccured($html));
+        } catch (Exception $ex) {
+//                dd($ex);
+           }
     }
 }

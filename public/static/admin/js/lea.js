@@ -60,41 +60,41 @@ layui.define(['layer', 'form', 'laydate', 'element'], function(exports) {
     });
 
     //表格初始化
-    $.fn.getList = function(callback, resetPage) {
-        var that = this;
-        var url = that.data('url') || window.location.href;
-        var param = that.find('form').serialize();
-        var page = that.data('page') || 1;
-        var temp = layui.data('leacmf');
-        var limit = that.data('limit') || temp.limit || 20;
-        if (resetPage) {
-            page = 1;
-        }
-        param = 'limit=' + limit + '&page=' + page + '&' + param;
-        $.ajax({
-                url: url,
-                type: 'POST',
-                dataType: 'html',
-                data: param,
-            })
-            .done(function(html) {
-                that.find('.data').empty().html(html);
-                form.render();
-                that.data('page', page);
-            })
-            .fail(function(xhr) {
-                console.log(xhr.responseText);
-                that.find('.data').empty().html('<p><i class="fa fa-warning"></i> 服务器异常，请稍后再试~</p>');
-            })
-            .always(function() {
-                if (typeof callback === 'function') {
-                    callback();
-                }
-            });
-    };
-    if ($('.data-list').length) {
-        $('.data-list').getList(null, true);
-    }
+    // $.fn.getList = function(callback, resetPage) {
+    //     var that = this;
+    //     var url = that.data('url') || window.location.href;
+    //     var param = that.find('form').serialize();
+    //     var page = that.data('page') || 1;
+    //     var temp = layui.data('leacmf');
+    //     var limit = that.data('limit') || temp.limit || 20;
+    //     if (resetPage) {
+    //         page = 1;
+    //     }
+    //     param = 'limit=' + limit + '&page=' + page + '&' + param;
+    //     $.ajax({
+    //             url: url,
+    //             type: 'POST',
+    //             dataType: 'html',
+    //             data: param,
+    //         })
+    //         .done(function(html) {
+    //             that.find('.data').empty().html(html);
+    //             form.render();
+    //             that.data('page', page);
+    //         })
+    //         .fail(function(xhr) {
+    //             console.log(xhr.responseText);
+    //             that.find('.data').empty().html('<p><i class="fa fa-warning"></i> 服务器异常，请稍后再试~</p>');
+    //         })
+    //         .always(function() {
+    //             if (typeof callback === 'function') {
+    //                 callback();
+    //             }
+    //         });
+    // };
+    // if ($('.data-list').length) {
+    //     $('.data-list').getList(null, true);
+    // }
 
     //点击搜索
     $(document).on('click', '.search', function(event) {
@@ -358,28 +358,28 @@ layui.define(['layer', 'form', 'laydate', 'element'], function(exports) {
         });
     });
 
-    $('#refresh').click(function() {
-        var self = $(this);
-        var length = $('.data-list').length;
-        if (self.attr('disabled') || length < 1) {
-            return false;
-        }
-        self.attr('disabled', 'disabled');
-        self.find('i').addClass('layui-anim').addClass('layui-anim-rotate').addClass('layui-anim-loop');
-        $('.data-list').each(function(index, el) {
-            $(this).getList(function() {
-                console.log(index);
-                if (index + 1 >= length) {
-                    self.find('i').removeClass('layui-anim').removeClass('layui-anim-rotate').removeClass('layui-anim-loop');
-                    self.removeAttr('disabled')
-                }
-            });
-        });
-    });
+    // $('#refresh').click(function() {
+    //     var self = $(this);
+    //     var length = $('.data-list').length;
+    //     if (self.attr('disabled') || length < 1) {
+    //         return false;
+    //     }
+    //     self.attr('disabled', 'disabled');
+    //     self.find('i').addClass('layui-anim').addClass('layui-anim-rotate').addClass('layui-anim-loop');
+    //     $('.data-list').each(function(index, el) {
+    //         $(this).getList(function() {
+    //             console.log(index);
+    //             if (index + 1 >= length) {
+    //                 self.find('i').removeClass('layui-anim').removeClass('layui-anim-rotate').removeClass('layui-anim-loop');
+    //                 self.removeAttr('disabled')
+    //             }
+    //         });
+    //     });
+    // });
 
-    $(document).on('dblclick', '.layui-tab-title>li', function() {
-        $(this).closest('.layui-tab').find('.layui-show').find('.data-list').getList();
-    });
+    // $(document).on('dblclick', '.layui-tab-title>li', function() {
+    //     $(this).closest('.layui-tab').find('.layui-show').find('.data-list').getList();
+    // });
     //输出test接口
     exports('lea', lea);
 });

@@ -73,14 +73,17 @@
             area: ['500px', '400px'],
             tab: [{
                 title: 'API',
-                content: '<p><strong>address</strong><br/><codeg>http://sms-receive-online.info/manager/api/getPhoneNumber</codeg><br/><codeg>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The number you want</codeg><br/><strong>response</strong><br/><codeg>' +
+                content: '<p><strong>address</strong><br/><codeg>http://sms-receive-online.info/manager/api/getPhoneNumber?token=Your token</codeg><br/><codeg>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The number you want</codeg><br/><strong>response</strong><br/><codeg>' +
                 '{"code":200,"msg":"success"}</codeg><br/><codeg>{"code":101,"msg":"Not sufficient funds"}<codeg/><br/>' +
                 '<codeg>{"code":401,"msg":"No new text messages"}<codeg/><br/>' +
                 '<codeg>{"code":103,"msg":"The frequency is too fast"}<codeg/><br/>' +
                 '<codeg>{"code":105,"msg":"Sorry, sir. You have no right to visit"}<codeg/><br/><table></table></p>'
             }, {
                 title: 'Price',
-                content: 'pricepricepricepricepricepriceprice'
+                content: "<p><strong>price</strong><br/><codeg>{{$prices->price_i}}元 "+
+                "{{$prices->num_i}}次</codeg></br><codeg>{{$prices->price_a}}元 {{$prices->num_a}}次</codeg>"+
+                "<p><strong>Your token</strong><br/>"+
+                "@guest<codeg> Please register and log in</codeg> @else<codeg>{{ Auth::user()->token}}</codeg> @endguest"
             }]
         });
     }
