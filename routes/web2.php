@@ -16,7 +16,7 @@ Auth::routes();
 #Route::get('/', 'HomeController@index')->name('home');
 Route::get('/','StaticPagesController@home') -> name('home');
 // 多语言
-Route::get('/language/{locale?}', function ($locale=null) {
+Route::get('/{locale?}', function ($locale=null) {
     App::setLocale($locale);
     return redirect()->route('home');
 });
