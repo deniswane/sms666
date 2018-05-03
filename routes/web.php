@@ -16,10 +16,11 @@ Auth::routes();
 #Route::get('/', 'HomeController@index')->name('home');
 Route::get('/','StaticPagesController@home') -> name('home');
 // 多语言
-Route::get('/language/{locale?}', function ($locale=null) {
-    App::setLocale($locale);
-    return redirect()->route('home');
-});
+Route::get('/language/{locale}', ['as'=>'lang.change', 'uses'=>'LanguageController@setLocale']);
+//Route::get('/language/{locale}', function ($locale) {
+//    App::setLocale($locale);
+//    return redirect()->route('home');
+//});
 
 Route::get('/private-numbers','StaticPagesController@privateNumbers') -> name('private_numbers');
 Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name('inactive_numbers');
