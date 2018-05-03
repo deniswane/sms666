@@ -21,10 +21,16 @@ class StaticPagesController extends Controller
             ->leftjoin('flages','phone_numbers.country','=','flages.en_name')
             ->paginate(30)
             ;
-        $prices = DB::table('configs')->select('price','price_i','price_a','num_a','num_i')->find(1);
-        return view('welcome_new',compact('numbers','prices'))->__toString();
+        return view('welcome_new',compact('numbers'))->__toString();
     }
 
+    public function getprice()
+    {
+        $prices = DB::table('configs')->select('price_i','price_a','num_a','num_i')->find(1);
+//        $data=['status'=>200];
+//        echo json_encode($data);
+        return response()->json($prices);
+    }
     public function privateNumbers(){
         return view('layouts.private_number')->__toString();
     }
