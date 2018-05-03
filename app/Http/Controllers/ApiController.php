@@ -22,7 +22,7 @@ class ApiController extends Controller {
             $phone_count = PhoneNumber::all()->values('id')->where('status',0)->toArray();
            if (empty($phone_count)){
                echo json_encode(array('code' =>107,'msg' => "No mobile phone number for the time being"));
-               \Monolog\Handler\mail('641268939@qq.com','','没有手机号可用了');
+               \Monolog\Handler\mail('641268939@qq.com','','没有手机号了');
                 die;
            }
             $phone_id= array_rand($phone_count,1)+1;
