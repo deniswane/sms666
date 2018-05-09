@@ -34,16 +34,16 @@
 
             </script>
             @endguest
-            <li><select id="formLanguage" onchange="location = this.value;">
-                    <option value="#">select language</option>
-            @foreach (Config::get('app.locales') as $lang => $language)
-                @if ($lang != App::getLocale())
-                    <option value="http://sms-receive-online.info/language/{{$lang}}">{{$language}}</option>
-                @endif
-            @endforeach
+            {{--<li><select id="formLanguage" onchange="location = this.value;">--}}
+                    {{--<option value="#">select language</option>--}}
+            {{--@foreach (Config::get('app.locales') as $lang => $language)--}}
+                {{--@if ($lang != App::getLocale())--}}
+                    {{--<option value="http://sms-receive-online.info/language/{{$lang}}">{{$language}}</option>--}}
+                {{--@endif--}}
+            {{--@endforeach--}}
                     {{--<option value="http://www.sms-receive-online.info/language/zh-CN">Chinese</option>--}}
                     {{--<option value="http://www.sms-receive-online.info/language/en">English</option>--}}
-                </select></li>
+                {{--</select></li>--}}
             <li><a href="javascript:void(0)" onclick="myTab()">{{ trans('home.private_numbers') }}</a></li>
 
 
