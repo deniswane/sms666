@@ -29,11 +29,6 @@ class PayPalController extends Controller
         $this->middleware('auth', ['only' => ['getExpressCheckout']]);
     }
 
-    public function getIndex(Request $request)
-    {
-        return $request;
-    }
-
     /**
      * @param \Illuminate\Http\Request $request
      *
@@ -204,7 +199,10 @@ class PayPalController extends Controller
         }
         //设置币种
 //        $this->provider->setCurrency('EUR')->setExpressCheckout($data);
-        $data['invoice_id'] = time() . Auth::user()->id;
+        $time = microtime(true);
+        list($s1,$s2) = explode('.', $time);
+        $order_no = date("YmdHis") . $s2 . rand(1000,9999);
+        $data['invoice_id'] = $order_no;
         //商家描述
         $data['invoice_description'] = '';
         $data['cancel_url'] = url('/');

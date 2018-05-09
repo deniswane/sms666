@@ -67,9 +67,6 @@ Route::any('/me', 'Admin\AdminController@me')->name('me');
 Route::any('admin/login', 'Admin\LoginController@login')->name('admin.login');
 
 //paypal
-//Route::get('paypal/index', 'PayPalController@getIndex');
-Route::post('paypal/index', 'PayPalController@getIndex');
-//Route::get('paypal/ec-checkout', 'PayPalController@getExpressCheckout');
 Route::any('paypal/ec-checkout', 'PayPalController@getExpressCheckout')->name('ec-checkout');
 Route::get('paypal/ec-checkout-success', 'PayPalController@getExpressCheckoutSuccess');
 Route::get('paypal/adaptive-pay', 'PayPalController@getAdaptivePay');
