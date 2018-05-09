@@ -1,12 +1,7 @@
-{{---jquery需要引入的文件-->--}}
-<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.js"></script>
-
-<!--ajax提交表单需要引入jquery.form.js-->
-<script type="text/javascript" src="http://malsup.github.io/jquery.form.js"></script>
 <ul class="topnav">
 
     @guest
-        <li><a href="{{ route('login') }}">Login</a></li>
+        <li><a href="{{ route('login') }}">{{ trans('home.login') }}</a></li>
         @elseif(Auth::user()->isVerified())
 
             <li>
@@ -20,42 +15,39 @@
 
             </li>
 
-            <li ><a id="" href="#">{{ Auth::user()->name }}</a></li>
+            <li><a id="" href="#">{{ Auth::user()->name }}</a></li>
         @else
 
             {{ Auth::logout() }}
-        <li><a href="{{ route('login') }}">Login</a></li>
+            <li><a href="{{ route('login') }}">{{ trans('home.login') }}</a></li>
 
-        <script>
-            layui.use('layer', function(){
-                var layer = layui.layer;
-                layer.alert('Please login to your mailbox to complete the activation and registration !', {
-                    title:'msg',
-                    btn:'ok',
-                    icon: 6,
-                    skin: 'layer-ext-moon'
-                })
-            });
+            <script>
+                layui.use('layer', function () {
+                    var layer = layui.layer;
+                    layer.alert('Please login to your mailbox to complete the activation and registration !', {
+                        title: 'msg',
+                        btn: 'ok',
+                        icon: 6,
+                        skin: 'layer-ext-moon'
+                    })
+                });
 
-        </script>
+            </script>
             @endguest
-            {{--<li><select id="formLanguage" onchange="location = this.value;">--}}
-            {{--<option value="">Select language ..</option>--}}
-            {{--<option value="https://www.receive-sms-online.info/">English</option>--}}
-            {{--<option value="https://es.receive-sms-online.info/">Español</option>--}}
-            {{--<option value="https://de.receive-sms-online.info/">Deutsche</option>--}}
-            {{--<option value="https://ar.receive-sms-online.info/">العربية</option>--}}
-            {{--<option value="https://fr.receive-sms-online.info/">Français</option>--}}
-            {{--<option value="https://it.receive-sms-online.info/">Italiano</option>--}}
-            {{--<option value="https://ru.receive-sms-online.info/">Pусский</option>--}}
-            {{--<option value="https://ro.receive-sms-online.info/">Română</option>--}}
-            {{--</select></li>--}}
-            <li><a href="javascript:void(0)" onclick="myTab()">Private numbers</a></li>
-            {{--<li><a href="{{route('inactive_numbers')}}">Inactive numbers</a></li>--}}
-            {{--<li><a href="{{route('contact')}}">Contact</a></li>--}}
+            <li><select id="formLanguage" onchange="location = this.value;">
+                    <option value="#">select language</option>
+            @foreach (Config::get('app.locales') as $lang => $language)
+                @if ($lang != App::getLocale())
+                    <option value="http://sms-receive-online.info/language/{{$lang}}">{{$language}}</option>
+                @endif
+            @endforeach
+                    {{--<option value="http://www.sms-receive-online.info/language/zh-CN">Chinese</option>--}}
+                    {{--<option value="http://www.sms-receive-online.info/language/en">English</option>--}}
+                </select></li>
+            <li><a href="javascript:void(0)" onclick="myTab()">{{ trans('home.private_numbers') }}</a></li>
 
 
-            <li><a href="{{route('home')}}">Home</a></li>
+            <li><a href="{{route('home')}}">{{ trans('home.home') }}</a></li>
             <li class="icon"><a href="javascript:void(0);" onclick="myFunction()">&#9776;</a></li>
             <li><a href="#"><img id="android_img"
                                  src="/img/android-app_google-play_button.png"
@@ -70,15 +62,17 @@
 <script>
 
     //JavaScript代码区域
-    layui.use('layer', function(){
+    layui.use('layer', function () {
         var layer = layui.layer;
 
     });
+
     function myTab() {
+
         $.ajax({
             type: 'get',
             url: "{{route('getprice')}}",
-            data:'',
+            data: '',
             cache: false,
             success: function (data) {
 
@@ -109,7 +103,6 @@
                         '@guest Please register and log in @else
                          <form id="addForm" ><input id="pri"  onkeyup='+'value=value.replace(/[^1234567890.]+/g,"") >'+' USD (Input number)<br>\
                         <input style="display:none" ></input><img id="submitAdd" style="cursor:pointer" src="/img/btn_buynow.gif" alt="PayPal - The safer, easier way to pay online!"></form> @endguest'
-
                     }
                     ]
                 });
@@ -124,12 +117,9 @@
                             layer.msg('Loading...', { icon: 16, shade: [0.5, '#f5f5f5'], scrollbar: false, offset: '50%', time: 300000 });
                         },
                         success:function(data){
-//                            console.log(data)
-
                             if(data.code =='1'){
                                 layer.alert('Incomplete filling format',{btn:'OK'});
                             }else if(data.code ==200){
-                                console.log(data.msg)
                                 $(location).attr('href', data.msg);
                             }
                         },
@@ -139,7 +129,7 @@
 
                 })
             },
-            error:function(){
+            error: function () {
             }
         });
     }

@@ -16,11 +16,10 @@ Auth::routes();
 #Route::get('/', 'HomeController@index')->name('home');
 Route::get('/','StaticPagesController@home') -> name('home');
 // 多语言
-Route::get('/language/{locale}', ['as'=>'lang.change', 'uses'=>'LanguageController@setLocale']);
-//Route::get('/language/{locale}', function ($locale) {
-//    App::setLocale($locale);
-//    return redirect()->route('home');
-//});
+Route::get('/{locale?}', function ($locale=null) {
+    App::setLocale($locale);
+    return redirect()->route('home');
+});
 
 Route::get('/private-numbers','StaticPagesController@privateNumbers') -> name('private_numbers');
 Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name('inactive_numbers');
@@ -35,7 +34,6 @@ Route::get('/emails/verification_result','StaticPagesController@setresult');
 //Route::get('/emails/verification_result','Auth\RegisterController@setresult');
 // 号码详情页
 Route::get('/detail/{number}', 'PhonecController@detailSms') -> name('phone.detail');
-Route::get('/getprice', 'StaticPagesController@getprice') -> name('getprice');
 
 // 支付链接
 Route::view('/payment/recharge','pay/recharge');
@@ -45,7 +43,7 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
@@ -65,16 +63,6 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
 //登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
 Route::any('admin/login', 'Admin\LoginController@login')->name('admin.login');
-
-//paypal
-//Route::get('paypal/index', 'PayPalController@getIndex');
-Route::post('paypal/index', 'PayPalController@getIndex');
-//Route::get('paypal/ec-checkout', 'PayPalController@getExpressCheckout');
-Route::any('paypal/ec-checkout', 'PayPalController@getExpressCheckout')->name('ec-checkout');
-Route::get('paypal/ec-checkout-success', 'PayPalController@getExpressCheckoutSuccess');
-Route::get('paypal/adaptive-pay', 'PayPalController@getAdaptivePay');
-Route::post('paypal/notify', 'PayPalController@notify');
-Route::get('paypal/success', 'PayPalController@success');
 
 
 
