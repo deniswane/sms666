@@ -36,7 +36,8 @@ Availability: <b class="statut_online">online</b></span><br><br>
                 null == document.getElementsByTagName("iframe").item(ga.length - 1) && $("div.login:last").html('<p class="alert-box [secondary warning radius round]">We&apos;ve detected that you&apos;re using <strong>AdBlock Plus</strong> or some other adblocking software. Please be aware that this is only contributing to the demise of the site. We need money to operate the site, and almost all of that comes from our online advertising. Please disable <strong>AdBlock Plus</strong> and refresh webpage!</p>') && $('#msgs').html('')
             });
 
-
         </script>
     </div>
+
+
 @endsection

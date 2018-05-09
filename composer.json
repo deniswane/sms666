@@ -11,7 +11,9 @@
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "mews/captcha": "~2.0",
-        "recca0120/laravel-tracy": "^1.8"
+        "netshell/paypal": "dev-master",
+        "recca0120/laravel-tracy": "^1.8",
+        "srmklive/paypal": "~1.0"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
@@ -20,6 +22,7 @@
         "phpunit/phpunit": "~6.0",
         "symfony/thanks": "^1.0"
     },
+    
     "autoload": {
         "classmap": [
             "database/seeds",

@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use Mail;
 /**
  * Class ApiController
  * @package App\Http\Controllers
@@ -22,8 +22,11 @@ class ApiController extends Controller {
             $phone_count = PhoneNumber::all()->values('id')->where('status',0)->toArray();
            if (empty($phone_count)){
                echo json_encode(array('code' =>107,'msg' => "No mobile phone number for the time being"));
-               \Monolog\Handler\mail('641268939@qq.com','','没有手机号了');
-                die;
+               Mail::send('emails.excpetion', ['content'=>'手机号没有可以被使用的了'], function($message)
+               {
+                   $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!');
+               });
+               die;
            }
             $phone_id= array_rand($phone_count,1)+1;
 //            dd($phone_id);
@@ -53,7 +56,7 @@ class ApiController extends Controller {
         $user = User::where('token', $token)
             ->first();
         if($user){
-            if ($user->balance > 1) {
+            if ($user->balance > 0) {
                 // 短信是否有更新
                 $phone_statuse = DB::table('newest_sms_content')->where('phone', $phone)->first();
                 if($phone_statuse){

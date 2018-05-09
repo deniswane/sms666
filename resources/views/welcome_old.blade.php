@@ -52,6 +52,8 @@
     </div>
 
     <div align="left">
+
+
         <h5><strong>• This site have any limitations ?</strong>
             <br>
             <strong>Receive-sms-online.info</strong> has no limitation when SMS is received. If you don&apos;t see the

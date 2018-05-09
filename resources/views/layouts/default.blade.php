@@ -24,6 +24,7 @@
     <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
     <link href="/layui/css/layui.css" rel="stylesheet" type="text/css"/>
     <script src="/layui/layui.js" type="text/javascript"></script>
+    <script src="https://www.paypalobjects.com/api/checkout.js"></script>
     <noscript>
         <div style="position:absolute;top:50px;left:100px;background-color:black;color:red; font-size:16px;"> Your browser
             does not support JavaScript!<br>Without JavaScript, this web page will not be displayed correctly!

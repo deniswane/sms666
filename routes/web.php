@@ -40,7 +40,7 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:50'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
@@ -60,6 +60,16 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
 //登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
 Route::any('admin/login', 'Admin\LoginController@login')->name('admin.login');
+
+//paypal
+//Route::get('paypal/index', 'PayPalController@getIndex');
+Route::post('paypal/index', 'PayPalController@getIndex');
+//Route::get('paypal/ec-checkout', 'PayPalController@getExpressCheckout');
+Route::any('paypal/ec-checkout', 'PayPalController@getExpressCheckout')->name('ec-checkout');
+Route::get('paypal/ec-checkout-success', 'PayPalController@getExpressCheckoutSuccess');
+Route::get('paypal/adaptive-pay', 'PayPalController@getAdaptivePay');
+Route::post('paypal/notify', 'PayPalController@notify');
+Route::get('paypal/success', 'PayPalController@success');
 
 
 

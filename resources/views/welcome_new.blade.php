@@ -16,6 +16,12 @@
             </div>
         </div>
 
+
+        {{--<a href="{{url('paypal/ec-checkout')}}">--}}
+
+            {{--<img src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0"  alt="PayPal - The safer, easier way to pay online!">--}}
+            {{--<img alt="" border="0" src="https://www.paypalobjects.com/zh_XC/i/scr/pixel.gif" width="1" height="1">--}}
+        {{--</a>--}}
         <div align="left">
             <h5><strong>• {{ trans('home.subtitle_3') }} ?</strong>
                 <br>

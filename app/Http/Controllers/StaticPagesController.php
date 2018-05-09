@@ -26,7 +26,8 @@ class StaticPagesController extends Controller
 
     public function getprice()
     {
-        $prices = DB::table('configs')->select('price_i','price_a','num_a','num_i')->find(1);
+//        $prices = DB::table('configs')->select('price_i','price_a','num_a','num_i')->find(1);
+        $prices = DB::table('configs')->select('price')->find(1);
 //        $data=['status'=>200];
 //        echo json_encode($data);
         return response()->json($prices);

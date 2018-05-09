@@ -1,6 +1,7 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
+    //屏蔽js错误
 /******/    var killErrors = function(value) {
             return true
             };

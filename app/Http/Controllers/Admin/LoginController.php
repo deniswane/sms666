@@ -33,7 +33,6 @@ class LoginController extends Controller
                 return Y::success('登录成功', [], route('admin.index'));
             }
             return Y::error('用户验证失败');
-            return view('admin.login.index');
         } else {
             return view('admin.login.index');
         }
