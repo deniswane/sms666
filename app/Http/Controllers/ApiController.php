@@ -21,26 +21,28 @@ class ApiController extends Controller {
         $user = User::where('token', $token)
             ->first();
         if($user){
-            $phone_count = PhoneNumber::all()->values('id')->where('status',0)->toArray();
-           if (empty($phone_count)){
-               echo json_encode(array('code' =>107,'msg' => "No mobile phone number for the time being"));
-               Mail::send('emails.excpetion', ['content'=>'手机号没有可以被使用的了'], function($message)
-               {
-                   $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!');
-               });
-               die;
-           }
-            $phone_id= array_rand($phone_count,1)+1;
-//            dd($phone_id);
-//            $random = random_int(1, $phone_count);
-//            $phone = PhoneNumber::findOrFail($random)->where('status',0)->phone;
-            $phone= DB::table('phone_numbers')->select('phone')->find($phone_id);
+            if($user->times <5) {
+                $phone_count = PhoneNumber::all()->values('id')->where('status', 0)->toArray();
+                if (empty($phone_count)) {
+                    echo json_encode(array('code' => 107, 'msg' => "No mobile phone number for the time being"));
+                    Mail::send('emails.excpetion', ['content' => '手机号没有可以被使用的了'], function ($message) {
+                        $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!');
+                    });
+                    die;
+                }
+                $phone_id = array_rand($phone_count, 1) + 1;
 
-            DB::table('phone_numbers')->where('id',$phone_id)->update(['status'=>'1']);
-            $ip=$request->getClientIp();
-            $txt=Carbon::now().'   '.$user->email.'--'.$ip.'--'.$phone->phone;
-            Storage::disk('local')->append('get_phone.txt',$txt);
-            echo json_encode(array('code'=>200,'msg' => $phone));
+                $phone = DB::table('phone_numbers')->select('phone')->find($phone_id);
+                $user->times = $user->times + 1;
+                $user->save();
+                DB::table('phone_numbers')->where('id', $phone_id)->update(['status' => '1']);
+                $ip = $request->getClientIp();
+                $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $phone->phone;
+                Storage::disk('local')->append('get_phone.txt', $txt);
+                echo json_encode(array('code' => 200, 'msg' =>  $phone->phone));
+            }else{
+                echo json_encode(array('code' => 201, 'msg' => 'Please update your text message first'));
+            }
         }else{
 
             echo json_encode(array('code' =>105,'msg' => "Sorry, sir. You have no right to visit"));
@@ -82,11 +84,15 @@ class ApiController extends Controller {
                         DB::table('phone_numbers')
                             ->where('phone', $phone)
                             ->update(['status' =>'0']);
+
                         //记录日志
                         $ip=$request->getClientIp();
-
                         $txt=Carbon::now().'   '.$user->email.'--'.$ip.'--'.$phone.'--'.$user->balance;
                         Storage::disk('local')->append('get_content.txt',$txt);
+
+                        $user->times = $user->times - 1;
+                        $user->save();
+
                         //统计访问量
                         $amount= DB::table('page_views')->where('user_id',$user->id)->first();
                         if($amount){
@@ -104,7 +110,6 @@ class ApiController extends Controller {
                             echo json_encode($result);
 
                         }else{
-
                             DB::table('page_views')->insert(['user_id'=>$user->id,'daliy_amount'=>0,'amounts'=>0]);
                         }
                     } else {
@@ -113,7 +118,6 @@ class ApiController extends Controller {
                 }
             }else{
                 echo json_encode(array('code' =>106,'msg' => 'You need to charge money'));
-
         }
         } else {
             echo json_encode(array('code' =>101,'msg' => 'Not sufficient funds'));
