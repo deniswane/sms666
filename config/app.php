@@ -39,7 +39,7 @@ return [
     |
     */
 
-    'debug' => env('APP_DEBUG', false),
+    'debug' => env('APP_DEBUG', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -107,7 +107,9 @@ return [
     */
 
     'key' => env('APP_KEY','1234567890qwerty'),
-
+    //online生产
+    'cipher' => 'AES-128-CBC',
+    //线下本地测试
     'cipher' => 'AES-256-CBC',
 
     /*

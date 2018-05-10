@@ -239,11 +239,9 @@ class PayPalController extends Controller
 
         if (!strcasecmp($status, 'Completed') || !strcasecmp($status, 'Processed')) {
             $invoice->paid = 1;
-
-            $user = new User();
-            $new_balance = $user->balance + $cart['total'];
-            $user->where('id', '=', Auth::user()->id)->update(['balance' => $new_balance]);
-
+            $user=User::find(Auth::user()->id);
+            $user->balance = $user->balance + $cart['total'];
+            $user->save();
         } else {
             $invoice->paid = 0;
         }
