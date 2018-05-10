@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\PhoneNumber;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Mail;
 /**
  * Class ApiController
@@ -36,7 +38,8 @@ class ApiController extends Controller {
 
             DB::table('phone_numbers')->where('id',$phone_id)->update(['status'=>'1']);
             $ip=$request->getClientIp();
-            Log::write('info', 'get_phone:',['email'=>$user->email,'ip'=>$ip,'phone'=>$phone->phone]);
+            $txt=Carbon::now().'   '.$user->email.'--'.$ip.'--'.$phone->phone;
+            Storage::disk('local')->append('get_phone.txt',$txt);
             echo json_encode(array('code'=>200,'msg' => $phone));
         }else{
 
@@ -81,7 +84,9 @@ class ApiController extends Controller {
                             ->update(['status' =>'0']);
                         //记录日志
                         $ip=$request->getClientIp();
-                        Log::write('info', 'get_content:',['email'=>$user->email,'ip'=>$ip,'balance'=>$user->balance,'phone_number'=>$phone]);
+
+                        $txt=Carbon::now().'   '.$user->email.'--'.$ip.'--'.$phone.'--'.$user->balance;
+                        Storage::disk('local')->append('get_content.txt',$txt);
                         //统计访问量
                         $amount= DB::table('page_views')->where('user_id',$user->id)->first();
                         if($amount){
