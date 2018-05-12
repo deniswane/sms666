@@ -25,8 +25,7 @@ class ResetPasswordController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/';
-
+    protected $redirectTo = 'http://www.sms-receive-online.info/';
     /**
      * Create a new controller instance.
      *

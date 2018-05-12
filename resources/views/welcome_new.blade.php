@@ -15,39 +15,75 @@
                 </div>
             </div>
         </div>
+        <br>
+        @guest
+        @else
+        Please enter the amount in the input box and click on the purchase
+        <form style="margin: 20px 5px;" method="post" >
+            <input type="text" placeholder=""  id="pri" autofocus  class="ec_input">USD
+            <input style="display:none" >
+            <img id="submitAdd" style="cursor:pointer" src="/img/btn_buynow.gif" alt="PayPal - The safer, easier way to pay online!">
+        </form>
 
+            <script>
 
-        {{--<a href="{{url('paypal/ec-checkout')}}">--}}
+            $("#submitAdd").click(function() {
+                $.ajax({
+                    type: 'post',
+                    url: "{{route('ec-checkout')}}",
+                    cache: false,
+                    data: {'_token': "{{csrf_token()}}", 'prices': $('#pri').val()},
+                    dataType: 'json',
+                    beforeSend: function () {
+                        layer.msg('Loading...', {
+                            icon: 16,
+                            shade: [0.5, '#f5f5f5'],
+                            scrollbar: false,
+                            offset: '50%',
+                            time: 300000
+                        });
+                    },
+                    success: function (data) {
+                        if (data.code == '1') {
+                            layer.alert('Incomplete filling format', {btn: 'OK'});
+                        } else if (data.code == 200) {
+                            $(location).attr('href', data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        console.log(data)
+                    }
+                });
+            })
+            </script>
 
-            {{--<img src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0"  alt="PayPal - The safer, easier way to pay online!">--}}
-            {{--<img alt="" border="0" src="https://www.paypalobjects.com/zh_XC/i/scr/pixel.gif" width="1" height="1">--}}
-        {{--</a>--}}
-        <div align="left">
-            <h5><strong>• {{ trans('home.subtitle_3') }} ?</strong>
-                <br>
-                <strong>Receive-sms-online.info</strong> {{ trans('home.subtitle_3_con') }}<br>
-                <br>
-                <strong> • </strong>{{ trans('home.subtitle_4') }}<br>
-                <br>
-                <strong>{{ trans('home.subtitle_5') }}</strong><br>
-                {{ trans('home.subtitle_4_con') }}<br>
-                <br>
-                <strong>{{ trans('home.subtitle_6') }}</strong><br>
-                {{ trans('home.subtitle_6_con') }}<br>
-                <br>
-                <strong>{{ trans('home.subtitle_7') }}</strong><br>
-                {{ trans('home.subtitle_7_con') }}<br>
-                <br>
-                <strong>{{ trans('home.subtitle_8') }}</strong><br>
-                {{ trans('home.subtitle_8_con') }}<br>
-                <br>
-                <strong> {{ trans('home.subtitle_9') }}</strong><br>
-                {{ trans('home.subtitle_9_con') }}<br>
-                <br>
-                <strong> {{ trans('home.subtitle_10') }}</strong><br>
-                {{ trans('home.subtitle_10_con') }}<br>
-                <br>
-            </h5>
-        </div>
-    </div>
+            @endguest
+<div align="left">
+<h5><strong>• {{ trans('home.subtitle_3') }} ?</strong>
+<br>
+<strong>Receive-sms-online.info</strong> {{ trans('home.subtitle_3_con') }}<br>
+<br>
+<strong> • </strong>{{ trans('home.subtitle_4') }}<br>
+<br>
+<strong>{{ trans('home.subtitle_5') }}</strong><br>
+{{ trans('home.subtitle_4_con') }}<br>
+<br>
+<strong>{{ trans('home.subtitle_6') }}</strong><br>
+{{ trans('home.subtitle_6_con') }}<br>
+<br>
+<strong>{{ trans('home.subtitle_7') }}</strong><br>
+{{ trans('home.subtitle_7_con') }}<br>
+<br>
+<strong>{{ trans('home.subtitle_8') }}</strong><br>
+{{ trans('home.subtitle_8_con') }}<br>
+<br>
+<strong> {{ trans('home.subtitle_9') }}</strong><br>
+{{ trans('home.subtitle_9_con') }}<br>
+<br>
+<strong> {{ trans('home.subtitle_10') }}</strong><br>
+{{ trans('home.subtitle_10_con') }}<br>
+<br>
+</h5>
+</div>
+</div>
 @endsection

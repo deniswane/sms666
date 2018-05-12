@@ -27,6 +27,7 @@ class ApiController extends Controller {
                     echo json_encode(array('code' => 107, 'msg' => "No mobile phone number for the time being"));
                     Mail::send('emails.excpetion', ['content' => '手机号没有可以被使用的了'], function ($message) {
                         $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!');
+                        $message->to('947848875@qq.com', 'Email Message')->subject('注意！ 注意!');
                     });
                     die;
                 }
