@@ -30,7 +30,7 @@ class LoginController extends Controller
                 return Y::error($validator->errors());
             }
             if (Auth::guard('admin')->attempt($post, boolval($request->post('remember', '')))) {
-                return Y::success('登录成功', [], route('admin.index'));
+                return Y::success('登录成功', [], route('cfcc.index'));
             }
             return Y::error('用户验证失败');
         } else {
@@ -41,7 +41,7 @@ class LoginController extends Controller
     public function logout()
     {
         Auth::guard('admin')->logout();
-        return redirect('admin/login');
+        return redirect('cfcc/login');
 
     }
     //自定义认证驱动

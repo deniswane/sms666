@@ -51,20 +51,20 @@ Route::group(['prefix' => 'manager/api','middleware' => 'throttle'], function ()
 });
 
 
-Route::group(['prefix' => 'admin','namespace' => 'Admin'],function ($router)
+Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
 {
-    $router->get('logout', 'LoginController@logout')->name('admin.logout');
-    $router->get('index', 'IndexController@index')->name('admin.index');
-    $router->get('bal', 'IndexController@bal')->name('admin.bal');
-    $router->post('test', 'IndexController@test')->name('admin.test');
+    $router->get('logout', 'LoginController@logout')->name('cfcc.logout');
+    $router->get('index', 'IndexController@index')->name('cfcc.index');
+    $router->get('bal', 'IndexController@bal')->name('cfcc.bal');
+    $router->post('test', 'IndexController@test')->name('cfcc.test');
     $router->get('flush', 'IndexController@flush') ->name('flush');
-    $router->post('phone_info', 'IndexController@phone_info')->name('admin.phone_info');
-    $router->any('set_money', 'IndexController@set_money')->name('admin.set_money');
+    $router->post('phone_info', 'IndexController@phone_info')->name('cfcc.phone_info');
+    $router->any('set_money', 'IndexController@set_money')->name('cfcc.set_money');
 
 });
 //登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
-Route::any('admin/login', 'Admin\LoginController@login')->name('admin.login');
+Route::any('cfcc/login', 'Admin\LoginController@login')->name('cfcc.login');
 
 //paypal
 Route::any('paypal/ec-checkout', 'PayPalController@getExpressCheckout')->name('ec-checkout');

@@ -27,7 +27,7 @@
                 ,limit: 25
                 ,id: 'testReload'
                 ,page: true
-                ,url: "{{route('admin.test')}}"
+                ,url: "{{route('cfcc.test')}}"
                 ,method:'post'
                 ,where:{'_token':"{{ csrf_token() }}"}
              ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增

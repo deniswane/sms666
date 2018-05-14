@@ -45,7 +45,7 @@
                 <dl class="layui-nav-child">
                     <dd><a href="{{ route('me') }}"><i class="fa  fa-user"></i> 更改密码</a></dd>
                     <hr>
-                    <dd><a href="{{route('admin.logout')}}"><i class="fa fa-sign-out"></i> 退出</a></dd>
+                    <dd><a href="{{route('cfcc.logout')}}"><i class="fa fa-sign-out"></i> 退出</a></dd>
                 </dl>
             </li>
         </ul>
@@ -68,8 +68,8 @@
             <ul class="aside-nav">
 
                 <li>
-                    <a href="{{route('admin.bal')}}"><i class="fa fa-code"></i> 客户余额</a>
-                    <a href="{{route('admin.set_money')}}"><i class="fa fa-code"></i> 设置请求费用</a>
+                    <a href="{{route('cfcc.bal')}}"><i class="fa fa-code"></i> 客户余额</a>
+                    <a href="{{route('cfcc.set_money')}}"><i class="fa fa-code"></i> 设置请求费用</a>
                 </li>
             </ul>
         </div>

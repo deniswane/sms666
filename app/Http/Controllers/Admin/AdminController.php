@@ -40,7 +40,7 @@ class AdminController extends Controller
 
             if (Admin::where('id', $post['user_id'])->update($data) > 0) {
                 Auth::guard('admin')->logout();
-                return Y::success('修改成功', [], route('admin.login'));
+                return Y::success('修改成功', [], route('cfcc.login'));
             }
             return Y::error('修改失败');
         } else {
