@@ -47,11 +47,9 @@ Availability: <b class="statut_online">online</b></span><br><br>
     <script data-cfasync="false" src="/cdn-cgi/scripts/d07b1474/cloudflare-static/email-decode.min.js"></script>
     <script type="text/javascript">
 
-
         $(window).load(function () {
             null == document.getElementsByTagName("iframe").item(ga.length - 1) && $("div.login:last").html('<p class="alert-box [secondary warning radius round]">We&apos;ve detected that you&apos;re using <strong>AdBlock Plus</strong> or some other adblocking software. Please be aware that this is only contributing to the demise of the site. We need money to operate the site, and almost all of that comes from our online advertising. Please disable <strong>AdBlock Plus</strong> and refresh webpage!</p>') && $('#msgs').html('')
         });
-
 
     </script>
 </div>
@@ -65,20 +63,6 @@ Availability: <b class="statut_online">online</b></span><br><br>
         if (a.style.zIndex == '999') a.style.zIndex = '1000'; else a.style.zIndex = '999';
     }
 </script>
-<script>
-    (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
-        i[r] = i[r] || function () {
-            (i[r].q = i[r].q || []).push(arguments)
-        }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-            m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-    ga('create', 'UA-48933097-1', 'www.receive-sms-online.info');
-    ga('send', 'pageview');
-</script>
+
 </body>
 </html>

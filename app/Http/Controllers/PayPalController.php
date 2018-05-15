@@ -153,9 +153,11 @@ class PayPalController extends Controller
         $post = $request->all();
 
         $response = (string)$this->provider->verifyIPN($post);
-
+        if ($response =='VERIFIED'){
+            $text=json_encode($post);
+        }
         $logFile = 'ipn_log_' . Carbon::now()->format('Ymd_His') . '.txt';
-        Storage::disk('local')->put($logFile, $response);
+        Storage::disk('local')->put($logFile, $text);
     }
 
     /**

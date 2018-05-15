@@ -27,7 +27,7 @@ return [
     'Api' => 'Api',
     'Price' => 'Price',
 
-    'subtitle_1' => 'Receive SMS Online',
+    'subtitle_1' => config('app.name'),
     'subtitle_2' => 'How to use?',
     'subtitle_3' => 'This site have any limitations ?',
     'subtitle_5' => "• What countries are currently available ?",
@@ -55,8 +55,8 @@ return [
     'subtitle_3_con' => 'has no limitation when SMS is received. If you don&apos;t see
                 the
                 message on this website, probably due to limitations imposed by mobile operators.',
-    'subtitle_3_1' => 'Receive-sms-online.info',
-    'subtitle_1_con' => 'Receive-SMS-online.info is FREE service for receive SMS messages online, based on REAL SIM and shows you the
+    'subtitle_3_1' =>config('app.name'),
+    'subtitle_1_con' => config('app.name').' is FREE service for receive SMS messages online, based on REAL SIM and shows you the
             exact information received by the modem with Dynamic Sender ID. On this website you can check if you receive
             SMS
             on different routes,or if you receive using the Dynamic Sender ID feature.',

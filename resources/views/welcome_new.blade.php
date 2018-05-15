@@ -61,7 +61,7 @@
 <div align="left">
 <h5><strong>• {{ trans('home.subtitle_3') }} ?</strong>
 <br>
-<strong>Receive-sms-online.info</strong> {{ trans('home.subtitle_3_con') }}<br>
+<strong>{{config('app.name')}}</strong> {{ trans('home.subtitle_3_con') }}<br>
 <br>
 <strong> • </strong>{{ trans('home.subtitle_4') }}<br>
 <br>
@@ -74,9 +74,9 @@
 <strong>{{ trans('home.subtitle_7') }}</strong><br>
 {{ trans('home.subtitle_7_con') }}<br>
 <br>
-<strong>{{ trans('home.subtitle_8') }}</strong><br>
-{{ trans('home.subtitle_8_con') }}<br>
-<br>
+{{--<strong>{{ trans('home.subtitle_8') }}</strong><br>--}}
+{{--{{ trans('home.subtitle_8_con') }}<br>--}}
+{{--<br>--}}
 <strong> {{ trans('home.subtitle_9') }}</strong><br>
 {{ trans('home.subtitle_9_con') }}<br>
 <br>

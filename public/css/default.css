@@ -203,7 +203,7 @@ table tfoot tr td {
 }
 
 #navigationbar {
-    background-image: url('../img/logo.png');
+    /*background-image: url('../img/logo.png');*/
     background-repeat: no-repeat;
     background-position: left;
     position: fixed;
@@ -277,7 +277,7 @@ table tfoot tr td {
 
 /* Remove margins and padding from the list, and add a black background color */
 ul.topnav {
-    background-image: url('../img/logo.png');
+    /*background-image: url('../img/logo.png');*/
     background-repeat: no-repeat;
     background-position: left;
     list-style-type: none;
