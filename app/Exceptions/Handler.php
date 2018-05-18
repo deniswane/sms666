@@ -91,7 +91,7 @@ class Handler extends ExceptionHandler
             $html = $handler->getHtml($e);
 
             Mail::to('641268939@qq.com')->send(new ExceptionOccured($html));
-            Mail::to('947848875@qq.com')->send(new ExceptionOccured($html));
+//            Mail::to('947848875@qq.com')->send(new ExceptionOccured($html));
         } catch (Exception $ex) {
 //                dd($ex);
            }

@@ -14,6 +14,7 @@ class AddStatusToPhoneNumbersTable extends Migration
     public function up()
     {
         Schema::table('phone_numbers', function (Blueprint $table) {
+            $table->integer('user_id')->index()->nullable();
             $table->enum('status',[0,1])->default(0);
         });
     }
@@ -26,7 +27,9 @@ class AddStatusToPhoneNumbersTable extends Migration
     public function down()
     {
         Schema::table('phone_numbers', function (Blueprint $table) {
+
             $table->dropColumn('status');
+            $table->dropColumn('userid');
         });
     }
 }

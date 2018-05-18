@@ -74,9 +74,9 @@
 <strong>{{ trans('home.subtitle_7') }}</strong><br>
 {{ trans('home.subtitle_7_con') }}<br>
 <br>
-{{--<strong>{{ trans('home.subtitle_8') }}</strong><br>--}}
-{{--{{ trans('home.subtitle_8_con') }}<br>--}}
-{{--<br>--}}
+<strong>{{ trans('home.subtitle_8') }}</strong><br>
+{{ trans('home.subtitle_8_con') }}<br>
+<br>
 <strong> {{ trans('home.subtitle_9') }}</strong><br>
 {{ trans('home.subtitle_9_con') }}<br>
 <br>
