@@ -80,9 +80,11 @@
                     area: ['600px', '400px'],
                     tab: [{
                         title: 'API',
-                        content: '<p "><strong style="font-size: 18px;">address</strong><br/>1.get phone number :</br>http://sms-receive-online.info/manager/api/getPhoneNumber?token=Your token<br/>'+
-                        '2.get content :</br>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The phone number obtained from the first step <br/><strong style="font-size: 18px;">response</strong><br/>' +
-                        '{"code":200,"msg":"success"}<br/>{"code":201,"msg":"Please update your text message first"}<br/>{"code":101,"msg":"Not sufficient funds"}<br/>' +
+                        content: '<p "><strong style="font-size: 18px;">Address</strong><br/>' +
+                        '1.Set keywords :</br>http://sms-receive-online.info/manager/api/keyword?k=k1:k2&token=Your token<br/>'+
+                        '2.Get phone number :</br>http://sms-receive-online.info/manager/api/getPhoneNumber?token=Your token<br/>'+
+                        '3.Get content :</br>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The phone number obtained from the first step <br/><strong style="font-size: 18px;">Response</strong><br/>' +
+                        '{"code":200,"msg":"success"}<br/>{"code":201,"msg":"Please update your text message first"}<br/>{"code":102,"msg":"Format error"}<br/>' +
                         '{"code":401,"msg":"No new text messages"}<br/>' +
                         '{"code":103,"msg":"The frequency is too fast"}<br/>' +
                         '{"code":105,"msg":"Sorry, sir. You have no right to visit"}<br/>' +

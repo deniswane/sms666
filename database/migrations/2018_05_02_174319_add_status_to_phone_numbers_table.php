@@ -28,8 +28,8 @@ class AddStatusToPhoneNumbersTable extends Migration
     {
         Schema::table('phone_numbers', function (Blueprint $table) {
 
+            $table->dropColumn('user_id');
             $table->dropColumn('status');
-            $table->dropColumn('userid');
         });
     }
 }

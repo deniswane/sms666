@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Recca0120\Terminal\Console\Commands\Mysql;
 
 class StaticPagesController extends Controller
 {
@@ -15,7 +16,6 @@ class StaticPagesController extends Controller
 
     // 获取首页数据，电话
     public function home(){
-
         $numbers =DB::table('phone_numbers')
             ->select('phone_numbers.id','phone_numbers.phone','phone_numbers.country','phone_numbers.amount','flages.src')
             ->leftjoin('flages','phone_numbers.country','=','flages.en_name')

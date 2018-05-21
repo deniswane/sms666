@@ -24,8 +24,7 @@ class ApiController extends Controller
     {
         $prefix=(request()->route()->getAction())['prefix'];
         if(strpos($prefix,'inside')){
-//            $data=1;
-            $this->database='mysql_001';
+            $this->database='mysql';
         }else{
             $this->database='';
         }
@@ -47,7 +46,10 @@ class ApiController extends Controller
 
             $token = $request->token;
             $user = $this->selectuser($token);
-
+            if ($user->balance <=0){
+                echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
+                die;
+            }
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
             $receive = '13126160037';
             if ($user) {
@@ -55,7 +57,7 @@ class ApiController extends Controller
                 $content = 'id' . $user->id;
 
                 //激活手机号及设备信息
-                $send_phones = DB::connection('wechat')->table('w_register')->where('send','!=',5)->orderby('addtime', 'desc')->first();
+                $send_phones = DB::connection('wechat')->table('w_register')->where('send','=',0)->orderby('addtime', 'desc')->first();
                 if(!$send_phones){
                     Mail::send('emails.excpetion', ['content' => '手机号没有可以被使用的了'], function ($message) {
                         $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!查看‘w_register’表');
@@ -98,7 +100,7 @@ class ApiController extends Controller
 
                 //添加到订单
                 $tablename = "SMS" . date('Ymd') . '6666';
-                $order_res = DB::connection($this->database)->table('cms_order')
+                $order_res = DB::connection('ourcms')->table('cms_order')
                     ->where('order_name', '=', $tablename)
                     ->where('state', '!=', '-1')
                     ->where('state', '!=', '-2')
@@ -111,17 +113,17 @@ class ApiController extends Controller
                     $info['order_tnum'] = 1;
                     $info['order_num'] = 0;
                     $info['state'] = $switch;//1 open
-                    $info['type'] = 8;  //短信订单
+                    $info['type'] = 10;  //短信订单
                     $info['addtime'] = time();
                     $info['LateSendTime'] = $info['LateReturnTime'] = date("Y-m-d H:i:s");
                     $info['spnumber'] = '';
                     $info['note'] = " 接收短信订单 ";
-                    $id = DB::connection($this->database)->table('cms_order')->insertGetId($info);
+                    $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
                     //创建订单详细表
                     //手机号,指令,发送手机号,发送时间,发送状态(012),用户project,software,返回时间
                     $ordtb = "cms_orddata_" . $id;
-                    if (!Schema::hasTable($ordtb)) {
-                        Schema::create($ordtb, function (Blueprint $table) {
+
+                    Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
                             $table->charset = 'utf8';
                             $table->engine = 'MyISAM';
                             $table->increments('id');
@@ -149,7 +151,6 @@ class ApiController extends Controller
                             $table->string('snumstart', 100)->default('')->comment('回复到某号码的关键半部分');
                             $table->string('maskkeyone', 100)->default('')->comment('关键字1');
                             $table->string('maskkeytwo', 100)->default('')->comment('关键字2');
-
                         });
                         $new_data = [
                             'phone' => $send_phones->phone,
@@ -161,8 +162,8 @@ class ApiController extends Controller
                             'software' => '',
 
                         ];
-                        DB::connection($this->database)->table($ordtb)->insert($new_data);
-                    }
+                        DB::connection('ourcms')->table($ordtb)->insert($new_data);
+
                     //记录日志
                     $ip = $request->getClientIp();
                     $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $keywords[0] . $keywords[1] . '--success';
@@ -191,9 +192,9 @@ class ApiController extends Controller
                         'software' => '',
 
                     ];
-                    $res = DB::connection($this->database)->table($ordtb)->insert($new_data);
+                    $res =DB::connection('ourcms')->table($ordtb)->insert($new_data);
                     if ($res) {
-                        DB::connection($this->database)->table('cms_order')
+                        DB::connection('ourcms')->table('cms_order')
                             ->where('id', '=', "$order_res->id")
                             ->update(['order_tnum' => $info['order_tnum'], 'state' => $info['state'], 'addtime' => $info['addtime']]);
                     }
@@ -225,12 +226,15 @@ class ApiController extends Controller
             if ($user->times < 5) {
                 //获取手机号
 
-                $phone = DB::connection($this->database)->table('phone_numbers')
+                $phone = DB::table('phone_numbers')
                     ->where('user_id', '=', $user->id)
                     ->where('status', '=', '0')
                     ->orderby('created_at', 'desc')
                     ->first();
-                DB::connection($this->database)->table('phone_numbers')->where('id',$phone->id)->update(['status'=>'1']);
+                if(!$phone){
+                    echo json_encode(['code'=>'107','msg'=>'No mobile phone number for the time being']);die;
+                }
+                DB::table('phone_numbers')->where('id',$phone->id)->update(['status'=>'1']);
 
                 $user->times = $user->times + 1;
                 $user->save();
@@ -268,12 +272,12 @@ class ApiController extends Controller
         // 验证token(对应账号有没有钱)
         // 拿手机号的最新短信
         $phone=$request->phone;
-        $price = DB::connection("$this->database")->table('configs')->find(1);
+        $price = DB::table('configs')->find(1);
         $user = $this->selectuser($token);
         if ($user) {
 
             if ($user->balance > 0) {
-                $phoneNumber =DB::connection($this->database)->table('phone_numbers')
+                $phoneNumber =DB::table('phone_numbers')
                     ->where('user_id',$user->id)
                     ->where('status','1')
                     ->where('phone',$phone)
@@ -281,7 +285,7 @@ class ApiController extends Controller
 
                 if ($phoneNumber) {
 
-                    $content = DB::connection($this->database)->table('sms_contents')
+                    $content = DB::table('sms_contents')
                         ->where('phone_number_id',$phoneNumber->id)
                         ->first();
                     $user->balance = $user->balance - $price->price;
@@ -300,7 +304,7 @@ class ApiController extends Controller
                     $user->save();
 
                     //统计访问量
-                    $amount = DB::connection($this->database)->table('page_views')->where('user_id', $user->id)->first();
+                    $amount = DB::table('page_views')->where('user_id', $user->id)->first();
                     if ($amount) {
                         $amounts = $amount->amounts + 1;
                         if ((time() - strtotime($amount->expiration_time)) >= 0) {
@@ -312,11 +316,11 @@ class ApiController extends Controller
                             $data['amounts'] = $amounts;
                             $data['expiration_time'] = $amount->expiration_time;
                         }
-                        DB::connection($this->database)->table('page_views')->where('user_id', $user->id)->update($data);
+                        DB::table('page_views')->where('user_id', $user->id)->update($data);
                         echo json_encode($result);die;
 
                     } else {
-                        DB::connection($this->database)->table('page_views')->insert(['user_id' => $user->id, 'daliy_amount' => 0, 'amounts' => 0]);
+                        DB::table('page_views')->insert(['user_id' => $user->id, 'daliy_amount' => 0, 'amounts' => 0]);
                     }
                 } else {
                     echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
@@ -336,9 +340,10 @@ class ApiController extends Controller
     //查用户
     private function selectuser($token)
     {
-        return DB::connection($this->database)->table('users')
+        return $user= DB::table('users')
             ->where('token',$token)
             ->first();
+
     }
 
 }

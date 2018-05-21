@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
         Model::unguard();
         $this->call(PhoneNumberTableSeeder::class);
         $this->call(SmsContentTableSeeder::class);
-        $this->call(BalsTableSeeder::class);
         $this->call(UsersTableSeeder::class);
         $this->call(AdminsTableSeeder::class);
         $this->call(ConfigsTableSeeder::class);
