@@ -51,7 +51,7 @@ class ApiController extends Controller
                 die;
             }
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
-            $receive = '13126160037';
+            $receive = '17125048412';
             if ($user) {
                 //有权限访问
                 $content = 'id' . $user->id;
