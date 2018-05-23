@@ -40,7 +40,7 @@ return [
                 number, and was replaced by another.",
     'subtitle_9_con' => "Yes, on Google Play you will find
                 our application for mobile phone that support Android OS.",
-    'subtitle_8_con' => "It&apos;s free, there is no charge to receive sms via this website. This free text message service is
+    'subtitle_8_con' => "It's free, there is no charge to receive sms via this website. This free text message service is
                 here
                 to protect your privacy by keeping your phone number private
                 We do hope you will refer us to your friends so this site will keep growing.",
@@ -49,7 +49,7 @@ return [
     'subtitle_4' => "If you use the numbers above for Phone Verification like Google,
                 Facebook, Ebay, Paypal ... you will do on your own responsibility, because this is a
                 PUBLIC site and we are not responsible for what you do.",
-    'subtitle_4_con' => "Currently We support few countries numbers like: USA, Spain, Romania,Uk,Germany, France, Russia, Italy
+    'subtitle_4_con' => "Currently We support few countries numbers like: Angola, Ukraine, Israel,Mongolia,Congo, Nigeria, Palestine, Pakistan
                 and
                 we will try to add more.",
     'subtitle_3_con' => 'has no limitation when SMS is received. If you don&apos;t see
