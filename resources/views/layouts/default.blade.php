@@ -5,17 +5,11 @@
     <meta charset="utf-8">
     {{--<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">--}}
     <meta name="description"
-          content="Receive SMS online for FREE, without Registration and without use your personal phone number.Numbers from United Kingdom, Romania ,United States,Spain,France,Germany">
+          content="Receive SMS online , without Registration and without use your personal phone number.Numbers from United Kingdom, Romania ,United States,Spain,France,Germany">
     <meta name="keywords"
-          content="receive SMS,receive SMS online,free receive sms,receive sms uk,recevive sms romania,united kingdom, sms united states,free sms germany, sms Ukraine,spain,sms spain,sms germany,germany">
+          content="SMS receive,SMS receive  online,sms receive uk,sms recevive romania,united kingdom, sms united states,free sms germany, sms Ukraine,spain,sms spain,sms germany,germany">
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes"/>
-    <meta property="og:title"
-          content="Receive SMS Online for FREE | NO Registration UK,Romania,USA,Spain,France,Germany,Russia">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="http://www.sms-receive-online.info/">
-    <meta property="og:image" content="http://www.receive-sms-online.info/img/receive_sms.png">
-    <meta name="msvalidate.01" content="CB3DC9D646F1A44B5CE15B6B1D3074F7">
-    <title>@yield('title', 'Receive SMS Online')</title>
+    <title>@yield('title', 'SMS Receive Online')</title>
     <link href="/favicon.ico" rel="icon" type="image/x-icon">
 
     <link href="{{ URL::asset('css/default.css') }}" rel="stylesheet" type="text/css"/>

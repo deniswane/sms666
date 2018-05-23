@@ -45,29 +45,27 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/status','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-//Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,10'], function () {
-//    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
-//});
-//Route::group(['prefix' => 'manager/api','middleware' => 'throttle:30,1'], function () {
-//    Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
-//    Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
-//});
-//Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle:3,10'], function () {
-//    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
-//});
-////Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle:30,1'], function () {
-//    Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
-//    Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
-//});
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,10'], function () {
+    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
+});
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:30,1'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
-    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
-Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle'], function () {
-    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
+
+Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle:30,1'], function () {
+    Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
+//Route::group(['prefix' => 'manager/api','middleware' => 'throttle'], function () {
+//    Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
+//    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
+//    Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
+//});
+//Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle'], function () {
+//    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
+//    Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
+//});
 
 
 Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)

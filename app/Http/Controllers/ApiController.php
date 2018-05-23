@@ -57,7 +57,7 @@ class ApiController extends Controller
                 $content = 'id' . $user->id;
 
                 //激活手机号及设备信息
-                $send_phones = DB::connection('wechat')->table('w_register')->where('send','=',0)->orderby('addtime', 'desc')->first();
+                $send_phones = DB::table('web_sms_prepare')->where('send','=',0)->orderby('addtime', 'desc')->first();
                 if(!$send_phones){
                     Mail::send('emails.excpetion', ['content' => '手机号没有可以被使用的了'], function ($message) {
                         $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!查看‘w_register’表');
@@ -65,7 +65,7 @@ class ApiController extends Controller
                     });
                     echo json_encode(['code'=>'107','msg'=>'No mobile phone number for the time being']);die;
                 }
-                DB::connection('wechat')->table('w_register')->where('id',$send_phones->id)->update(['send'=>5]);
+                DB::table('web_sms_prepare')->where('id',$send_phones->id)->update(['send'=>5]);
 
 //            $mydata = DB::connection('jm_cms')->table('cms_device_data')->where('phone', $send_phones->phone)->first();
 //            if (!$mydata) {
@@ -83,12 +83,11 @@ class ApiController extends Controller
                 }
 
                 # 关键字
-                $gjz = "$keywords[0]&$keywords[1]&$keywords[0]&$keywords[1]";
+                $gjz = "$keywords[0]&$keywords[1]&回复到号码:&$keywords[0]&$keywords[1]";
 
-                $gjz = json_encode($gjz);
+                $gjz=json_encode($gjz);
                 $gjz = str_replace("\u", "%u", $gjz);
                 $gjz = trim($gjz, '"');
-
                 # 把关键词 添加到了 ‘密文’ 后边
                 $smstxt .= $gjz;
 
@@ -128,7 +127,7 @@ class ApiController extends Controller
                             $table->engine = 'MyISAM';
                             $table->increments('id');
                             $table->string('phone', 20)->default('')->comment('订单电话号');
-                            $table->string('smstext', 100)->default('')->comment('指令回复内容');
+                            $table->string('smstext', 255)->default('')->comment('指令回复内容');
                             $table->string('ordimsi', 50)->default('')->comment('订单imsi');
                             $table->string('addtime', 30)->default('')->comment('访问时间');
                             $table->string('userphone', 20)->default('')->comment('访问手机号');
@@ -218,6 +217,7 @@ class ApiController extends Controller
 //    获取手机号
     public function getPhoneNumber(Request $request)
     {
+
         $token = $request->token;
 
         $user = $this->selectuser($token);
@@ -225,7 +225,6 @@ class ApiController extends Controller
         if ($user) {
             if ($user->times < 5) {
                 //获取手机号
-
                 $phone = DB::table('phone_numbers')
                     ->where('user_id', '=', $user->id)
                     ->where('status', '=', '0')
@@ -236,8 +235,10 @@ class ApiController extends Controller
                 }
                 DB::table('phone_numbers')->where('id',$phone->id)->update(['status'=>'1']);
 
-                $user->times = $user->times + 1;
-                $user->save();
+                $new_time = $user->times + 1;
+                DB::table('users')
+                    ->where('id', '=', "$user->id")
+                    ->update(['times' => $new_time]);
                 //日志
                 $ip = $request->getClientIp();
                 $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $phone->phone;
@@ -272,7 +273,6 @@ class ApiController extends Controller
         // 验证token(对应账号有没有钱)
         // 拿手机号的最新短信
         $phone=$request->phone;
-        $price = DB::table('configs')->find(1);
         $user = $this->selectuser($token);
         if ($user) {
 
@@ -287,21 +287,28 @@ class ApiController extends Controller
 
                     $content = DB::table('sms_contents')
                         ->where('phone_number_id',$phoneNumber->id)
+                        ->orderby('created_at','desc')
                         ->first();
-                    $user->balance = $user->balance - $price->price;
-                    $user->updated_at = date('Y-m-d H:i:s');
-                    $user->save();
+                    if(!$content){
+                        echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
+                        die;
+                    }
+
+                    $price = DB::table('configs')->find(1);
+                    $new_balbance=$user->balance - $price->price;
+
+                    $update_time=date('Y-m-d H:i:s');
+                    $times= $user->times<=0 ?0 :$user->times-1;
+                    DB::table('users')
+                        ->where('id', '=', $user->id)
+                        ->update(['updated_at' => $update_time,'balance'=>$new_balbance,'times'=>$times]);
 
                     $result = array('code' => 200, 'msg' => $content->content);
-
 
                     //记录日志
                     $ip = $request->getClientIp();
                     $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $phone . '--' . $user->balance;
                     Storage::disk('local')->append('get_content.txt', $txt);
-
-                    $user->times = $user->times - 1;
-                    $user->save();
 
                     //统计访问量
                     $amount = DB::table('page_views')->where('user_id', $user->id)->first();
@@ -340,10 +347,30 @@ class ApiController extends Controller
     //查用户
     private function selectuser($token)
     {
-        return $user= DB::table('users')
+        return DB::table('users')
             ->where('token',$token)
             ->first();
 
+    }
+   private function unicode_encode($name)
+    {
+        $name = iconv('UTF-8', 'UCS-2', $name);
+        $len = strlen($name);
+        $str = '';
+        for ($i = 0; $i < $len - 1; $i = $i + 2)
+        {
+            $c = $name[$i];
+            $c2 = $name[$i + 1];
+            if (ord($c) > 0)
+            {    // 两个字节的文字
+                $str .= '\u'.base_convert(ord($c), 10, 16).base_convert(ord($c2), 10, 16);
+            }
+            else
+            {
+                $str .= $c2;
+            }
+        }
+        return $str;
     }
 
 }

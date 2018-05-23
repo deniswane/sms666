@@ -77,13 +77,13 @@
             success: function (data) {
 
                 layer.tab({
-                    area: ['600px', '400px'],
+                    area: ['35%', '55%'],
                     tab: [{
                         title: 'API',
                         content: '<p "><strong style="font-size: 18px;">Address</strong><br/>' +
                         '1.Set keywords :</br>http://sms-receive-online.info/manager/api/keyword?k=k1:k2&token=Your token<br/>'+
                         '2.Get phone number :</br>http://sms-receive-online.info/manager/api/getPhoneNumber?token=Your token<br/>'+
-                        '3.Get content :</br>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The phone number obtained from the first step <br/><strong style="font-size: 18px;">Response</strong><br/>' +
+                        '3.Get content :</br>http://sms-receive-online.info/manager/api/getSmsContent?token=Your token&phone=The phone number obtained from the second step <br/><strong style="font-size: 18px;">Response</strong><br/>' +
                         '{"code":200,"msg":"success"}<br/>{"code":201,"msg":"Please update your text message first"}<br/>{"code":102,"msg":"Format error"}<br/>' +
                         '{"code":401,"msg":"No new text messages"}<br/>' +
                         '{"code":103,"msg":"The frequency is too fast"}<br/>' +
