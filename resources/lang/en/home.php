@@ -52,7 +52,7 @@ return [
     'subtitle_4_con' => "Currently We support few countries numbers like: Angola, Ukraine, Israel,Mongolia,Congo, Nigeria, Palestine, Pakistan
                 and
                 we will try to add more.",
-    'subtitle_3_con' => 'has no limitation when SMS is received. If you don&apos;t see
+    'subtitle_3_con' => 'has no limitation when SMS is received. If you don`t see
                 the
                 message on this website, probably due to limitations imposed by mobile operators.',
     'subtitle_3_1' =>config('app.name'),

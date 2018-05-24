@@ -19,7 +19,7 @@ class StaticPagesController extends Controller
         $numbers =DB::table('phone_numbers')
             ->select('phone_numbers.id','phone_numbers.phone','phone_numbers.country','phone_numbers.amount','flages.src')
             ->leftjoin('flages','phone_numbers.country','=','flages.en_name')
-            ->paginate(20);
+            ->paginate(10);
         return view('welcome_new',compact('numbers'))->__toString();
     }
 
