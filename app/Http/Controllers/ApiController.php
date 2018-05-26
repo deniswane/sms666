@@ -51,7 +51,7 @@ class ApiController extends Controller
                 die;
             }
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
-            $receive = '17125048412';
+            $receive = '15510396471';
             if ($user) {
                 //有权限访问
                 $content = 'id' . $user->id;
@@ -223,7 +223,7 @@ class ApiController extends Controller
         $user = $this->selectuser($token);
 
         if ($user) {
-            if ($user->times < 5) {
+//            if ($user->times < 5) {
                 //获取手机号
                 $phone = DB::table('phone_numbers')
                     ->where('user_id', '=', $user->id)
@@ -235,20 +235,20 @@ class ApiController extends Controller
                 }
                 DB::table('phone_numbers')->where('id',$phone->id)->update(['status'=>'1']);
 
-                $new_time = $user->times + 1;
-                DB::table('users')
-                    ->where('id', '=', "$user->id")
-                    ->update(['times' => $new_time]);
+//                $new_time = $user->times + 1;
+//                DB::table('users')
+//                    ->where('id', '=', "$user->id")
+//                    ->update(['times' => $new_time]);
                 //日志
                 $ip = $request->getClientIp();
                 $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $phone->phone;
                 Storage::disk('local')->append('get_phone.txt', $txt);
                 echo json_encode(array('code' => 200, 'msg' => $phone->phone));
                 die;
-            } else {
-                echo json_encode(array('code' => 201, 'msg' => 'Please update your text message first'));
-                die;
-            }
+//            } else {
+//                echo json_encode(array('code' => 201, 'msg' => 'Please update your text message first'));
+//                die;
+//            }
         } else {
 
             echo json_encode(array('code' => 105, 'msg' => "Sorry, sir. You have no right to visit"));die;
@@ -324,7 +324,7 @@ class ApiController extends Controller
                             $data['expiration_time'] = $amount->expiration_time;
                         }
                         DB::table('page_views')->where('user_id', $user->id)->update($data);
-                        echo json_encode($result);die;
+                        echo json_encode($result,JSON_UNESCAPED_UNICODE);die;
 
                     } else {
                         DB::table('page_views')->insert(['user_id' => $user->id, 'daliy_amount' => 0, 'amounts' => 0]);

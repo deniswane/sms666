@@ -17,22 +17,17 @@ Auth::routes();
 Route::get('/','StaticPagesController@home') -> name('home');
 // 多语言
 Route::get('/language/{locale}', ['as'=>'lang.change', 'uses'=>'LanguageController@setLocale']);
-//Route::get('/language/{locale}', function ($locale) {
-//    App::setLocale($locale);
-//    return redirect()->route('home');
-//});
+
 
 Route::get('/private-numbers','StaticPagesController@privateNumbers') -> name('private_numbers');
 Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name('inactive_numbers');
 Route::get('/contact','StaticPagesController@contact') -> name('contact');
 
 Route::get('/signup', 'UsersController@create')->name('signup');
-//Route::any('/signup', 'UsersController@create')->name('signup');
 // 注册确认
 //此方法是 VerifiesUsers Trait 里的方法，他会自动处理验证逻辑
 Route::get('/verification/{token}','Auth\RegisterController@getVerification');
 Route::get('/emails/verification_result','StaticPagesController@setresult');
-//Route::get('/emails/verification_result','Auth\RegisterController@setresult');
 // 号码详情页
 Route::get('/detail/{number}', 'PhonecController@detailSms') -> name('phone.detail');
 Route::get('/getprice', 'StaticPagesController@getprice') -> name('getprice');
@@ -42,13 +37,13 @@ Route::view('/payment/recharge','pay/recharge');
 Route::post('/payment/recharge','PaymentController@launchPay') -> name('launch');
 Route::get('/payment/success','PaymentController@success') ->name('success');
 Route::get('/payment/fail','PaymentController@fail') ->name('fail');
-Route::get('/payment/status','PaymentController@status') ->name('status');
+Route::get('/payment/statuys','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,10'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,5'], function () {
     Route::get('keyword','ApiController@setKeyword') ->name('get.number');
 });
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:30,1'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,5'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
@@ -57,16 +52,6 @@ Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle:30,1'],
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
-//Route::group(['prefix' => 'manager/api','middleware' => 'throttle'], function () {
-//    Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
-//    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
-//    Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
-//});
-//Route::group(['prefix' => 'manager/api/inside','middleware' => 'throttle'], function () {
-//    Route::get('keyword','ApiController@setKeyword') ->name('get.number');
-//    Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
-//});
-
 
 Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
 {
@@ -89,6 +74,7 @@ Route::get('paypal/ec-checkout-success', 'PayPalController@getExpressCheckoutSuc
 Route::get('paypal/adaptive-pay', 'PayPalController@getAdaptivePay');
 Route::post('paypal/notify', 'PayPalController@notify');
 Route::get('paypal/success', 'PayPalController@success');
+
 
 
 
