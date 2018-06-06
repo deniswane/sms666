@@ -46,13 +46,17 @@ class ApiController extends Controller
 
             $token = $request->token;
             $user = $this->selectuser($token);
-            if ($user->balance <=0){
-                echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
-                die;
-            }
+
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
             $receive = '15510396471';
             if ($user) {
+                if ($user->balance <=0){
+                    echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
+                    die;
+                }
+                //余额剩10发邮件
+//                $this->balance_info($user);
+
                 //有权限访问
                 $content = 'id' . $user->id;
 
@@ -223,6 +227,8 @@ class ApiController extends Controller
         $user = $this->selectuser($token);
 
         if ($user) {
+            //余额剩10发邮件
+//            $this->balance_info($user);
 //            if ($user->times < 5) {
                 //获取手机号
                 $phone = DB::table('phone_numbers')
@@ -275,6 +281,8 @@ class ApiController extends Controller
         $phone=$request->phone;
         $user = $this->selectuser($token);
         if ($user) {
+            //余额剩10发邮件
+//            $this->balance_info($user);
 
             if ($user->balance > 0) {
                 $phoneNumber =DB::table('phone_numbers')
@@ -298,16 +306,16 @@ class ApiController extends Controller
                     $new_balbance=$user->balance - $price->price;
 
                     $update_time=date('Y-m-d H:i:s');
-                    $times= $user->times<=0 ?0 :$user->times-1;
+
                     DB::table('users')
                         ->where('id', '=', $user->id)
-                        ->update(['updated_at' => $update_time,'balance'=>$new_balbance,'times'=>$times]);
+                        ->update(['updated_at' => $update_time,'balance'=>$new_balbance]);
 
                     $result = array('code' => 200, 'msg' => $content->content);
 
                     //记录日志
                     $ip = $request->getClientIp();
-                    $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $phone . '--' . $user->balance;
+                    $txt = Carbon::now() . '   ' . $user->email . '--' . $ip . '--' . $phone . '--' .$content->content .'--'.$user->balance;
                     Storage::disk('local')->append('get_content.txt', $txt);
 
                     //统计访问量
@@ -348,29 +356,19 @@ class ApiController extends Controller
     private function selectuser($token)
     {
         return DB::table('users')
+            ->select('balance','email','id','balance')
             ->where('token',$token)
             ->first();
 
     }
-   private function unicode_encode($name)
-    {
-        $name = iconv('UTF-8', 'UCS-2', $name);
-        $len = strlen($name);
-        $str = '';
-        for ($i = 0; $i < $len - 1; $i = $i + 2)
-        {
-            $c = $name[$i];
-            $c2 = $name[$i + 1];
-            if (ord($c) > 0)
-            {    // 两个字节的文字
-                $str .= '\u'.base_convert(ord($c), 10, 16).base_convert(ord($c2), 10, 16);
-            }
-            else
-            {
-                $str .= $c2;
-            }
-        }
-        return $str;
-    }
+//    private function balance_info($user){
+//        if ($user ->balance =10){
+//            Mail::send('emails.excpetion', ['content' => 'Your balance is 10 dollars left. Please pay attention to the recharge'], function ($message) use ($user) {
+//                $message->to($user->email, 'Email Message')->subject('BALANCE INFO');
+//            });
+//        }
+//
+//    }
+
 
 }

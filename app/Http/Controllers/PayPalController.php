@@ -103,6 +103,10 @@ class PayPalController extends Controller
             if ($response['CHECKOUTSTATUS'] == 'PaymentActionNotInitiated') {
                 $this->createInvoice($cart, $status);
             }
+            //记录日志
+
+            $txt = Carbon::now() . '   ' .Auth::user()->email.'--'.Session::get(Auth::user()->id);
+            Storage::disk('local')->append('set_money.txt', $txt);
 
             Session::forget(Auth::user()->id . 'prices');
 

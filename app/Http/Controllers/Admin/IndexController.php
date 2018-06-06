@@ -134,6 +134,23 @@ class IndexController extends Controller
         ]);
 
     }
+    //设置余额
+    public function set_bal(Request $request)
+    {
+        $post =$request->all();
+        $validator = Validator::make($post, [
+            'balance' => 'numeric|required',
+        ]);
+        if ($validator->fails()) {
+            return Y::error($validator->errors());
+        }
+         if($post['balance']){
+            $res= DB::table('users')->where('email','=',$post['email'])->update(['balance'=>$post['balance']]);
+             if ($res){
+                 return ['code'=>'200'];
+             }
+         }
+   }
     //清空缓存
     public function flush()
     {

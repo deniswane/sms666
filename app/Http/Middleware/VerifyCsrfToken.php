@@ -13,6 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //paypal/notify
-        'paypal/notify'
+        'paypal/notify',
+        'manager/api/sendmsg'
     ];
 }

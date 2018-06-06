@@ -35,7 +35,7 @@
                     {title: '序号', align: 'center', width: 80,  templet: '#indexTpl'}
                     , {field: 'name', align: 'center', title: '用户名'}
                     , {field: 'email', align: 'center', title: '邮箱'}
-                    , {field: 'balance', align: 'center', title: '余额', sort: true}
+                    , {field: 'balance', align: 'center', title: '余额',event: 'setSign', sort: true}
                     , {field: 'daliy_amount', align: 'center', title: '今日请求次数', sort: true}
                     , {field: 'amounts', align: 'center', title: '总的请求次数', sort: true}
                     , {field: 'updated_at', align: 'center', title: '更新时间'} //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
@@ -43,26 +43,45 @@
                 ]]
             });
             //监听单元格事件
-            {{--table.on('tool(test)', function (obj) {--}}
-                {{--var data = obj.data;--}}
-                {{--if (obj.event === 'setSign') {--}}
-                    {{--$.ajax({--}}
-                        {{--headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},--}}
-                        {{--type: 'post',--}}
-                        {{--url: "{{route('admin.phone_info')}}",--}}
-                        {{--cache: false,--}}
-                        {{--data: {phone:data.phone},--}}
-                        {{--success: function (data) {--}}
-                            {{--console.log(data)--}}
-                            {{--layer.open({--}}
-                                {{--title: '最后信息'--}}
-                                {{--, content: data--}}
-                            {{--});--}}
-                        {{--},--}}
-                    {{--});--}}
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'setSign') {
+                    layer.prompt({
+                        formType: 2
+                        ,title: '设置余额'
+                        ,value: data.balance
+                    }, function(value, index){
+                        layer.close(index);
+                        //这里一般是发送修改的Ajax请求
+                        $.ajax({
+                            type: 'post',
+                            url: "{{route('cfcc.set_bal')}}",
+                            cache: false,
+                            data: {balance:value,email:data.email,_token:"{{csrf_token()}}"},
+                            success: function (data) {
+                                console.log(data)
 
-                {{--}--}}
-            {{--});--}}
+                                //同步更新表格和缓存对应的值
+                                if(data.code != 200){
+                                    layer.alert('请填写数字')
+                                }else{
+                                    obj.update({
+                                        balance: value
+                                    });
+                                }
+                            },
+                            error:function (data) {
+                                layer.alert(data.msg)
+
+                            }
+                        });
+                        obj.update({
+                            sign: value
+                        });
+                    });
+                }
+            });
+
             //表格重载
             var $ = layui.$, active = {
                 reload: function () {

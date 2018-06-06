@@ -40,10 +40,12 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/statuys','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,5'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:5,1'],function () {
     Route::get('keyword','ApiController@setKeyword') ->name('get.number');
+    Route::post('sendmsg','ApiController@sendMsg');
+
 });
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle:3,5'], function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:30,1'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
@@ -60,7 +62,7 @@ Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
     $router->get('bal', 'IndexController@bal')->name('cfcc.bal');
     $router->post('test', 'IndexController@test')->name('cfcc.test');
     $router->get('flush', 'IndexController@flush') ->name('flush');
-    $router->post('phone_info', 'IndexController@phone_info')->name('cfcc.phone_info');
+    $router->post('set_bal', 'IndexController@set_bal')->name('cfcc.set_bal');
     $router->any('set_money', 'IndexController@set_money')->name('cfcc.set_money');
 
 });
@@ -74,7 +76,6 @@ Route::get('paypal/ec-checkout-success', 'PayPalController@getExpressCheckoutSuc
 Route::get('paypal/adaptive-pay', 'PayPalController@getAdaptivePay');
 Route::post('paypal/notify', 'PayPalController@notify');
 Route::get('paypal/success', 'PayPalController@success');
-
 
 
 
