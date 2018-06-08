@@ -6,7 +6,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +17,7 @@ use Mail;
  * @package App\Http\Controllers
  * 是否有新短信标记
  */
-class ApiController extends Controller
+class ApiCeshiController extends Controller
 {
     private $database;
     public function __construct()
@@ -31,11 +30,10 @@ class ApiController extends Controller
         }
 
     }
-
-    /**设置关键字
-     * @param Request $request
-     * @return array
-     */
+    public function ceshi(){
+        echo Carbon::now();
+    }
+//    设置关键字
     public function setKeyword(Request $request)
     {
         $get = ['k'=>htmlspecialchars($request->get('k'))];
@@ -59,7 +57,8 @@ class ApiController extends Controller
                     echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
                     die;
                 }
-
+                //余额剩10发邮件
+//                $this->balance_info($user);
 
                 //有权限访问
                 $content = 'id' . $user->id;
@@ -107,7 +106,7 @@ class ApiController extends Controller
 
                 //添加到订单
                 $tablename = "SMS" . date('Ymd') . '6666';
-                $order_res = DB::connection('ourcms')->table('cms_order')
+                $order_res = DB::table('cms_order')
                     ->where('order_name', '=', $tablename)
                     ->where('state', '!=', '-1')
                     ->where('state', '!=', '-2')
@@ -125,12 +124,12 @@ class ApiController extends Controller
                     $info['LateSendTime'] = $info['LateReturnTime'] = date("Y-m-d H:i:s");
                     $info['spnumber'] = '';
                     $info['note'] = " 接收短信订单 ";
-                    $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
+                    $id = DB::table('cms_order')->insertGetId($info);
                     //创建订单详细表
                     //手机号,指令,发送手机号,发送时间,发送状态(012),用户project,software,返回时间
                     $ordtb = "cms_orddata_" . $id;
 
-                    Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
+                    Schema::create($ordtb, function (Blueprint $table) {
                             $table->charset = 'utf8';
                             $table->engine = 'MyISAM';
                             $table->increments('id');
@@ -169,11 +168,11 @@ class ApiController extends Controller
                             'software' => '',
 
                         ];
-                        DB::connection('ourcms')->table($ordtb)->insert($new_data);
+                        DB::table($ordtb)->insert($new_data);
 
                     //写入日志的信息
                     $ip = $request->getClientIp();
-                    $profile = $user->name.'/set_gjz.txt';
+                    $profile = 'set_gjz.txt';
                     $data = [
                         'email' => $user->email,
                         'ip' => $ip,
@@ -206,16 +205,15 @@ class ApiController extends Controller
                         'software' => '',
 
                     ];
-                    $res =DB::connection('ourcms')->table($ordtb)->insert($new_data);
+                    $res =DB::table($ordtb)->insert($new_data);
                     if ($res) {
-                        DB::connection('ourcms')->table('cms_order')
+                        DB::table('cms_order')
                             ->where('id', '=', "$order_res->id")
                             ->update(['order_tnum' => $info['order_tnum'], 'state' => $info['state'], 'addtime' => $info['addtime']]);
                     }
-                    //记录日志
                     //写入日志的信息
                     $ip = $request->getClientIp();
-                    $profile = $user->name.'/set_gjz.txt';
+                    $profile = 'set_gjz.txt';
                     $data = [
                         'email' => $user->email,
                         'ip' => $ip,
@@ -236,9 +234,7 @@ class ApiController extends Controller
         }
     }
 
-    /** 获取手机号
-     * @param Request $request
-     */
+//    获取手机号
     public function getPhoneNumber(Request $request)
     {
 
@@ -247,7 +243,9 @@ class ApiController extends Controller
         $user = $this->selectuser($token);
 
         if ($user) {
-
+            //余额剩10发邮件
+//            $this->balance_info($user);
+//            if ($user->times < 5) {
                 //获取手机号
                 $phone = DB::table('phone_numbers')
                     ->where('user_id', '=', $user->id)
@@ -259,16 +257,17 @@ class ApiController extends Controller
                 }
                 DB::table('phone_numbers')->where('id',$phone->id)->update(['status'=>'1']);
 
+//                $new_time = $user->times + 1;
+//                DB::table('users')
+//                    ->where('id', '=', "$user->id")
+//                    ->update(['times' => $new_time]);
                 //日志
 
+                $dt = Carbon::now();
+                $day= $dt->year.$dt->month.$dt->day;
                 $ip = $request->getClientIp();
-                $profile = $user->name.'/get_phone.txt';
-                $data = [
-                    'email' => $user->email,
-                    'ip' => $ip,
-                    'phone' => $phone->phone
-                ];
-                $this->setLog($profile, $data);
+                $txt = $dt . '   ' . $user->email . '--' . $ip . '--' . $phone->phone;
+                Storage::disk('local')->append($day.'/'.'get_phone.txt', $txt);
 
                 echo json_encode(array('code' => 200, 'msg' => $phone->phone));
                 die;
@@ -282,9 +281,6 @@ class ApiController extends Controller
         }
     }
 
-    /**获取短信内容
-     * @param Request $request
-     */
     public function getSmsContent(Request $request)
     {
         // 标识
@@ -306,7 +302,7 @@ class ApiController extends Controller
         $user = $this->selectuser($token);
         if ($user) {
             //余额剩10发邮件
-            $this->balance_info($user);
+//            $this->balance_info($user);
 
             if ($user->balance > 0) {
                 $phoneNumber =DB::table('phone_numbers')
@@ -328,24 +324,24 @@ class ApiController extends Controller
 
                     $price = DB::table('configs')->find(1);
                     $new_balbance=$user->balance - $price->price;
+
                     $update_time=date('Y-m-d H:i:s');
 
-                   DB::table('users')
+                    DB::table('users')
                         ->where('id', '=', $user->id)
                         ->update(['updated_at' => $update_time,'balance'=>$new_balbance]);
+
                     $result = array('code' => 200, 'msg' => $content->content);
 
                     //记录日志
-                    $ip = $request->getClientIp();
-                    $contets = [
-                        'email' => $user->email,
-                        'ip' => $ip,
-                        'phone' => $phone,
-                        'content'=>$content->content,
-                        'balance'=> $new_balbance
-                    ];
 
-                    $this->setLog($user->name.'/get_content.txt', $contets);
+                    $ip = $request->getClientIp();
+                    $dt = Carbon::now();
+                    $txt = $dt . '   ' . $user->email . '--' . $ip . '--' . $phone . '--' .$content->content .'--'.$user->balance;
+                    $day= $dt->year.$dt->month.$dt->day;
+
+                    Storage::disk('local')->append($day.'/'.'get_content.txt', $txt);
+
                     //统计访问量
                     $amount = DB::table('page_views')->where('user_id', $user->id)->first();
                     if ($amount) {
@@ -354,7 +350,6 @@ class ApiController extends Controller
                             $data['expiration_time'] = date('Y:m:d H-i-s', strtotime(date('Y-m-d', time())) + 86400);
                             $data['daliy_amount'] = 1;
                             $data['amounts'] = $amounts;
-                            $data['yes_num']=  $amount->daliy_amount;
                         } else {
                             $data['daliy_amount'] = $amount->daliy_amount + 1;
                             $data['amounts'] = $amounts;
@@ -364,7 +359,7 @@ class ApiController extends Controller
                         echo json_encode($result,JSON_UNESCAPED_UNICODE);die;
 
                     } else {
-                        DB::table('page_views')->insert(['user_id' => $user->id, 'daliy_amount' => 0,'yes_num'=>0, 'amounts' => 0]);
+                        DB::table('page_views')->insert(['user_id' => $user->id, 'daliy_amount' => 0, 'amounts' => 0]);
                     }
                 } else {
                     echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
@@ -381,29 +376,24 @@ class ApiController extends Controller
         }
     }
 
-    /**查用户
-     * @param $token
-     * @return mixed
-     */
+    //查用户
     private function selectuser($token)
     {
         return DB::table('users')
-            ->select('balance','email','id','name')
+            ->select('balance','email','id','balance')
             ->where('token',$token)
             ->first();
 
     }
 
-    /**用户余额为10 发邮件提醒
-     * @param $user
-     */
-    private function balance_info($user){
-        if ($user ->balance == 10){
-            Mail::send('emails.excpetion', ['content' => 'Your balance is 10 dollars left. Please pay attention to the recharge'], function ($message) use ($user) {
-                $message->to($user->email, 'Email Message')->subject('BALANCE INFO');
-            });
-        }
-    }
+//    private function balance_info($user){
+//        if ($user ->balance =10){
+//            Mail::send('emails.excpetion', ['content' => 'Your balance is 10 dollars left. Please pay attention to the recharge'], function ($message) use ($user) {
+//                $message->to($user->email, 'Email Message')->subject('BALANCE INFO');
+//            });
+//        }
+//
+//    }
     /**记日志
      * @param $profile
      * @param array $parame
@@ -415,5 +405,4 @@ class ApiController extends Controller
         $day=date('Ymd',time());
         Storage::disk('local')->append($day.'/'.$profile, $txt);
     }
-
 }

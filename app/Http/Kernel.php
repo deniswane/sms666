@@ -58,6 +58,8 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        //根据用户的token字段限制
+        'throttle_token' => \App\Http\Middleware\ThrottleRequests::class,
         'isVerified' => \Jrean\UserVerification\Middleware\IsVerified::class,
         'admin' => \App\Http\Middleware\AuthAdmin::class,
     ];

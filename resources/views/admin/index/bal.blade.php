@@ -35,9 +35,10 @@
                     {title: '序号', align: 'center', width: 80,  templet: '#indexTpl'}
                     , {field: 'name', align: 'center', title: '用户名'}
                     , {field: 'email', align: 'center', title: '邮箱'}
-                    , {field: 'balance', align: 'center', title: '余额',event: 'setSign', sort: true}
+                    , {field: 'balance', align: 'center', title: '余额',event: 'setSign', sort: true,style:"cursor:pointer "}
                     , {field: 'daliy_amount', align: 'center', title: '今日请求次数', sort: true}
                     , {field: 'amounts', align: 'center', title: '总的请求次数', sort: true}
+                    , {field: 'yes_num', align: 'center', title: '昨天的统计数量', sort: true}
                     , {field: 'updated_at', align: 'center', title: '更新时间'} //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
                     , {field: 'created_at', align: 'center', title: '注册时间'}
                 ]]
