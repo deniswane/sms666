@@ -347,7 +347,8 @@ class ApiController extends Controller
 
                     $this->setLog($user->name.'/get_content.txt', $contets);
                     //统计访问量
-                    $amount = DB::table('page_views')->where('user_id', $user->id)->first();
+                    $page_views = DB::table('page_views');
+                    $amount = $page_views ->where('user_id', $user->id)->first();
                     if ($amount) {
                         $amounts = $amount->amounts + 1;
                         if ((time() - strtotime($amount->expiration_time)) >= 0) {
@@ -360,11 +361,11 @@ class ApiController extends Controller
                             $data['amounts'] = $amounts;
                             $data['expiration_time'] = $amount->expiration_time;
                         }
-                        DB::table('page_views')->where('user_id', $user->id)->update($data);
+                        $page_views->where('user_id', $user->id)->update($data);
                         echo json_encode($result,JSON_UNESCAPED_UNICODE);die;
 
                     } else {
-                        DB::table('page_views')->insert(['user_id' => $user->id, 'daliy_amount' => 0,'yes_num'=>0, 'amounts' => 0]);
+                        $page_views->insert(['user_id' => $user->id, 'daliy_amount' => 0,'yes_num'=>0, 'amounts' => 0]);
                     }
                 } else {
                     echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
