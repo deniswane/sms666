@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -38,15 +39,17 @@ class ApiController extends Controller
      */
     public function setKeyword(Request $request)
     {
-        $get = ['k'=>htmlspecialchars($request->get('k'))];
+        $get = ['k'=>htmlspecialchars($request->get('k')),'p'=>$request->get('p')];
 
         $validator = Validator::make($get, [
-            'k'=>'required|min:2|max:5'
+            'k'=>'required|min:2|max:5',
+//            'p'=>'required'
         ]);
 
         if ($validator->fails()) {
             echo json_encode(['code'=>102,'msg'=>'Format error']);die;
         }
+        $p = $request->get('p');
         if (strpos($request->k, ':') || strpos($request->k, '：')) {
 
             $token = $request->token;
@@ -65,7 +68,10 @@ class ApiController extends Controller
                 $content = 'id' . $user->id;
 
                 //激活手机号及设备信息
-                $send_phones = DB::table('web_sms_prepare')->where('send','=',0)->orderby('addtime', 'desc')->first();
+
+                $dat=empty($p) ? ['send'=>0]:['send'=>0,'province'=>$p];
+
+                $send_phones = DB::table('web_sms_prepare')->where($dat)->orderby('addtime', 'desc')->first();
                 if(!$send_phones){
                     Mail::send('emails.excpetion', ['content' => '手机号没有可以被使用的了'], function ($message) {
                         $message->to('641268939@qq.com', 'Email Message')->subject('注意！ 注意!查看‘w_register’表');
@@ -178,6 +184,7 @@ class ApiController extends Controller
                         'email' => $user->email,
                         'ip' => $ip,
                         'keywords' => "$keywords[0]&$keywords[1]",
+                        'provice'=>$p,
                         'success'=>'success'
                     ];
                     $this->setLog($profile, $data);
@@ -220,6 +227,7 @@ class ApiController extends Controller
                         'email' => $user->email,
                         'ip' => $ip,
                         'keywords' => "$keywords[0]&$keywords[1]",
+                        'provice'=>$p,
                         'success'=>'success'
                     ];
                     $this->setLog($profile, $data);
@@ -244,14 +252,23 @@ class ApiController extends Controller
 
         $token = $request->token;
 
-        $user = $this->selectuser($token);
+//        $get_p= ['p'=>$request->p];
+//        $validator = Validator::make($get_p, [
+//            'p' =>'required'
+//        ]);
+//        if ($validator->fails()) {
+//            echo json_encode(['code'=>102,'msg'=>'Format error']);die;
+//        }
 
+        $p=$request->p;
+
+        $user = $this->selectuser($token);
         if ($user) {
 
+            $dat=empty($p) ? ['user_id'=>$user->id,'status'=>'0']:['user_id'=>$user->id,'status'=>'0','province'=>$p];
                 //获取手机号
                 $phone = DB::table('phone_numbers')
-                    ->where('user_id', '=', $user->id)
-                    ->where('status', '=', '0')
+                    ->where($dat)
                     ->orderby('created_at', 'desc')
                     ->first();
                 if(!$phone){
@@ -266,7 +283,8 @@ class ApiController extends Controller
                 $data = [
                     'email' => $user->email,
                     'ip' => $ip,
-                    'phone' => $phone->phone
+                    'phone' => $phone->phone,
+                    'province'=>$p,
                 ];
                 $this->setLog($profile, $data);
 
@@ -350,22 +368,40 @@ class ApiController extends Controller
                     $page_views = DB::table('page_views');
                     $amount = $page_views ->where('user_id', $user->id)->first();
                     if ($amount) {
-                        $amounts = $amount->amounts + 1;
+//                        $amounts = $amount->amounts + 1;
+//                        if ((time() - strtotime($amount->expiration_time)) >= 0) {
+//                            $data['expiration_time'] = date('Y:m:d H-i-s', strtotime(date('Y-m-d', time())) + 86400);
+//                            $data['daliy_amount'] = 1;
+//                            $data['amounts'] = $amounts;
+//                            $data['yes_num']=  $amount->daliy_amount;
+//                        } else {
+//                            $data['daliy_amount'] = $amount->daliy_amount + 1;
+//                            $data['amounts'] = $amounts;
+//                            $data['expiration_time'] = $amount->expiration_time;
+//                        }
+//                        $page_views->where('user_id', $user->id)->update($data);
                         if ((time() - strtotime($amount->expiration_time)) >= 0) {
+
                             $data['expiration_time'] = date('Y:m:d H-i-s', strtotime(date('Y-m-d', time())) + 86400);
-                            $data['daliy_amount'] = 1;
-                            $data['amounts'] = $amounts;
-                            $data['yes_num']=  $amount->daliy_amount;
+                            $data['amounts'] =Cache::get($user->id.'amounts',$amount->amounts+1);
+                            $data['yes_num']= Cache::get($user->id.'daliy_amount',0) ;
+                            $page_views->where('user_id', $user->id)->update($data);
+
+                            Cache::forever($user->id.'amounts',Cache::get($user->id.'amounts')+1);
+                            Cache::forever($user->id.'daliy_amount',1);
                         } else {
-                            $data['daliy_amount'] = $amount->daliy_amount + 1;
-                            $data['amounts'] = $amounts;
-                            $data['expiration_time'] = $amount->expiration_time;
+                            if (!Cache::has($user->id.'amounts')){
+                                Cache::forever($user->id.'amounts',0);
+                                Cache::forever($user->id.'daliy_amount',0);
+                            }
+                            Cache::increment($user->id.'daliy_amount',1);
+                            Cache::increment($user->id.'amounts',1);
                         }
-                        $page_views->where('user_id', $user->id)->update($data);
                         echo json_encode($result,JSON_UNESCAPED_UNICODE);die;
 
                     } else {
                         $page_views->insert(['user_id' => $user->id, 'daliy_amount' => 0,'yes_num'=>0, 'amounts' => 0]);
+
                     }
                 } else {
                     echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));

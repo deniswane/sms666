@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Recca0120\Terminal\Console\Commands\Mysql;
 
 class StaticPagesController extends Controller
 {
@@ -17,9 +16,10 @@ class StaticPagesController extends Controller
 
     // 获取首页数据，电话
     public function home(){
+
         $numbers =DB::table('phone_numbers')
-            ->select('phone_numbers.id','phone_numbers.phone','phone_numbers.country','phone_numbers.amount','flages.src')
-            ->leftjoin('flages','phone_numbers.country','=','flages.en_name')
+            ->select('phone_numbers.id','phone_numbers.phone','phone_numbers.province','phone_numbers.amount','flages.src')
+            ->leftjoin('flages','phone_numbers.province','=','flages.en_name')
             ->paginate(10);
         return view('welcome_new',compact('numbers'))->__toString();
     }

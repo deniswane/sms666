@@ -40,7 +40,7 @@ Route::get('/payment/fail','PaymentController@fail') ->name('fail');
 Route::get('/payment/statuys','PaymentController@status') ->name('status');
 
 // 接口 十分钟请求三次
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle_token:5,1'],function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle:5,1'],function () {
     Route::get('keyword','ApiController@setKeyword') ->name('get.number');
     Route::post('sendmsg','ApiController@sendMsg');
 
@@ -79,7 +79,7 @@ Route::get('paypal/success', 'PayPalController@success');
 
 
 //本地测试
-Route::group(['prefix' => 'manager/api','middleware' => 'throttle_token:5,1'],function () {
+Route::group(['prefix' => 'manager/api','middleware' => 'throttle_token:60,1'],function () {
 //Route::group(['prefix' => 'manager/api','middleware' => 'throttle:5,1'],function () {
     Route::get('keywords','ApiCeshiController@setKeyword') ->name('get.number');
     Route::get('ceshi','ApiCeshiController@ceshi') ->name('get.number');

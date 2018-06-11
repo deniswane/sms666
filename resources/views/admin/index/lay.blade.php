@@ -32,10 +32,10 @@
                 </a>
             </li>
 
-            <li class="layui-nav-item" lay-unselect onclick="flush()">
-                <a href="" title="清空缓存" >
-                    <i class="layui-icon">&#xe61d;</i></a>
-            </li>
+            {{--<li class="layui-nav-item" lay-unselect onclick="flush()">--}}
+                {{--<a href="" title="清空缓存" >--}}
+                    {{--<i class="layui-icon">&#xe61d;</i></a>--}}
+            {{--</li>--}}
 
         </ul>
         <ul class="layui-nav  layui-layout-right">

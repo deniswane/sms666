@@ -3,7 +3,7 @@
     @foreach($numbers as $num)
         <div class="Cell">
             <a href="#">
-            <div>{{$num->country}}<br>
+            <div>{{$num->province}}<br>
                 {{--号码-国家图片-国家--}}
 
                 {{--<a href="{{ route('phone.detail',$num->id) }}">--}}

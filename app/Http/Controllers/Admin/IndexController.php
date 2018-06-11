@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
@@ -71,7 +72,6 @@ class IndexController extends Controller
             if (Admin\Config::where('id', '1')->update($data) > 0) {
 
                 return Y::success('修改成功');
-
             }
             return Y::error('修改失败');
         }  else {
@@ -96,7 +96,7 @@ class IndexController extends Controller
 
             $nums = DB::table('users')->where('name',$user_name)->count();
             $datas = DB::table('users')
-                ->select('name','email','balance','expiration_time','yes_num','daliy_amount','amounts','updated_at','created_at')
+                ->select('name','users.id','email','balance','expiration_time','yes_num','daliy_amount','amounts','updated_at','created_at')
                 ->leftjoin('page_views','users.id','=','page_views.user_id')
                 ->limit($num)
                 ->where('name',$user_name)
@@ -106,7 +106,7 @@ class IndexController extends Controller
         }else{
             $nums = DB::table('users')->count();
             $datas = DB::table('users')
-                ->select('name','email','balance','daliy_amount','yes_num','expiration_time','amounts','updated_at','created_at')
+                ->select('name','users.id','email','balance','daliy_amount','yes_num','expiration_time','amounts','updated_at','created_at')
                 ->leftjoin('page_views','users.id','=','page_views.user_id')
                 ->limit($num)
                 ->offset($offset)
@@ -115,27 +115,32 @@ class IndexController extends Controller
         }
 
         foreach ($datas as $value){
+            //统计数据显示
             if ($value->expiration_time){
-                if(time()-strtotime($value->expiration_time)>=0){
+                //根据数据表内的过期时间判断
+                if( time()-strtotime( $value -> expiration_time ) >= 0 ){
                     $value->daliy_amount = 0;
+                    $value->yes_num      = Cache::get($value->id.'daliy_amount', 0) ;
+                }else{
+                    $value->daliy_amount = Cache::get($value->id.'daliy_amount', $value->daliy_amount);
+                    $value->amounts      = Cache::get($value->id.'amounts', $value->amounts);
                 }
-                if(time()-strtotime($value->expiration_time)>=86400) {
-                    $value->yes_num = 0;
+                if( time()-strtotime( $value -> expiration_time ) >= 86400) {
+                    $value->yes_num      = 0;
                 }
             }else{
-                $value->yes_num = 0;
-                $value->daliy_amount = 0;
-                $value->amounts = 0;
-
+                $value->yes_num          = 0;
+                $value->daliy_amount     = 0;
+                $value->amounts          = 0;
                 }
 
         }
 
         return response()->json([
-            'code' => '',
-            'msg' => '',
+            'code'  => '',
+            'msg'   => '',
             'count' => $nums,
-            'data' => $datas
+            'data'  => $datas
         ]);
 
     }
@@ -157,11 +162,21 @@ class IndexController extends Controller
          }
    }
     //清空缓存
-    public function flush()
-    {
-        Cache::flush();
-
-        return response()->json(['code'=>200,'msg'=>'成功']);
-    }
+//    public function flush()
+//    {
+//        $ids=User::all()->pluck('id');
+//        foreach ($ids as $value){
+//            if(Cache::has($value.'daliy_amount')){
+//                DB::table('page_views')
+//                    ->where(['user_id'=>$value])
+//                    ->update(['daliy_amount'=> Cache::get($value.'daliy_amount'),'amounts'=>Cache::get($value.'amounts')])
+//                ;
+//            }
+//        }
+//
+//        Cache::flush();
+//
+//        return response()->json(['code'=>200,'msg'=>'成功']);
+//    }
 
 }
