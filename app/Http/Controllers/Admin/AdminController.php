@@ -44,7 +44,7 @@ class AdminController extends Controller
             }
             return Y::error('修改失败');
         } else {
-            return view('admin.admin.edit', [
+            return view('cfcc.admin.edit', [
                 'user' => Auth::guard('admin')->user()
             ]);
         }

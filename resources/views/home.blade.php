@@ -14,8 +14,9 @@
                         </div>
                     @endif
 
-                    You are logged in!
-                </div>
+                        <div class="content">
+                            <div class="title">{{ trans('home.login') }}</div>
+                        </div>                </div>
             </div>
         </div>
     </div>

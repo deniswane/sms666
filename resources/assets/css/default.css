@@ -81,13 +81,12 @@ ins {
 
 .panel h1, h2, h3, h4, h5, h6 {
 
-    line-height: 1;
+    line-height: 20px;
     font-size: 0.9rem;
     color: #222222;
     font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
     font-style: normal;
     font-weight: normal;
-    line-height: 1;
     margin-bottom: 0.5rem;
     margin-top: 0.2rem;
     text-rendering: optimizelegibility;

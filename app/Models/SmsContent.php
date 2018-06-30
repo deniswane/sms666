@@ -16,7 +16,7 @@ use App\Models\PhoneNumber;
  */
 class SmsContent extends Model
 {
-    public function phoneNumber() {
+    public function phone() {
         // 属于xx  1对多 括号里是1
         return $this->belongsTo(PhoneNumber::class);
     }

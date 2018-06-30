@@ -12,4 +12,7 @@ class PhoneNumber extends Model
         return $this->hasMany(SmsContent::class,'phone_number_id','id');
     }
 
+    public function user(){
+        return $this->belongsTo(User::class,'user_id','id');
+    }
 }

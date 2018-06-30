@@ -58,6 +58,8 @@ class PayPalController extends Controller
 
 //                $this->provider->setCurrency('EUR')->setExpressCheckout($cart);
                 $response = $this->provider->setExpressCheckout($cart, $recurring);
+//                dd($response);
+
                 echo json_encode(['code' => 200, 'msg' => $response['paypal_link']]);
             } catch (\Exception $e) {
                 $invoice = $this->createInvoice($cart, 'Invalid');
@@ -76,7 +78,7 @@ class PayPalController extends Controller
      */
     public function getExpressCheckoutSuccess(Request $request)
     {
-
+//        dd($request);
 
         $recurring = ($request->get('mode') === 'recurring') ? true : false;
         $token = $request->get('token');
@@ -85,6 +87,8 @@ class PayPalController extends Controller
 
         // Verify Express Checkout Token 验证token
         $response = $this->provider->getExpressCheckoutDetails($token);
+//        dd($response);
+
         if (in_array(strtoupper($response['ACK']), ['SUCCESS', 'SUCCESSWITHWARNING'])) {
             if ($recurring === true) {
                 $response = $this->provider->createMonthlySubscription($response['TOKEN'], 9.99, $cart['subscription_desc']);
@@ -139,8 +143,7 @@ class PayPalController extends Controller
         ];
 
         $response = $this->provider->createPayRequest($data);
-        dd($response);
-    }
+     }
 
     /**
      * Parse PayPal IPN.
@@ -183,7 +186,6 @@ class PayPalController extends Controller
                     'qty' => 1,
                 ],
             ];
-
             $data['return_url'] = url('/paypal/ec-checkout-success?mode=recurring');
             $data['subscription_desc'] = 'Monthly Subscription ' . config('paypal.invoice_prefix') . ' #' . $order_id;
         } else {

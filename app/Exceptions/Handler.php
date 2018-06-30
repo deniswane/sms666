@@ -64,9 +64,16 @@ class Handler extends ExceptionHandler
         }
 
         if ($exception instanceof   \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            //后台404
+            if(strpos(request()->url(),'cfcc') !== false){
+                return response()->view('errors.admin404');
+            }
             return response()->view('errors.404', [], 404);
         }
         if ($exception instanceof   \Illuminate\Database\Eloquent\ModelNotFoundException) {
+            //后台404
+            if(strpos(request()->url(),'cfcc') !== false){
+                return response()->view('errors.admin404', [], 404);}
             return response()->view('errors.404', [], 404);
         }
         if ($exception instanceof  \Symfony\Component\HttpKernel\Exception\HttpException) {

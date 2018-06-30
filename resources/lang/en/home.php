@@ -26,7 +26,7 @@ return [
     'response' => 'Response',
     'Api' => 'Api',
     'Price' => 'Price',
-
+    'subtitle_0' => 'Please enter the amount in the input box and click on the purchase',
     'subtitle_1' => config('app.name'),
     'subtitle_2' => 'How to use?',
     'subtitle_3' => 'This site have any limitations ?',

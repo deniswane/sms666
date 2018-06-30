@@ -1,10 +1,11 @@
 @extends('layouts.default')
 @section('content')
     <div class="panel">
-        <h5><strong>{{ trans('home.subtitle_1') }}</strong><br>
-            {{ trans('home.received_email') }}<br>
-            <strong>{{ trans('home.subtitle_2') }}</strong><br>
-            {{ trans('home.subtitle_2_con') }}<br>
+        <h5><strong>{{ trans('home.subtitle_1') }}</strong></br>
+            {{ trans('home.received_email') }}</br>
+            <strong>{{ trans('home.subtitle_2') }}</strong></br>
+            {{ trans('home.subtitle_2_con') }}
+            </br>
         </h5>
         <div align="center">
             <div class='login'></div>
@@ -15,10 +16,22 @@
                 </div>
             </div>
         </div>
-        <br>
+        </br>
         @guest
         @else
-        Please enter the amount in the input box and click on the purchase
+{{--           {{ trans('home.subtitle_0') }}--}}
+            @if($lang == 'zh-CN')
+                <img width="100"  src="/img/zhifubao1.jpg" alt="支付宝!">
+
+                <form style="margin: 20px 5px;" method="post"  action="alipay" onsubmit="return check(this)">
+                    {{csrf_field()}}
+                    <input type="text" name="prices" id="pri" autofocus  class="ec_input"> &nbsp;<span style="font-size: 20px">¥ </span>&nbsp;&nbsp;
+                    <input style="display:none" >
+                    <button type="submit" value="提交"> 立即充值</button>
+                </form>
+
+        @else
+                Please enter the amount in the input box and click on the purchase
         <form style="margin: 20px 5px;" method="post" >
             <input type="text" placeholder=""  id="pri" autofocus  class="ec_input">USD
             <input style="display:none" >
@@ -50,40 +63,60 @@
                             $(location).attr('href', data.msg);
                         }
                     },
-                    error: function (data) {
-                        console.log(data)
+                    error: function () {
                     }
                 });
             })
             </script>
-
+            @endif
             @endguest
-<div align="left">
-<h5><strong>• {{ trans('home.subtitle_3') }} ?</strong>
-<br>
-<strong>{{config('app.name')}}</strong> {{ trans('home.subtitle_3_con') }}<br>
-<br>
-<strong> • </strong>{{ trans('home.subtitle_4') }}<br>
-<br>
-<strong>{{ trans('home.subtitle_5') }}</strong><br>
-{{ trans('home.subtitle_4_con') }}<br>
-<br>
-<strong>{{ trans('home.subtitle_6') }}</strong><br>
-{{ trans('home.subtitle_6_con') }}<br>
-<br>
-<strong>{{ trans('home.subtitle_7') }}</strong><br>
-{{ trans('home.subtitle_7_con') }}<br>
-<br>
-<strong>{{ trans('home.subtitle_8') }}</strong><br>
-{{ trans('home.subtitle_8_con') }}<br>
-<br>
-<strong> {{ trans('home.subtitle_9') }}</strong><br>
-{{ trans('home.subtitle_9_con') }}<br>
-<br>
-<strong> {{ trans('home.subtitle_10') }}</strong><br>
-{{ trans('home.subtitle_10_con') }}<br>
-<br>
+
+
+            <div align="left">
+<h5><strong>• {{ trans('home.subtitle_3') }} </strong></br>
+<strong>{{config('app.name')}}</strong> {{ trans('home.subtitle_3_con') }}</br>
+
+{{ trans('home.subtitle_4') }}</br>
+</br>
+<strong>{{ trans('home.subtitle_5') }}</strong></br>
+{{ trans('home.subtitle_4_con') }}</br>
+</br>
+<strong>{{ trans('home.subtitle_6') }}</strong></br>
+{{ trans('home.subtitle_6_con') }}</br>
+</br>
+<strong>{{ trans('home.subtitle_7') }}</strong></br>
+{{ trans('home.subtitle_7_con') }}</br>
+</br>
+<strong>{{ trans('home.subtitle_8') }}</strong></br>
+{{ trans('home.subtitle_8_con') }}</br>
+</br>
+<strong> {{ trans('home.subtitle_9') }}</strong></br>
+{{ trans('home.subtitle_9_con') }}</br>
+</br>
+<strong> {{ trans('home.subtitle_10') }}</strong></br>
+{{ trans('home.subtitle_10_con') }}</br>
+</br>
 </h5>
 </div>
 </div>
 @endsection
+<script>
+
+    function check(form){
+
+        var amount = form.prices.value;
+
+        if(amount!= null && amount != ""&&amount!="0"){
+            var exp = /^(([1-9]\d*)|\d)(\.\d{1,2})?$/;
+            if(!exp.test(amount)){
+                layer.alert('金额格式不对',{'title':'错误'});
+                return false;
+            }
+
+        }else{
+            layer.alert('金额不能为空或0',{'title':'错误'});
+            return false;
+        }
+    }
+
+</script>

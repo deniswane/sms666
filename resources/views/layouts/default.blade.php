@@ -17,7 +17,7 @@
     <link rel="canonical" href="#">
     <script type="text/javascript" src="{{ URL::asset('js/policy.js') }}"></script>
     <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
-    <link href="/layui/css/layui.css" rel="stylesheet" type="text/css"/>
+    {{--<link href="/layui/css/layui.css" rel="stylesheet" type="text/css"/>--}}
     <script src="/layui/layui.js" type="text/javascript"></script>
     <script src="https://www.paypalobjects.com/api/checkout.js"></script>
     <noscript>

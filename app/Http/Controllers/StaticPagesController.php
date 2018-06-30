@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -15,21 +16,27 @@ class StaticPagesController extends Controller
     }
 
     // 获取首页数据，电话
-    public function home(){
-
+    public function home(Request $request){
+        switch ($_SERVER['HTTP_HOST']){
+            case 'sms.test':
+                App::setLocale('zh-CN');
+                $lang ='zh-CN' ;
+                break;
+            default :
+                App::setLocale('en');
+                $lang ='en' ;
+                break;
+        }
         $numbers =DB::table('phone_numbers')
             ->select('phone_numbers.id','phone_numbers.phone','phone_numbers.province','phone_numbers.amount','flages.src')
             ->leftjoin('flages','phone_numbers.province','=','flages.en_name')
             ->paginate(10);
-        return view('welcome_new',compact('numbers'))->__toString();
+        return view('welcome_new',compact(['numbers','lang']))->__toString();
     }
 
     public function getprice()
     {
-//        $prices = DB::table('configs')->select('price_i','price_a','num_a','num_i')->find(1);
         $prices = DB::table('configs')->select('price')->find(1);
-//        $data=['status'=>200];
-//        echo json_encode($data);
         return response()->json($prices);
     }
     public function privateNumbers(){
@@ -41,6 +48,7 @@ class StaticPagesController extends Controller
     }
 
     public function contact(){
+        dd($_SERVER['HTTP_HOST']);
         echo "contact";
     }
 

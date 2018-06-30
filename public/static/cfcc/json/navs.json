@@ -1,0 +1,26 @@
+{
+	"contentManagement": [
+		{
+			"title": "账户余额",
+			"icon": "&#xe634;",
+			"href": "bal",
+			"spread": false
+		},
+		{
+			"title": "设置请求金额",
+			"icon": "&#xe634;",
+			"href": "set_money",
+			"spread": false
+		}
+	],
+	"memberCenter": [
+		{
+			"title": "请求省份管理",
+			"icon": "&#xe612;",
+			"href": "show_detail",
+			"spread": false
+		}
+	]
+}
+
+
