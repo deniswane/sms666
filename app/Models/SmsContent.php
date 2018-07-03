@@ -18,6 +18,6 @@ class SmsContent extends Model
 {
     public function phone() {
         // 属于xx  1对多 括号里是1
-        return $this->belongsTo(PhoneNumber::class);
+        return $this->belongsTo(PhoneNumber::class,'phone_number_id');
     }
 }

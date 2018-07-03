@@ -105,11 +105,6 @@
         });
 
     </script>
-    <script type="text/html" id="barDemo">
-        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
-        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
-        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
-    </script>
 
     <script type="text/html" id="indexTpl">
     @{{d.LAY_TABLE_INDEX+1}}

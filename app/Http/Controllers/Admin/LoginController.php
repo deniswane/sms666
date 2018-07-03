@@ -34,7 +34,7 @@ class LoginController extends Controller
             }
             return Y::error('用户验证失败');
         } else {
-            return view('admin.login.index');
+            return view('cfcc.login.index');
         }
     }
     //退出

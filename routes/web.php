@@ -65,25 +65,7 @@ Route::post('alipay', 'PaysAliWechatController@alipay')->name('alipay');
 Route::get('alireturn', 'PaysAliWechatController@alireturn');
 Route::post('alinotify', 'PaysAliWechatController@alinotify');
 
-//后台
-//Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
-//{
-//    $router->get('logout', 'LoginController@logout')        -> name('cfcc.logout');
-//    $router->get('index', 'IndexController@index')          -> name('cfcc.index');
-//    $router->get('home', 'IndexController@home')            -> name('cfcc.home');
-//    $router->any('index/edit/{id?}', 'IndexController@edit')-> name('index.edit');
-//    $router->get('bal', 'IndexController@bal')              -> name('cfcc.bal');
-//    $router->get('show_detail/{email?}', 'IndexController@show_detail') -> name('cfcc.show_detail');
-//    $router->get('flush', 'IndexController@bal')            -> name('flush');
-//    $router->post('test', 'IndexController@test')           -> name('cfcc.test');
-//    $router->post('set_bal', 'IndexController@set_bal')     -> name('cfcc.set_bal');
-//    $router->any('set_money', 'IndexController@set_money')  -> name('cfcc.set_money');
-//    $router->post('searchContent', 'IndexController@search_content')  -> name('cfcc.searchContent');
-//    $router->post('searchUserContent', 'IndexController@searchUserContent')->name('cfcc.searchUserContent') ;
-//    $router->any('showContents', 'IndexController@showContents')->name('cfcc.showContents') ;
-//
-//
-//});
+
 //后台登陆、密码修改
 Route::any('/me', 'Admin\AdminController@me')->name('me');
 Route::any('cfcc/login', 'Admin\LoginController@login')->name('cfcc.login');
@@ -104,17 +86,22 @@ Route::group(['prefix' =>'ceshi','middleware' => 'throttle:60,1'],function () {
 Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
 {
     $router->get('logout', 'LoginController@logout')        -> name('cfcc.logout');
-    $router->get('index', 'CeShiController@index')          -> name('cfcc.index');
-    $router->get('home', 'CeShiController@home')            -> name('cfcc.home');
-    $router->any('index/edit/{id?}', 'CeShiController@edit')-> name('index.edit');
-    $router->get('bal', 'CeShiController@bal')              -> name('cfcc.bal');
-    $router->get('show_detail/{email?}', 'CeShiController@show_detail') -> name('cfcc.show_detail');
-    $router->get('flush', 'CeShiController@bal')            -> name('flush');
-    $router->post('test', 'CeShiController@test')           -> name('cfcc.test');
-    $router->post('set_bal', 'CeShiController@set_bal')     -> name('cfcc.set_bal');
-    $router->any('set_money', 'CeShiController@set_money')  -> name('cfcc.set_money');
-    $router->post('searchContent', 'CeShiController@search_content')  -> name('cfcc.searchContent');
-    $router->post('searchUserContent', 'CeShiController@searchUserContent')->name('cfcc.searchUserContent') ;
-    $router->any('showContents', 'CeShiController@showContents')->name('cfcc.showContents') ;
+    $router->get('index', 'IndexController@index')          -> name('cfcc.index');
+    $router->get('home', 'IndexController@home')            -> name('cfcc.home');
+    $router->any('index/edit/{id?}', 'IndexController@edit')-> name('index.edit');
+    $router->get('bal', 'IndexController@bal')              -> name('cfcc.bal');
+    $router->get('show_detail', 'IndexController@show_detail') -> name('cfcc.show_detail');
+    $router->get('flush', 'IndexController@bal')            -> name('flush');
+    $router->post('test', 'IndexController@test')           -> name('cfcc.test');
+    $router->post('set_bal', 'IndexController@set_bal')     -> name('cfcc.set_bal');
+    $router->any('set_money', 'IndexController@set_money')  -> name('cfcc.set_money');
+    $router->post('searchContent', 'IndexController@search_content')  -> name('cfcc.searchContent');
+    $router->post('searchUserContent', 'IndexController@searchUserContent')->name('cfcc.searchUserContent') ;
+    $router->any('showContents', 'IndexController@showContents')->name('cfcc.showContents') ;
+    //月份及时间
+    $router->any('month_detail', 'IndexController@month_detail') -> name('cfcc.month_detail');
+    $router->get('filter_detail', 'IndexController@filter_detail') -> name('cfcc.filter_detail');
+    $router->any('ceshi', 'IndexController@ceshi');
+
 
 });

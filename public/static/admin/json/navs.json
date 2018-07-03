@@ -15,9 +15,19 @@
 	],
 	"memberCenter": [
 		{
-			"title": "请求省份管理",
+			"title": "两日内详细数据",
 			"icon": "&#xe612;",
 			"href": "show_detail",
+			"spread": false
+		},{
+			"title": "总体数据",
+			"icon": "&#xe612;",
+			"href": "month_detail",
+			"spread": false
+		},{
+			"title": "今日筛选数据",
+			"icon": "&#xe612;",
+			"href": "filter_detail",
 			"spread": false
 		}
 	]

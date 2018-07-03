@@ -24,7 +24,7 @@
             <button class="layui-btn " onclick="searchPhone()">搜索</button>
         </div>
     </blockquote>
-    说明：省份 取走内容的手机号数量/取走的手机号 （比率大于100%手机号包含昨天的）；由于异步请求数据实时更新，总数以下边数据表总数为准。
+    说明：省份 取走内容的手机号数量--取走的手机号 （比率大于100%手机号包含昨天的）；由于异步请求数据实时更新，总数以下边数据表总数为准。
     <div class="layui-form">
 
         <table class="layui-table">
@@ -39,26 +39,31 @@
                     @if(empty($allIds['to_phone']))
                         无
                     @else
-                       <span hidden> {{$count =0}}
-                    {{$n=0}}</span>
+                        <span hidden> {{$count =0}}
+                            {{$n=0}}</span>
                         @foreach($allIds['to_phone'] as $k => $id)
 
-                           <span style="width:250px; float:left; display:block; ">
-                            {{$k}}：
+                            <span style="width:250px; float:left; display:block; ">
+                           @if(isset($contents['to_phone'][$k]))
 
-                            {{$contents['to_phone'][$k]}}/{{count($id)}}
-                              <span hidden> {{$count = $count+$contents['to_phone'][$k]}}
-                               {{$n = $n+count($id)}}</span>
-                            成功率 ： {{ round($contents['to_phone'][$k]/count($id),4)*100}} %
+                                    {{$k}}：
+
+                                    {{$contents['to_phone'][$k]}} --
+                                    {{count($id)}}
+                                    <span hidden> {{$count = $count+$contents['to_phone'][$k]}}
+                                        {{$n = $n+count($id)}}</span>
+                                    成功率 ： {{ round($contents['to_phone'][$k]/count($id),4)*100}} %
+                                @endif
                           </span>
 
-                                @if($loop->iteration%5==0)
+                            @if($loop->iteration%5==0)
 
-                                </br>
+                            </br>
                             @endif
                         @endforeach
 
-                       总数据： {{$count}}/ {{$n}} &nbsp;&nbsp; {{ round($count/ $n,4)*100}} %
+                        总数据： {{$count}} -- {{$n}}
+                                &nbsp;&nbsp; {{ round($count/ $n,4)*100}} %
 
                     @endif
                 </td>
@@ -74,17 +79,16 @@
 
                         <span hidden> {{$ye_count =0}}
                             {{$ye_n=0}}</span>
-                    @foreach($allIds['yes_phone'] as $k => $id)
+                        @foreach($allIds['yes_phone'] as $k => $id)
                             <span style="width:250px; float:left; display:block; ">
-
-                            {{$k}}：
                             @if(isset($contents['yes_phone'][$k]))
-                            {{$contents['yes_phone'][$k]}}&nbsp;/
-                            {{count($id)}}&nbsp;
+                                    {{$k}}：
+                                    {{$contents['yes_phone'][$k]}}&nbsp;--
+                                    {{count($id)}}&nbsp;
 
-                         <span hidden> {{$ye_count = $ye_count+$contents['yes_phone'][$k]}}
-                             {{$ye_n = $ye_n+count($id)}}</span>
-                            成功率 ：/ {{ round($contents['yes_phone'][$k]/count($id),4)*100}} %
+                                    <span hidden> {{$ye_count = $ye_count+$contents['yes_phone'][$k]}}
+                                        {{$ye_n = $ye_n+count($id)}}</span>
+                                    成功率 ： {{ round($contents['yes_phone'][$k]/count($id),4)*100}} %
                            </span>
                             @endif
                             @if($loop->iteration%5==0)
@@ -92,7 +96,7 @@
                             @endif
 
                         @endforeach
-                        总数据： {{$ye_count}}/ {{$ye_n}} &nbsp;&nbsp; {{ round($ye_count/ $ye_n,4)*100}} %
+                        总数据： {{$ye_count}} -- {{$ye_n}} &nbsp;&nbsp; {{ round($ye_count/ $ye_n,4)*100}} %
                     @endif
 
                 </td>
@@ -131,21 +135,22 @@
                             } else {
                                 console.log(data)
                                 var contents = ''
-                                var i=1;
-                                var count=num=0;
+                                var i = 1;
+                                var count = num = 0;
                                 for (var Key in data.allIds.to_phone) {
-                                    contents +='<span style="width:250px; float:left; display:block; ">'
-                                    contents += Key + '：' + data.contents.to_phone[Key] + '/' + data.allIds.to_phone[Key].length + "&nbsp;" + '成功率：' + Math.floor((data.contents.to_phone[Key] / data.allIds.to_phone[Key].length) * 100) + "%"
-                                    contents +='</span>'
-                                    count +=data.contents.to_phone[Key];
-                                    num   +=data.allIds.to_phone[Key].length;
-                                    if (i % 5==0){
-                                        contents+="<br>"
-                                    };
+                                    contents += '<span style="width:250px; float:left; display:block; ">'
+                                    contents += Key + '：' + data.contents.to_phone[Key] + ' -- ' + data.allIds.to_phone[Key].length + "&nbsp;" + '成功率：' + Math.floor((data.contents.to_phone[Key] / data.allIds.to_phone[Key].length) * 100) + "%"
+                                    contents += '</span>'
+                                    count += data.contents.to_phone[Key];
+                                    num += data.allIds.to_phone[Key].length;
+                                    if (i % 5 == 0) {
+                                        contents += "<br>"
+                                    }
+                                    ;
                                     i++;
                                 }
-                                contents +='</span>'
-                                contents +='总数据：'+count+'/'+num+' 成功率：'+ Math.floor(count/num*100)+'%'
+                                contents += '</span>'
+                                contents += '总数据：' + count + ' -- ' + num + ' 成功率：' + Math.floor(count / num * 100) + '%'
                                 return contents
                             }
 
@@ -155,21 +160,22 @@
                                 return '无'
                             } else {
                                 var contents = ''
-                                var i=1;
-                                var count=num=0;
+                                var i = 1;
+                                var count = num = 0;
                                 for (var Key in data.allIds.yes_phone) {
-                                    contents +='<span style="width:250px; float:left; display:block; ">'
-                                    contents += Key + '：' + data.contents.yes_phone[Key] + '/' + data.allIds.yes_phone[Key].length + "&nbsp;" + '成功率：' + Math.floor((data.contents.yes_phone[Key] / data.allIds.yes_phone[Key].length) * 100) + '%'
-                                    contents +='</span>'
-                                    count +=data.contents.yes_phone[Key];
-                                    num   +=data.allIds.yes_phone[Key].length;
-                                    if (i % 5==0){
-                                        contents+="<br>"
-                                    };
+                                    contents += '<span style="width:250px; float:left; display:block; ">'
+                                    contents += Key + '：' + data.contents.yes_phone[Key] + ' -- ' + data.allIds.yes_phone[Key].length + "&nbsp;" + '成功率：' + Math.floor((data.contents.yes_phone[Key] / data.allIds.yes_phone[Key].length) * 100) + '%'
+                                    contents += '</span>'
+                                    count += data.contents.yes_phone[Key];
+                                    num += data.allIds.yes_phone[Key].length;
+                                    if (i % 5 == 0) {
+                                        contents += "<br>"
+                                    }
+                                    ;
                                     i++;
                                 }
 
-                                contents +='总数据：'+count+'/'+num+' 成功率：'+ Math.floor(count/num*100)+'%'
+                                contents += '总数据：' + count + ' -- ' + num + ' 成功率：' + Math.floor(count / num * 100) + '%'
                                 return contents
                             }
 

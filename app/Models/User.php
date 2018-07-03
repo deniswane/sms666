@@ -30,7 +30,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'token'
+        'password', 'remember_token'
     ];
 
     protected $table = 'users';
@@ -137,6 +137,7 @@ class User extends Authenticatable
         }
         $phones = $userPhone->whereBetween('created_at', $arr)
             ->where(['status' => '1'])
+//            ->orderby(length())
             ->get()
             ->toArray();
         $province = [];
