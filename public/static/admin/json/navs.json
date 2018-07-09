@@ -29,6 +29,11 @@
 			"icon": "&#xe612;",
 			"href": "filter_detail",
 			"spread": false
+		},{
+			"title": "全返回结果数据",
+			"icon": "&#xe612;",
+			"href": "all_return_detail",
+			"spread": false
 		}
 	]
 }

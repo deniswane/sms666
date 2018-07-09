@@ -261,7 +261,6 @@ class ApiController extends Controller
                         $profile = $user->name . '/get_content.txt';
                         $this->setLog($profile, $contets);
                         //统计请求量
-                        $this->countNum($user->id);
                     }
                     echo json_encode($result, JSON_UNESCAPED_UNICODE);
                     die;
@@ -333,7 +332,6 @@ class ApiController extends Controller
                         'content' => $parame['content']
                     ];
                     //统计请求量
-                    $this->countNum($user->id);
 
                     $receive = $parame['receive'];
                     $content = $parame['content'];
@@ -348,7 +346,7 @@ class ApiController extends Controller
      * 筛选手机号
      * return phone
      */
-    private function filter($dat)
+    public function filter($dat)
     {
         $send_phones = DB::table('web_sms_prepare')->select('phone','id')->where($dat)->orderby('addtime', 'desc')->first();
         if (!$send_phones) {
@@ -365,7 +363,7 @@ class ApiController extends Controller
      * receive  接收的手机号
      * gjz      返回截取的位置
      */
-    private function setorder($phone, $content, $receive, $gjz, $profile, $parame,$type=0)
+    public function setorder($phone, $content, $receive, $gjz, $profile, $parame,$type=0)
     {
 
 //        $mydata = DB::connection('jm_cms')->table('cms_device_data')->where('phone', $phone)->first();
@@ -434,7 +432,7 @@ class ApiController extends Controller
                 $table->engine = 'MyISAM';
                 $table->increments('id');
                 $table->string('phone', 20)->default('')->comment('订单电话号');
-                $table->text('smstext')->comment('指令回复内容');
+                $table->string('smstext',255)->comment('指令回复内容');
                 $table->string('ordimsi', 50)->default('')->comment('订单imsi');
                 $table->string('addtime', 30)->default('')->comment('访问时间');
                 $table->string('userphone', 20)->default('')->comment('访问手机号');
@@ -528,7 +526,7 @@ class ApiController extends Controller
      * @param $token
      * @return mixed
      */
-    private function selectuser($token)
+    public function selectuser($token)
     {
         return DB::table('users')
             ->select('token','id','email','balance','name','times')
@@ -541,7 +539,7 @@ class ApiController extends Controller
      * @param $profile
      * @param array $parame
      */
-    private function setLog($profile, $parame = [])
+    public function setLog($profile, $parame = [])
     {
         $dt = Carbon::now();
         $txt =$dt . '   ' . implode('--', $parame);
@@ -552,7 +550,7 @@ class ApiController extends Controller
     /**关闭指令
      * @param $phone
      */
-    private function closeOrder($phone){
+    public function closeOrder($phone){
         //添加到订单
         $tablename = "SMS" . date('Ymd') . '6666';
         $order_res = DB::connection('ourcms')->table('cms_order')

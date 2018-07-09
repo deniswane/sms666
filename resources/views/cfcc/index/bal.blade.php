@@ -23,7 +23,10 @@
                     , limitName: 'nums' //每页数据量的参数名，默认：limit
                 }
                 ,height: 'full-104'
-                ,elem: '#test'
+                ,elem: '#test',
+                done :function(res){
+                    console.log(res)
+                }
                 ,limits: ['25', '30']
                 ,limit: 25
                 ,id: 'testReload'

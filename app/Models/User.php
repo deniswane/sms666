@@ -163,6 +163,19 @@ class User extends Authenticatable
 				->where('sms_contents.status','=','1')
                 ->where('phone_numbers.user_id','=',$userid )
                 ->wherebetween('sms_contents.updated_at', $arr)
+           ->orWhere(function($query) use($arr)
+           {
+             $query->where('tb_st','1')->where('jd_st','0')
+					->wherebetween('sms_contents.updated_at', $arr);
+
+        })
+            ->orWhere(function($query) use($arr)
+            {
+                $query  ->where('tb_st','0')->where('jd_st','1')
+					->wherebetween('sms_contents.updated_at', $arr)
+
+                ;
+            })
                 ->orderby('sms_contents.updated_at', 'desc')
                 ->get()
                 ->toArray();
@@ -171,7 +184,24 @@ class User extends Authenticatable
             $datas = SmsContent::select('sms_contents.id', 'province')
                 ->leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')
                 ->where('sms_contents.status','1')
-                ->wherebetween('sms_contents.updated_at', $arr)
+				->wherebetween('sms_contents.updated_at', $arr)
+               ->orWhere(function($query) use($arr)
+           {
+                $query->where(['sms_contents.status'=>'0' ])
+                    ->where('tb_st','1')->where('jd_st','0')
+					->wherebetween('sms_contents.updated_at', $arr)
+
+                ;
+            })
+            ->orWhere(function($query) use($arr)
+            {
+                $query->where(['sms_contents.status'=>'0'])
+                    ->where('jd_st','1')->where('tb_st','0')
+					->wherebetween('sms_contents.updated_at', $arr)
+
+                ;
+           })
+
                 ->orderby('sms_contents.updated_at', 'desc')
                 ->get()
                 ->toArray();

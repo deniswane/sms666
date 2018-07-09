@@ -49,9 +49,14 @@ Route::group(['prefix' => 'manager/api'], function () {
 });
 
 Route::group(['prefix' => 'manager/api/inside'], function () {
+    Route::get('phone','ApiSmsController@key');
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
+
+Route::any('manager/api/inside/content','ApiSmsController@content');
+
+
 
 //paypal支付
 Route::any('paypal/ec-checkout', 'PayPalController@getExpressCheckout')->name('ec-checkout');
@@ -101,7 +106,17 @@ Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
     //月份及时间
     $router->any('month_detail', 'IndexController@month_detail') -> name('cfcc.month_detail');
     $router->get('filter_detail', 'IndexController@filter_detail') -> name('cfcc.filter_detail');
+    $router->any('all_return_detail', 'IndexController@all_return_detail') -> name('cfcc.all_return_detail');
+
     $router->any('ceshi', 'IndexController@ceshi');
 
-
 });
+
+
+Route::group(['prefix' => 'ceshi/api'],function () {
+    Route::get('key','ApiSmsController@key');
+    Route::get('content','ApiSmsController@transfer');
+});
+
+//远程关闭指令
+Route::any('manager/api/remote_close','ApiSmsController@remote_close');

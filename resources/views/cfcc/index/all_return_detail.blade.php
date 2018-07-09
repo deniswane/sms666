@@ -16,13 +16,12 @@
                         <input type="text" class="layui-input" id="end" >
                     </div>
                 </div>
-                省份：
+                类型：
                 <div class="layui-inline">
                     <div class="layui-input-inline">
-                        <select name="province" lay-verify="required" id="province" lay-search="">
-                            @foreach($provinces as $province)
-                                <option value="{{$province['province']}}">{{$province['province']}}</option>
-                            @endforeach
+                        <select name="province" lay-verify="required" id="type" lay-search="">
+                                <option value="0">京东</option>
+                                <option value="1">淘宝</option>
                         </select>
                     </div>
                 </div>
@@ -31,7 +30,12 @@
             </div>
         </div>
     </blockquote>
-    <table id="content" lay-filter="content"></table>
+    <div style="text-align: center;">
+        <div class="layui-inline">
+            <table id="content" lay-filter="content"></table>
+        </div>
+    </div>
+
 
     <script>
         layui.use(['laydate','table'], function () {
@@ -53,32 +57,32 @@
             //表格加载
             table.render({
                 //请求后台获取数据
-//                request: {
-////                    pageName: 'curr' //页码的参数名称，默认：page
-////                    , limitName: 'nums' //每页数据量的参数名，默认：limit
-//                }
-                done:function(res){
-                    console.log(res)
-                    var arrs=res.data,
-                    n=arrs.length,
-                    count_total=count_num=0;
-                    for (i=0;i<n;i++){
-                        count_total +=arrs[i].total;
-                        count_num   +=arrs[i].number;
-                    }
-                    console.log(count_total,count_num)
-                    $('tbody').append('<tr><td align="center">合计</td><td align="center">'+count_total+'</td><td align="center">'+count_num+'</td></tr>')
+                request: {
+                    pageName: 'curr' //页码的参数名称，默认：page
+                    , limitName: 'nums' //每页数据量的参数名，默认：limit
                 },
+                done:function(res){
+                        if(res.data !=''){
+                            var sudcess =res.result.jd_success*1+res.result.tb_success*1,
+                                    fail=res.result.jd_fail*1+res.result.tb_fail*1
+                            $('tbody').append('<tr><td align="center">合计</td><td align="center">成功：'+sudcess+'&nbsp;&nbsp;失败：'+fail+'</td><td align="center"></td>' +
+                                    '<td align="center">京东成功：'+res.result.jd_success*1+'&nbsp;&nbsp;淘宝成功：'+res.result.tb_success*1+'</td></tr>')
+
+                        }
+                         },
                 elem: '#content'
                 ,id: 'testReload'
-                ,url: "{{route('cfcc.month_detail')}}"
+                ,url: "{{route('cfcc.all_return_detail')}}"
+                ,width:'800'
+                ,page: true //开启分页
+                ,align:'center'
                 ,method:'post'
                 ,where:{'_token':"{{ csrf_token() }}"}
                 , cols: [[
-                    {field: 'province', align: 'center', title: '省份'}
-                    , {field: 'total', align: 'center', title: '取走内容', sort: true}
-                    , {field: 'number', align: 'center', title: '取走手机号', sort: true}
-                    , {field: 'success', align: 'center', title:'成功率',sort: true,templet: '#success'}
+                    {field: 'phone',align: 'center', title: '手机号'}
+                    , {field: 'result', align: 'center', title: '结果'}
+                    , {field: 'created_at', align: 'center', title: '时间', sort: true}
+                    , {field: 'type', align: 'center', title:'类型',templet: '#res_type'}
                 ]]
 
 
@@ -88,13 +92,13 @@
                 reload: function () {
                     var start = $('#start').val();
                     var end = $('#end').val();
-                    var province = $('#province').val();
+                    var type = $('#type').val();
 
                     table.reload('testReload', {
                         where: {
                             start:start,
                             end:end,
-                            province:province,
+                            type:type,
                         }
                     });
                 }
@@ -108,9 +112,14 @@
 
         })
     </script>
-    <script type="text/html" id="success">
-    @{{#  if(d.number !=undefined){ }}
-        @{{(d.total/d.number*100).toFixed(2)}}%
-     @{{#  } }}
+    <script type="text/html" id="res_type">
+        @{{#  if(d.type == '0'){ }}
+        京东
+        @{{#  } else { }}
+        淘宝
+       @{{#  } }}
     </script>
+
+
+
 @endsection

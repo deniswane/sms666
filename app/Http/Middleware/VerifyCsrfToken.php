@@ -15,6 +15,8 @@ class VerifyCsrfToken extends Middleware
         //paypal/notify
         'alinotify*',
         'paypal/notify',
-        'manager/api/sendmsg'
+        'manager/api/sendmsg',
+        'manager/api/inside/content',
+        'manager/api/remote_close'
     ];
 }
