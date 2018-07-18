@@ -27,13 +27,19 @@
 		},{
 			"title": "今日筛选数据",
 			"icon": "&#xe612;",
-			"href": "filter_detail",
+			"href": "to_filter_detail",
 			"spread": false
-		},{
+		},
+      {
+        "title": "昨日筛选数据",
+        "icon": "&#xe612;",
+        "href": "ye_filter_detail",
+        "spread": false
+      },{
 			"title": "全返回结果数据",
 			"icon": "&#xe612;",
 			"href": "all_return_detail",
-			"spread": false
+        "spread": false
 		}
 	]
 }

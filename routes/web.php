@@ -39,7 +39,7 @@ Route::post('/payment/recharge','PaymentController@launchPay') -> name('launch')
 Route::get('/payment/success','PaymentController@success')     ->name('success');
 
 // 接口 频率 次数：间隔时间
-Route::group(['prefix' => 'manager/api'],function () {
+Route::group(['prefix' => 'manager/api','middleware'=>'throttle:50,1'],function () {
     Route::get('keyword','ApiController@setKeyword');
     Route::post('sendmsg','ApiController@sendMsg');
 });
@@ -48,7 +48,7 @@ Route::group(['prefix' => 'manager/api'], function () {
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
 
-Route::group(['prefix' => 'manager/api/inside'], function () {
+Route::group(['prefix' => 'manager/api/inside','middleware'=>'throttle:50,1'], function () {
     Route::get('phone','ApiSmsController@key');
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
@@ -105,7 +105,8 @@ Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
     $router->any('showContents', 'IndexController@showContents')->name('cfcc.showContents') ;
     //月份及时间
     $router->any('month_detail', 'IndexController@month_detail') -> name('cfcc.month_detail');
-    $router->get('filter_detail', 'IndexController@filter_detail') -> name('cfcc.filter_detail');
+    $router->get('to_filter_detail', 'IndexController@to_filter_detail') -> name('cfcc.to_filter_detail');
+    $router->get('ye_filter_detail', 'IndexController@ye_filter_detail') -> name('cfcc.ye_filter_detail');
     $router->any('all_return_detail', 'IndexController@all_return_detail') -> name('cfcc.all_return_detail');
 
     $router->any('ceshi', 'IndexController@ceshi');

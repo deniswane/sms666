@@ -1,3 +1,4 @@
+{{--总数据统计--}}
 @extends('cfcc.index.lay')
 @section('content')
     <blockquote class="layui-elem-quote quoteBox">
@@ -58,15 +59,15 @@
 ////                    , limitName: 'nums' //每页数据量的参数名，默认：limit
 //                }
                 done:function(res){
-                    console.log(res)
+//                    console.log(res)
                     var arrs=res.data,
                     n=arrs.length,
                     count_total=count_num=0;
                     for (i=0;i<n;i++){
-                        count_total +=arrs[i].total;
-                        count_num   +=arrs[i].number;
+                        if(typeof(arrs[i].total) !='undefined') count_total +=arrs[i].total;
+                        if(typeof(arrs[i].number) !='undefined') count_num   +=arrs[i].number;
                     }
-                    console.log(count_total,count_num)
+//                    console.log(count_total,count_num)
                     $('tbody').append('<tr><td align="center">合计</td><td align="center">'+count_total+'</td><td align="center">'+count_num+'</td></tr>')
                 },
                 elem: '#content'

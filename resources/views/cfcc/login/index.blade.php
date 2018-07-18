@@ -48,7 +48,6 @@
 <script src="/js/jquery.min.js"></script>
 <script src="/static/cfcc/layui/layui.js"></script>
 <script type="text/javascript">
-
     layui.config({
         base: '/static/cfcc/js/'
     }).use('lea');
@@ -59,12 +58,6 @@
         });
         $('#vercode').click();
     });
-</script>
-<script>
-    if(window.top.location.href!=location.href)
-    {
-        window.top.location.href=location.href;
-    }
 </script>
 </body>
 

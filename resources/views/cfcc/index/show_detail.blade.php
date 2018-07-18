@@ -61,10 +61,10 @@
                             </br>
                             @endif
                         @endforeach
-
+                        @if($count !=0 || $n !=0)
                         总数据： {{$count}} -- {{$n}}
                                 &nbsp;&nbsp; {{ round($count/ $n,4)*100}} %
-
+                        @endif
                     @endif
                 </td>
             </tr>
@@ -89,14 +89,17 @@
                                     <span hidden> {{$ye_count = $ye_count+$contents['yes_phone'][$k]}}
                                         {{$ye_n = $ye_n+count($id)}}</span>
                                     成功率 ： {{ round($contents['yes_phone'][$k]/count($id),4)*100}} %
+                                @endif
                            </span>
-                            @endif
                             @if($loop->iteration%5==0)
                             </br>
                             @endif
 
                         @endforeach
+                        @if($ye_count !=0 || $ye_n !=0)
+
                         总数据： {{$ye_count}} -- {{$ye_n}} &nbsp;&nbsp; {{ round($ye_count/ $ye_n,4)*100}} %
+                        @endif
                     @endif
 
                 </td>

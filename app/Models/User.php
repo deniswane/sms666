@@ -165,13 +165,13 @@ class User extends Authenticatable
                 ->wherebetween('sms_contents.updated_at', $arr)
            ->orWhere(function($query) use($arr)
            {
-             $query->where('tb_st','1')->where('jd_st','0')
+             $query->where('tb_st','1')->where(['jd_st'=>'0','jd_st'=>'2'])
 					->wherebetween('sms_contents.updated_at', $arr);
 
         })
             ->orWhere(function($query) use($arr)
             {
-                $query  ->where('tb_st','0')->where('jd_st','1')
+                $query  ->where(['tb_st'=>'0','tb_st'=>'2'])->where('jd_st','1')
 					->wherebetween('sms_contents.updated_at', $arr)
 
                 ;
@@ -188,7 +188,7 @@ class User extends Authenticatable
                ->orWhere(function($query) use($arr)
            {
                 $query->where(['sms_contents.status'=>'0' ])
-                    ->where('tb_st','1')->where('jd_st','0')
+                    ->where('tb_st','1')->where(['jd_st'=>'0','jd_st'=>'2'])
 					->wherebetween('sms_contents.updated_at', $arr)
 
                 ;
@@ -196,7 +196,7 @@ class User extends Authenticatable
             ->orWhere(function($query) use($arr)
             {
                 $query->where(['sms_contents.status'=>'0'])
-                    ->where('jd_st','1')->where('tb_st','0')
+                    ->where('jd_st','1')->where(['tb_st'=>'0','tb_st'=>'2'])
 					->wherebetween('sms_contents.updated_at', $arr)
 
                 ;

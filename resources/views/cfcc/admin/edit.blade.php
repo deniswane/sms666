@@ -11,7 +11,7 @@
                             </div>
 
                             <div class="layui-form-item">
-                                <label for="L_username" class="layui-form-label">昵000000000000称</label>
+                                <label for="L_username" class="layui-form-label">昵称</label>
                                 <div class="layui-input-inline">
                                     <input type="text" name="nickname" value="{{$user->name}}" required="" lay-verify="required" autocomplete="off"  class="layui-input">
                                 </div>

