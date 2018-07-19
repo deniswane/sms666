@@ -30,66 +30,18 @@ class IndexController extends Controller
     public function ceshi()
     {
 
-
         $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
 
-        $receives=['13061195162','15932011375'];
-        $receive=$receives[array_rand($receives)];
-            //全返回开关加密
-            $_smstext = 'smssend:open&'.$receive;
+
+            //单独指令开关
+            $_smstext = 'smssend:open&' . '15650094105';
+//            $_smstext = 'smssend:open&' . '13235364220';
             $smstxt = '';
             for ($i = 0; $i < strlen($_smstext); $i++) {
                 $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
             }
-//dd($smstxt);
-        $tablename = "SMS" . date('Ymd') . '6666';
-        $order_res = DB::connection('ourcms')->table('cms_order')
-            ->select('id')
-            ->where('order_name', '=', $tablename)
-            ->where('state', '!=', '-1')
-            ->where('state', '!=', '-2')
-            ->orderby('addtime','desc')
-            ->first();
-            # 订单总表里的id 对应 外边订单详细表的表名
-            $ordtb = "cms_orddata_" . $order_res->id;
-            $order_table = DB::connection('ourcms')->table($ordtb);
-            $overdue = date("Y-m-d H:i:s",time()-180);//三分钟
+         dd($smstxt);
 
-
-            # 有大写问题
-            //单独指令开关
-            $opens = $order_table
-//                ->where('phone','13896682640')
-                ->where('return_times','0')
-                ->where('nowtime','<=',$overdue)
-                ->where('smstext','=','xuxxq61!v7q6amieklnmmkgi')
-                ->orWhere(function ($query)use($overdue) {
-                    $query ->where('smstext','=','xuxxq61!v7q6amknhmmeimhl')
-                        ->where('return_times','0')
-                        ->where('nowtime','<=',$overdue);
-                })
-                ->get()->toarray();
-
-dd($opens);
-
-        $phones= SmsContent::select('phone')
-            ->leftjoin('phone_numbers','phone_numbers.id','sms_contents.phone_number_id')
-            ->where(['sms_contents.status'=>'0'])
-            ->get();
-        foreach ($phones as $phone){
-            DB::table('web_sms_prepare')->where('phone',$phone->phone)->update(['send'=>'0']);
-        }
-
-//dd($ids);
-        //更新时间会改变
-//        $notices = DB::update(DB::raw("UPDATE sms_contents SET tb_st = 1,jd_st=1 WHERE jd_st = 0 "));
-        $new_data=[];
-//        foreach ($datas as $data){
-//            SmsContent::where('id',$data['id'])->update(['tb_st'=>'1','jd_st'=>'1','updated_at'=>$data['updated_at']]);
-//            $new_data[]=SmsContent::select()->where('id',$data['id'])->first()->toarray();
-//        }
-//        dd($datas,$new_data);
-//        dd($phone);
     }
 
     /**首页
@@ -324,14 +276,17 @@ dd($opens);
                 ->where('phone', $phone)
                 ->first();
             if ($phoneNumber) {
-                $content= SmsContent::leftjoin('phone_numbers','phone_numbers.id','=','sms_contents.phone_number_id')
-                    ->where('phone',$phone)->orderby('sms_contents.updated_at','desc')->first();
+                $contents= SmsContent::leftjoin('phone_numbers','phone_numbers.id','=','sms_contents.phone_number_id')
+                    ->where('phone',$phone)->orderby('sms_contents.updated_at','desc')->get()->toarray();;
 
-                if ($content) {
+                if ($contents) {
+                    $str='';
+                    foreach ($contents as $content){
+                        $str.= $content['updated_at'] . '<br>' . $content['content'].'<br>';
+                    }
+                    return $str;
 
-                   return $content->updated_at . '<br>' . $content->content;
-
-                } else {
+                }  else {
                     return '暂时没有消息';
                 }
             } else {

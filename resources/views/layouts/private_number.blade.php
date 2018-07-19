@@ -1,75 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>layout 后台大布局 - Layui</title>
-    <link href="{{ URL::asset('css/layui.css') }}" rel="stylesheet" type="text/css"/>
-    <script src="{{ URL::asset('js/layui.js') }}"></script>
-
+    <meta name="description"
+          content="Read SMS: Receive SMS online for FREE - 919654766051  : India - without Registration and without use your personal phone number.">
+    <meta name="keywords"
+          content="receive SMS,receive SMS online,free receive sms,receive free sms,receive no registration">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="Receive SMS Online for FREE | NO Registration: 919654766051"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="http://www.receive-sms-online.info/"/>
+    <meta property="og:image" content="http://www.receive-sms-online.info/img/receive_sms.png"/>
+    <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+    <link href="{{ URL::asset('css/default.css') }}" rel="stylesheet" type="text/css"/>
+    <link rel="canonical" href="https://www.receive-sms-online.info">
+    <script type="text/javascript" src="{{ URL::asset('js/policy.js') }}"></script>
+    <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
 </head>
-<body class="layui-layout-body">
-<div class="layui-layout layui-layout-admin">
-    <div class="layui-header">
-        <div class="layui-logo">layui 后台布局</div>
-        <!-- 头部区域（可配合layui已有的水平导航） -->
-
-        <ul class="layui-nav layui-layout-right">
-            <li class="layui-nav-item">
-                <a href="javascript:;">
-                    <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
-                    贤心
-                </a>
-                <dl class="layui-nav-child">
-                    <dd><a href="">基本资料</a></dd>
-                    <dd><a href="">安全设置</a></dd>
-                </dl>
-            </li>
-            <li class="layui-nav-item"><a href="">退了</a></li>
-        </ul>
+<body>
+{{--@include('shared._social')--}}
+@include('layouts._header')
+<div class="demoTable" style="text-align: center ;margin-top:200px"  >
+    搜索手机信息：
+    <div class="layui-inline">
+        <input class="layui-input" name="phone" placeholder="输入手机号" id="phone" autocomplete="off">
     </div>
-
-    <div class="layui-side layui-bg-black">
-        <div class="layui-side-scroll">
-            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
-
-                <li class="layui-nav-item"><a href="javascript:void(0)" onclick="myTab()">API接口文档</a></li>
-                <li class="layui-nav-item"><a href="javascript:;">价格</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="layui-body">
-        <!-- 内容主体区域 -->
-        <div style="padding: 15px;">内容主体区域</div>
-    </div>
-
-    <div class="layui-footer">
-        <!-- 底部固定区域 -->
-        © layui.com - 底部固定区域
-    </div>
+    <button class="layui-btn " onclick="searchPhone()">搜索</button>
+    <a href="">下载今日数据</a> 下载昨日数据
 </div>
-<script>
-    //JavaScript代码区域
-    layui.use('layer', function(){
-        var layer = layui.layer;
 
-        //window.location = "http://www.baidu.com";
-    });
-    function myTab() {
-        layer.tab({
-            area: ['600px', '300px'],
-            tab: [{
-                title: 'API接口',
-                content: 'API接口API接口API接口API接口API接口API接口API接口API接口API接口'
-            }, {
-                title: '价格',
-                content: '价格价格价格价格价格价格价格价格价格价格价格价格价格'
-            }]
-        });
-    }
-
-</script>
 </body>
 </html>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="/static/client/layui/layui.js"></script>
+<script type="text/javascript" src="/static/client/js/index.js"></script>
+
+<script>
+    // 获取手机号短信内容
+
+    function searchPhone() {
+        var phone = $('#phone').val();
+        if (IsMobilePhoneNumber(phone)) {
+            $.ajax({
+                type: 'post',
+                url: "{{route('client.index')}}",
+                cache: false,
+                data: {phone: phone, _token: "{{csrf_token()}}"},
+                success: function (data) {
+                    layer.alert(data, {'title': '最新信息','offset':'150px'})
+                },
+                error: function (data) {
+                }
+            });
+        } else {
+            layer.alert('格式不对')
+        }
+
+    }
+    //验证手机号
+    function IsMobilePhoneNumber(input) {
+        var regex = /^((\+)?86|((\+)?86)?)0?1[3458]\d{9}$/;
+        if (input.match(regex)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+</script>
+</script>

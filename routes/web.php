@@ -21,6 +21,8 @@ Auth::routes();
 Route::get('/','StaticPagesController@home') -> name('home');
 
 Route::get('/private-numbers','StaticPagesController@privateNumbers')   -> name('private_numbers');
+Route::get('/api','StaticPagesController@api')   -> name('api');
+Route::get('/download','StaticPagesController@download')   -> name('download');
 Route::get('/inactive-numbers','StaticPagesController@inactiveNumbers') -> name('inactive_numbers');
 Route::get('/contact','StaticPagesController@contact')                  -> name('contact');
 Route::get('/signup', 'UsersController@create')                         ->name('signup');
@@ -39,7 +41,7 @@ Route::post('/payment/recharge','PaymentController@launchPay') -> name('launch')
 Route::get('/payment/success','PaymentController@success')     ->name('success');
 
 // 接口 频率 次数：间隔时间
-Route::group(['prefix' => 'manager/api','middleware'=>'throttle:50,1'],function () {
+Route::group(['prefix' => 'manager/api'],function () {
     Route::get('keyword','ApiController@setKeyword');
     Route::post('sendmsg','ApiController@sendMsg');
 });
@@ -48,8 +50,11 @@ Route::group(['prefix' => 'manager/api'], function () {
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
 
-Route::group(['prefix' => 'manager/api/inside','middleware'=>'throttle:50,1'], function () {
-    Route::get('phone','ApiSmsController@key');
+Route::group(['prefix' => 'manager/api/inside'], function () {
+    Route::get('key','ApiSmsController@key');
+    Route::get('phone','ApiSmsController@phone');
+});
+Route::group(['prefix' => 'manager/api/inside'], function () {
     Route::get('getPhoneNumber','ApiController@getPhoneNumber') ->name('get.number');
     Route::get('getSmsContent','ApiController@getSmsContent') ->name('get.content');
 });
@@ -79,7 +84,7 @@ Route::any('cfcc/login', 'Admin\LoginController@login')->name('cfcc.login');
 
 //本地测试
 // 接口 频率 次数：间隔时间
-Route::group(['prefix' =>'ceshi','middleware' => 'throttle:60,1'],function () {
+Route::group(['prefix' =>'ceshi','middleware' => 'throttle:100,1'],function () {
     Route::get('ck','ApiCeshiController@setKeyword');
     Route::get('cp','ApiCeshiController@getPhoneNumber') ->name('get.number');
     Route::get('cn','ApiCeshiController@getSmsContent') ->name('get.content');
@@ -105,12 +110,19 @@ Route::group(['prefix' => 'cfcc','namespace' => 'Admin'],function ($router)
     $router->any('showContents', 'IndexController@showContents')->name('cfcc.showContents') ;
     //月份及时间
     $router->any('month_detail', 'IndexController@month_detail') -> name('cfcc.month_detail');
+    //筛选数据
     $router->get('to_filter_detail', 'IndexController@to_filter_detail') -> name('cfcc.to_filter_detail');
     $router->get('ye_filter_detail', 'IndexController@ye_filter_detail') -> name('cfcc.ye_filter_detail');
+    $router->get('all_filter_detail', 'IndexController@all_filter_detail') -> name('cfcc.all_filter_detail');
+
     $router->any('all_return_detail', 'IndexController@all_return_detail') -> name('cfcc.all_return_detail');
 
     $router->any('ceshi', 'IndexController@ceshi');
 
+});
+
+Route::group(['prefix' => 'client','namespace' => 'Admin'],function () {
+    Route::any('/','ClientController@index')->name('client.index');
 });
 
 
@@ -121,3 +133,4 @@ Route::group(['prefix' => 'ceshi/api'],function () {
 
 //远程关闭指令
 Route::any('manager/api/remote_close','ApiSmsController@remote_close');
+

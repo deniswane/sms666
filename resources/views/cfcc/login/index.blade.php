@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/static/cfcc/css/style.css" media="all">
 </head>
 
-<body>
+<body onload="loadTopWindow()">
 <div class="login layui-anim-up">
     <div class="login-main">
         <div class="login-box login-header">
@@ -59,6 +59,17 @@
         $('#vercode').click();
     });
 </script>
+<script language="JavaScript">
+    //判断当前窗口是否有顶级窗口，如果有就让当前的窗口的地址栏发生变化，
+    //这样就可以让登陆窗口显示在整个窗口了
+    function loadTopWindow(){
+        if (window.top!=null && window.top.document.URL!=document.URL){
+            window.top.location= document.URL;
+        }
+    }
+</script>
+</head>
+<!--在body的写上onload事件要调用的方法-->
 </body>
 
 </html>

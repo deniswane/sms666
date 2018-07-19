@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -12,7 +13,7 @@ class StaticPagesController extends Controller
 {
     public function __construct() {
 
-        $this->middleware('auth',['only' => ['privateNumbers']]);
+        $this->middleware('auth',['only' => ['api','download']]);
     }
 
     // 获取首页数据，电话
@@ -43,6 +44,13 @@ class StaticPagesController extends Controller
         return view('layouts.private_number')->__toString();
     }
 
+    public function api()
+    {
+        $user =Auth::user();
+        $token=$user->token;
+        return view('layouts.api',compact('token'))->__toString();
+
+    }
     public function inactiveNumbers(){
         echo "inactiveNumbers";
     }
@@ -56,5 +64,18 @@ class StaticPagesController extends Controller
     {
         $error=$request->error;
         return view('emails.verification_result',['error'=>$error]);
+    }
+
+    public function download(Request $request ){
+        $user =Auth::user();
+
+        $date= $request->date;
+
+        if (is_file(storage_path('app').'/'.$date.'/'.$user->name.'/'.$date.'.txt')){
+            return response()->download(storage_path('app').'/'.$date.'/'.$user->name.'/'.$date.'.txt');
+//
+        }else{
+            return response()->download(storage_path('app').'/result.txt');
+        }
     }
 }

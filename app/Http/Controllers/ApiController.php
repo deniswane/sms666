@@ -40,13 +40,14 @@ class ApiController extends Controller
     public function setKeyWord(Request $request)
     {
         //数据验证
-        $get = ['k'=>htmlspecialchars($request->get('k')),'p'=>$request->get('p')];
+        $get = ['k' => htmlspecialchars($request->get('k')), 'p' => $request->get('p')];
         $validator = Validator::make($get, [
-            'k'=>'required|min:2|max:5',
+            'k' => 'required|min:2|max:5',
 //            'p'=>'required'
         ]);
         if ($validator->fails()) {
-            echo json_encode(['code'=>102,'msg'=>'Format error']);die;
+            echo json_encode(['code' => 102, 'msg' => 'Format error']);
+            die;
         }
         $p = $request->get('p');
 
@@ -57,8 +58,8 @@ class ApiController extends Controller
 
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
 //            $receive = '15932011375';
-            $receives=['13061195162','15932011375'];
-            $receive=$receives[array_rand($receives)];
+            $receives = ['13061195162', '15932011375','13235364220','15650094105'];
+            $receive = $receives[array_rand($receives)];
 
             if ($user) {
                 if ($user->balance <= 0) {
@@ -67,26 +68,26 @@ class ApiController extends Controller
                 }
                 //有权限访问 返回的标记
                 $content = 'id' . $user->id;
-                $dat=empty($p) ? ['send'=>0]:['send'=>0,'province'=>$p];
+                $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
 
                 $phone = $this->filter($dat);
 
-                if (!$phone) {
+               if (!$phone) {
                     echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
-                    die;
+                     die;
                 }
                 //setorder($phone,$content,$receive,$gjz)
                 $gjz = "$keywords[0]&$keywords[1]&回复到号码:&$keywords[0]&$keywords[1]";
 
                 //写入日志的信息
                 $ip = $request->getClientIp();
-                $profile = $user->name.'/set_gjz.txt';
+                $profile = $user->name . '/set_gjz.txt';
                 $data = [
                     'email' => $user->email,
                     'ip' => $ip,
                     'keywords' => "$keywords[0]&$keywords[1]",
-                    'provice'=>$p,
-                    'success'=>'success'
+                    'provice' => $p,
+                    'success' => 'success'
                 ];
 
                 $this->setorder($phone, $content, $receive, $gjz, $profile, $data);
@@ -108,24 +109,25 @@ class ApiController extends Controller
     {
         //验证数据
         $token = $request->token;
-        $get_p= ['p'=>$request->p];
+        $get_p = ['p' => $request->p];
         $validator = Validator::make($get_p, [
 //            'p' =>'required'
         ]);
         if ($validator->fails()) {
-            echo json_encode(['code'=>102,'msg'=>'Format error']);die;
+            echo json_encode(['code' => 102, 'msg' => 'Format error']);
+            die;
         }
 
-        $p=$request->p;
+        $p = $request->p;
 
         $user = $this->selectuser($token);
 
         if ($user) {
 
-            $dat=empty($p) ? ['user_id'=>$user->id,'status'=>'0']:['user_id'=>$user->id,'status'=>'0','province'=>$p];
+            $dat = empty($p) ? ['user_id' => $user->id, 'status' => '0'] : ['user_id' => $user->id, 'status' => '0', 'province' => $p];
 
             $phone = DB::table('phone_numbers')
-                ->select('phone','id')
+                ->select('phone', 'id')
                 ->where($dat)
                 ->orderby('created_at', 'desc')
                 ->first();
@@ -137,12 +139,12 @@ class ApiController extends Controller
 
             //日志
             $ip = $request->getClientIp();
-            $profile = $user->name.'/get_phone.txt';
+            $profile = $user->name . '/get_phone.txt';
             $data = [
                 'email' => $user->email,
                 'ip' => $ip,
                 'phone' => $phone->phone,
-                'province'=>$p,
+                'province' => $p,
             ];
             $this->setLog($profile, $data);
 
@@ -187,14 +189,14 @@ class ApiController extends Controller
             if ($user->balance > 0) {
                 $phoneNumber = DB::table('phone_numbers')
                     ->select('id')
-                    ->where(['user_id'=>$user->id,'status'=>'1','phone'=>$phone])
-                    ->orWhere(['phone'=>$phone])
+                    ->where(['user_id' => $user->id, 'status' => '1', 'phone' => $phone])
+                    ->orWhere(['phone' => $phone])
                     ->first();
 
                 if ($phoneNumber) {
 
                     $content = DB::table('sms_contents')
-                        ->select('id','content','status')
+                        ->select('id', 'content', 'status')
                         ->where('phone_number_id', $phoneNumber->id)
                         ->orderby('created_at', 'desc')
                         ->first();
@@ -204,7 +206,7 @@ class ApiController extends Controller
                     }
 
                     //更新取号后的状态
-                    DB::table('sms_contents')->where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
+                    DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now()]);
 
 
                     $price = DB::table('configs')->select('price')->find(1);
@@ -217,7 +219,7 @@ class ApiController extends Controller
 
                     $result = array('code' => 200, 'msg' => $content->content);
 
-                    if($content->content ==='xuxxq61!p5vxq'){
+                    if ($content->content === 'xuxxq61!p5vxq') {
                         $content = DB::table('sms_contents')
                             ->select('content')
                             ->where('phone_number_id', $phoneNumber->id)
@@ -304,7 +306,7 @@ class ApiController extends Controller
                         ->where('id', '=', $user->id)
                         ->update(['updated_at' => $update_time, 'balance' => $new_balbance]);
 
-                    $profile =$user->name. '/send_msg.txt';
+                    $profile = $user->name . '/send_msg.txt';
                     $data = [
                         'ip' => $request->getClientIp(),
                         'email' => $user->email,
@@ -327,7 +329,7 @@ class ApiController extends Controller
      */
     public function filter($dat)
     {
-        $send_phones = DB::table('web_sms_prepare')->select('phone','id')->where($dat)->orderby('addtime', 'desc')->first();
+        $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
         if (!$send_phones) {
             return false;
         }
@@ -342,7 +344,7 @@ class ApiController extends Controller
      * receive  接收的手机号
      * gjz      返回截取的位置
      */
-    public function setorder($phone, $content, $receive, $gjz, $profile, $parame,$type=0)
+    public function setorder($phone, $content, $receive, $gjz, $profile, $parame, $type = 0)
     {
 
 //        $mydata = DB::connection('jm_cms')->table('cms_device_data')->where('phone', $phone)->first();
@@ -354,15 +356,15 @@ class ApiController extends Controller
         $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
 
 
-        if ($type == '1'){
+        if ($type == '1') {
             //单独指令开关
-            $_smstext = 'smssend:open&'.$receive;
+            $_smstext = 'smssend:open&' . $receive;
             $smstxt = '';
             for ($i = 0; $i < strlen($_smstext); $i++) {
                 $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
             }
 
-        }else{
+        } else {
             $_smstext = "second:" . $receive . "&" . $content . "&1&";
             $smstxt = '';
             for ($i = 0; $i < strlen($_smstext); $i++) {
@@ -386,7 +388,7 @@ class ApiController extends Controller
         $tablename = "SMS" . date('Ymd') . '6666';
         $order_res = DB::connection('ourcms')->table('cms_order')
 //        $order_res = DB::table('cms_order')
-                ->select('id','order_tnum')
+            ->select('id', 'order_tnum')
             ->where('order_name', '=', $tablename)
             ->where('state', '!=', '-1')
             ->where('state', '!=', '-2')
@@ -415,7 +417,7 @@ class ApiController extends Controller
                 $table->engine = 'MyISAM';
                 $table->increments('id');
                 $table->string('phone', 20)->default('')->comment('订单电话号');
-                $table->string('smstext',255)->comment('指令回复内容');
+                $table->string('smstext', 255)->comment('指令回复内容');
                 $table->string('ordimsi', 50)->default('')->comment('订单imsi');
                 $table->string('addtime', 30)->default('')->comment('访问时间');
                 $table->string('userphone', 20)->default('')->comment('访问手机号');
@@ -454,13 +456,10 @@ class ApiController extends Controller
 
             //记录日志
             $this->setLog($profile, $parame);
-            if ($type == '1'){
-                echo json_encode(['code' => '200', 'msg' => $phone]);
-                die;
-            }else{
-                echo json_encode(['code' => '200', 'msg' => 'success']);
-                die;
-            }
+
+            echo json_encode(['code' => '200', 'msg' => 'success']);
+            die;
+
 
         } else {
 
@@ -495,13 +494,9 @@ class ApiController extends Controller
             //记录日志
             $this->setLog($profile, $parame);
 
-            if ($type == '1'){
-                echo json_encode(['code' => '200', 'msg' => $phone]);
-                die;
-            }else{
-                echo json_encode(['code' => '200', 'msg' => 'success']);
-                die;
-            }
+            echo json_encode(['code' => '200', 'msg' => 'success']);
+            die;
+
         }
     }
 
@@ -512,7 +507,7 @@ class ApiController extends Controller
     public function selectuser($token)
     {
         return DB::table('users')
-            ->select('token','id','email','balance','name','times')
+            ->select('token', 'id', 'email', 'balance', 'name', 'times')
             ->where('token', $token)
             ->first();
 
@@ -525,9 +520,9 @@ class ApiController extends Controller
     public function setLog($profile, $parame = [])
     {
         $dt = Carbon::now();
-        $txt =$dt . '   ' . implode('--', $parame);
-        $day=date('Ymd',time());
-        Storage::disk('local')->append($day.'/'.$profile, $txt);
+        $txt = $dt . '   ' . implode('--', $parame);
+        $day = date('Ymd', time());
+        Storage::disk('local')->append($day . '/' . $profile, $txt);
     }
 
 }

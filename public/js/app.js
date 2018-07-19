@@ -2,12 +2,12 @@
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
     //屏蔽js错误
-/******/    var killErrors = function(value) {
-            return true
-            };
+// /******/    var killErrors = function(value) {
+//             return true
+//             };
 
-            window.onerror = null;
-            window.onerror = killErrors;
+            // window.onerror = null;
+            // window.onerror = killErrors;
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/
