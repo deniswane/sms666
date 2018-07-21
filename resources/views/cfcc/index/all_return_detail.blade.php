@@ -50,7 +50,7 @@
             });
             laydate.render({
                 elem: '#end'
-                , value: new Date()
+                , value: new Date(new Date().getTime() + 24*60*60*1000)
                 , calendar: true
             });
 

@@ -7,11 +7,14 @@ use App\Models\PhoneNumber;
 use App\Models\SmsContent;
 use App\Models\User;
 use Carbon\Carbon;
+use function Couchbase\defaultDecoder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Queue\RedisQueue;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Library\Y;
 use PayPal\Api\Phone;
@@ -29,18 +32,18 @@ class IndexController extends Controller
 
     public function ceshi()
     {
-
-        $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
-
-
-            //单独指令开关
-            $_smstext = 'smssend:open&' . '15650094105';
-//            $_smstext = 'smssend:open&' . '13235364220';
-            $smstxt = '';
-            for ($i = 0; $i < strlen($_smstext); $i++) {
-                $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
-            }
-         dd($smstxt);
+        dd  (PhoneNumber::where('phone','15537173706')->get()->toarray(),SmsContent::leftjoin('phone_numbers','phone_numbers.id','sms_contents.phone_number_id')->where('phone','15537173706')->get()->toarray());
+//        $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
+//
+//
+//            //单独指令开关
+//            $_smstext = 'smssend:open&' . '15650094105';
+////            $_smstext = 'smssend:open&' . '13235364220';
+//            $smstxt = '';
+//            for ($i = 0; $i < strlen($_smstext); $i++) {
+//                $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
+//            }
+//         dd($smstxt);
 
     }
 
@@ -145,7 +148,7 @@ class IndexController extends Controller
         $offset = ($page - 1) * $num;
 
         $nums = User::count();
-        $to_datas = User::select('name', 'sms_contents.content')
+        $to_datas = User::select('name', 'email','sms_contents.content')
             ->leftjoin('phone_numbers', 'phone_numbers.user_id', '=', 'users.id')
             ->leftjoin('sms_contents', 'phone_numbers.id', '=', 'sms_contents.phone_number_id')
             ->where('sms_contents.status', '1')
@@ -169,13 +172,13 @@ class IndexController extends Controller
         $abc = [];
         foreach ($to_datas as $data) {
             if (isset($data['content'])) {
-                $abc[$data['name']][] = $data['content'];
+                $abc[$data['email']][] = $data['content'];
             } else {
-                $abc[$data['name']] = [];
+                $abc[$data['email']] = [];
             }
         }
 
-        $ye_datas = User::select('name', 'sms_contents.content')
+        $ye_datas = User::select('name', 'email','sms_contents.content')
             ->leftjoin('phone_numbers', 'phone_numbers.user_id', '=', 'users.id')
             ->leftjoin('sms_contents', 'phone_numbers.id', '=', 'sms_contents.phone_number_id')
             ->where('sms_contents.status', '1')
@@ -201,22 +204,22 @@ class IndexController extends Controller
         $abcd = [];
         foreach ($ye_datas as $data) {
             if (isset($data['content'])) {
-                $abcd[$data['name']][] = $data['content'];
+                $abcd[$data['email']][] = $data['content'];
             } else {
-                $abcd[$data['name']] = [];
+                $abcd[$data['email']] = [];
             }
         }
         $datas = User::select('email', 'name', 'balance', 'created_at')
             ->limit($num)->offset($offset)->get()->toarray();
         foreach ($datas as &$user) {
-            if (isset($abc[$user['name']])) {
-                $user['daliy_amount'] = count($abc[$user['name']]);
+            if (isset($abc[$user['email']])) {
+                $user['daliy_amount'] = count($abc[$user['email']]);
 
             } else {
                 $user['daliy_amount'] = 0;
             }
-            if (isset($abcd[$user['name']])) {
-                $user['yes_num'] = count($abcd[$user['name']]);
+            if (isset($abcd[$user['email']])) {
+                $user['yes_num'] = count($abcd[$user['email']]);
 
             } else {
                 $user['yes_num'] = 0;
@@ -250,6 +253,10 @@ class IndexController extends Controller
         if ($post['balance']) {
             $res = DB::table('users')->where('email', '=', $post['email'])->update(['balance' => $post['balance']]);
             if ($res) {
+               $name= Auth::guard('admin')->user()->name;//
+                $ip =$request->getClientIp();
+                $dt= Carbon::now().' 管理员'.$name.' ip是 '.$ip.'给'.$post['email'].'设置了金额'.$post['balance'];
+                Storage::disk('local')->append('set_balance.txt',$dt);
                 return ['code' => '200'];
             }
         }
@@ -276,7 +283,7 @@ class IndexController extends Controller
                 ->where('phone', $phone)
                 ->first();
             if ($phoneNumber) {
-                $contents= SmsContent::leftjoin('phone_numbers','phone_numbers.id','=','sms_contents.phone_number_id')
+                $contents= SmsContent::select('sms_contents.updated_at','content')->leftjoin('phone_numbers','phone_numbers.id','=','sms_contents.phone_number_id')
                     ->where('phone',$phone)->orderby('sms_contents.updated_at','desc')->get()->toarray();;
 
                 if ($contents) {
@@ -397,41 +404,44 @@ class IndexController extends Controller
                     ->toArray();
 
             } else {
-                $nums = DB::table('sms_contents')->where('status', '1')->wherebetween('updated_at', [Carbon::today(), Carbon::tomorrow()])
-                    ->orWhere(function ($query) {
-                        $query->where(['sms_contents.status' => '0'])
-                            ->where('tb_st', 1)
-                            ->where('jd_st','!=',1)
-                            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
+                $nums = DB::table('sms_contents')
+                    ->wherebetween('updated_at', [Carbon::today(), Carbon::tomorrow()])
+                    ->where(function($query){
+                        $query->where('sms_contents.status', '1')
+                            ->orWhere(function($quer){
+                                $quer->where('sms_contents.status','0')
+                                    ->where('tb_st','1')
+                                    ->where('jd_st','!=','1');
+                            })
+                            ->orWhere(function($quer){
+                                $quer->where('sms_contents.status','0')
+                                    ->where('jd_st','1')
+                                    ->where('tb_st','!=','1');
+                            });
                     })
-                    ->orWhere(function ($query) {
-                        $query->where(['sms_contents.status' => '0'])
-                            ->where('tb_st','!=',1)
-                            ->where('jd_st', '=',1)
-                            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
-                    })
-                    ->count();
+                    ->count();;
+//
                 $datas = SmsContent::select('phone', 'province', 'content', 'sms_contents.updated_at')
                     ->leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')
-                    ->where('sms_contents.status', '1')
                     ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()])
-                    ->orWhere(function ($query) {
-                        $query->where(['sms_contents.status' => '0'])
-                            ->where('tb_st', 1)
-                            ->where('jd_st','!=',1)
-                            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
+                    ->where(function($query){
+                        $query->where('sms_contents.status', '1')
+                            ->orWhere(function($quer){
+                                $quer->where('sms_contents.status','0')
+                                    ->where('tb_st','1')
+                                    ->where('jd_st','!=','1');
+                            })
+                            ->orWhere(function($quer){
+                                $quer->where('sms_contents.status','0')
+                                    ->where('jd_st','1')
+                                    ->where('tb_st','!=','1');
+                            });
                     })
-                    ->orWhere(function ($query) {
-                        $query->where(['sms_contents.status' => '0'])
-                            ->where('tb_st','!=',1)
-                            ->where('jd_st', '=',1)
-                            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
-                    })
+//
                     ->orderby('sms_contents.updated_at', 'desc')
                     ->limit($num)
                     ->offset($offset)
-//                    ->toSql();
-//                dd ($datas);
+
                     ->get()
                     ->toArray();
             }
@@ -460,37 +470,40 @@ class IndexController extends Controller
             $end = $request->end;
             $pro = $request->province;
 
-            $contents = SmsContent::select(DB::raw('count(*) as total,province'))->leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id');
+            $contents = SmsContent::leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')->select(DB::raw('count(*) as total,province'));
             $countphones = PhoneNumber::select(DB::raw('count(*) as number,province'));
             if ($start) {
-                $contents->where('sms_contents.updated_at', '>=', $start);
-                $countphones->where('created_at', '>=', $start);
+                $contents= $contents->where('sms_contents.updated_at', '>=', $start);
+                $countphones=$countphones->where('created_at', '>=', $start);
 
             }
             if ($end) {
 
-                $contents->where('sms_contents.updated_at', '<=', $end);
-                $countphones->where('created_at', '<=', $end);
+                $contents=  $contents->where('sms_contents.updated_at', '<=', $end);
+                $countphones= $countphones->where('created_at', '<=', $end);
 
             }
             if ($pro) {
-                $contents->where('phone_numbers.province', '=', $pro);
-                $countphones->where('province', '=', $pro);
+                $contents= $contents->where('phone_numbers.province', '=', $pro);
+                $countphones= $countphones->where('province', '=', $pro);
 
             }
-            $provinces = $contents->where('sms_contents.status', '1')
-                ->orWhere(function ($query) {
-                    $query->where('jd_st', '1')
-                        ->where('tb_st','!=','1')
-                        ->where('sms_contents.status', '0');
-                })
-                ->orWhere(function ($query) {
-                    $query->where('tb_st', '1')
-                        ->where('jd_st','!=','1')
-                        ->where('sms_contents.status', '0');
-                })
+            $provinces = $contents->
+                where(function($query){
+                    $query->where('sms_contents.status', '1')
+                        ->orWhere(function ($quer){
+                            $quer->where('jd_st', '1')
+                            ->where('tb_st','!=','1')
+                            ->where('sms_contents.status', '0');
+                        })
+                        ->orWhere(function ($quer){
+                            $quer->where('tb_st', '1')
+                            ->where('jd_st','!=','1')
+                            ->where('sms_contents.status', '0');
+                        });
+            })
                 ->groupby('province')->get()->toarray();
-//               ->groupby('province')->toSql();;
+
             $phones = $countphones->where('status', '1')->groupby('province')->get()->toarray();
 
             $datas = $provinces;
@@ -500,37 +513,28 @@ class IndexController extends Controller
                     if ($province['province'] === $phone['province']) {
                         $datas[$key]['number'] = $phone['number'];
 
-                    }
+                    }else{
+                        unset($phone);
 
+                    }
                 }
             }
             $nums = PhoneNumber::select('province')
                 ->groupby('province')
                 ->get()->count();
+
             return response()->json([
                 'code' => '',
                 'msg' => '',
                 'count' => $nums,
-                'data' => $datas
+                'data' => $datas,
+                'contenr'=>$provinces
             ]);
-
         } else {
 
-            $provinces = SmsContent::select(DB::raw('count(*) as total,province'))
-                ->leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')
-                ->where('sms_contents.status', '1')
-                ->orWhere(function ($query) {
-                    $query->where('jd_st', '1')->where('tb_st','!=','1')
-                        ->where('sms_contents.status', '0');
-                })
-                ->orWhere(function ($query) {
-                    $query->where('tb_st', '1')->where('jd_st','!=','1')
-                        ->where('sms_contents.status', '0');
-                })
-                ->groupby('province')
-                ->get()
-                ->toarray();
+            $provinces =PhoneNumber::select('province')->groupby('province')->get()->toarray();
             return view('cfcc.index.month_detail', compact('provinces'));
+//            return view('cfcc.index.month_detail');
         }
     }
 
@@ -609,6 +613,9 @@ class IndexController extends Controller
                 $datas = $datas->where('created_at', '>=', $start);
             }
             if ($end) {
+                if ($end == $start){
+                    $end =Carbon::tomorrow($start);
+                }
                 $datas = $datas->where('created_at', '<=', $end);
             }
             if (isset($type)) {

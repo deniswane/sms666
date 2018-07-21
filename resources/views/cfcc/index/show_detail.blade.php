@@ -136,7 +136,9 @@
                             if (data.allIds.to_phone == false) {
                                 return '无'
                             } else {
-                                console.log(data)
+                                console.log('666666')
+                                console.log( data.contents)
+
                                 var contents = ''
                                 var i = 1;
                                 var count = num = 0;

@@ -101,10 +101,9 @@ class Test extends Command
                      if ($insert) ++$m;
                  }
              }
-//
+             $dt= Carbon::now().'调用成功完成,数据表'.$ordtb.'更新'.$n.'条，插入'.$m.'条；';
+             Storage::disk('local')->append('cron.txt',$dt);
          }
 
-        $dt= Carbon::now().'调用成功完成,数据表'.$ordtb.'更新'.$n.'条，插入'.$m.'条；';
-        Storage::disk('local')->append('cron.txt',$dt);
     }
 }

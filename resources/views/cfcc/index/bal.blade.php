@@ -25,7 +25,7 @@
                 ,height: 'full-104'
                 ,elem: '#test',
                 done :function(res){
-                    console.log(res)
+                    // console.log(res)
                 }
                 ,limits: ['25', '30']
                 ,limit: 25

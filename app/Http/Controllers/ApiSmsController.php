@@ -65,7 +65,7 @@ class ApiSmsController extends Controller
             //根据不同的用户去短信表 判断获取手机号
             if ($type_sta){
                 //取手机号
-                $receives=['13061195162','15932011375','13235364220','15650094105'];
+                $receives=['13061195162','15932011375','13235364220'];
                 $receive=$receives[array_rand($receives)];
 
                 $content = 'id' . $user->id;

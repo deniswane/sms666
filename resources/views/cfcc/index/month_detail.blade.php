@@ -47,7 +47,7 @@
             });
             laydate.render({
                 elem: '#end'
-                , value: new Date()
+                , value: new Date(new Date().getTime() + 24*60*60*1000)
                 , calendar: true
             });
 
@@ -59,7 +59,7 @@
 ////                    , limitName: 'nums' //每页数据量的参数名，默认：limit
 //                }
                 done:function(res){
-//                    console.log(res)
+                   // console.log(res)
                     var arrs=res.data,
                     n=arrs.length,
                     count_total=count_num=0;

@@ -20,17 +20,7 @@
         @guest
         @else
 {{--           {{ trans('home.subtitle_0') }}--}}
-            @if($lang == 'zh-CN')
-                <img width="100"  src="/img/zhifubao1.jpg" alt="支付宝!">
 
-                <form style="margin: 20px 5px;" method="post"  action="alipay" onsubmit="return check(this)">
-                    {{csrf_field()}}
-                    <input type="text" name="prices" id="pri" autofocus  class="ec_input"> &nbsp;<span style="font-size: 20px">¥ </span>&nbsp;&nbsp;
-                    <input style="display:none" >
-                    <button type="submit" value="提交"> 立即充值</button>
-                </form>
-
-        @else
                 Please enter the amount in the input box and click on the purchase
         <form style="margin: 20px 5px;" method="post" >
             <input type="text" placeholder=""  id="pri" autofocus  class="ec_input">USD
@@ -68,7 +58,6 @@
                 });
             })
             </script>
-            @endif
             @endguest
 
 

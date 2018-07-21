@@ -6,6 +6,7 @@ use App\Library\Y;
 use App\Models\SmsContent;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,12 +27,13 @@ class ClientController extends Controller
 
 
             $phone = $request->phone;
-
+            $userid= Auth::id();
 
 
             $phoneNumber = DB::table('phone_numbers')
                 ->select('id')
                 ->where('phone', $phone)
+                ->where('user_id', $userid)
                 ->first();
             if ($phoneNumber) {
                 $contents= SmsContent::leftjoin('phone_numbers','phone_numbers.id','=','sms_contents.phone_number_id')
