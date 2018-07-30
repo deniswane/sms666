@@ -32,19 +32,6 @@ class IndexController extends Controller
 
     public function ceshi()
     {
-        dd  (PhoneNumber::where('phone','15537173706')->get()->toarray(),SmsContent::leftjoin('phone_numbers','phone_numbers.id','sms_contents.phone_number_id')->where('phone','15537173706')->get()->toarray());
-//        $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
-//
-//
-//            //单独指令开关
-//            $_smstext = 'smssend:open&' . '15650094105';
-////            $_smstext = 'smssend:open&' . '13235364220';
-//            $smstxt = '';
-//            for ($i = 0; $i < strlen($_smstext); $i++) {
-//                $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
-//            }
-//         dd($smstxt);
-
     }
 
     /**首页
@@ -326,7 +313,7 @@ class IndexController extends Controller
     {
         $post = $request->all();
         $validator = Validator::make($post, [
-            'username' => 'required',
+            'username' => 'required|email',
         ]);
 
         if ($validator->fails()) {
@@ -335,7 +322,7 @@ class IndexController extends Controller
 
 
         $user = new User();
-        $id = $user->select('id')->where('name', $post['username'])->first();
+        $id = $user->select('id')->where('email', $post['username'])->first();
         if (!$id) {
             return ['code' => '201', 'msg' => '没有这个用户'];
         }
@@ -354,19 +341,19 @@ class IndexController extends Controller
     public function showContents(Request $request)
     {
         if ($request->isMethod('post')) {
-            $user_name = $request->user;
+            $email = $request->user;
             $page = $request->curr ? $request->curr : 1;//当前页
             $num = $request->nums ? $request->nums : 10;//每页显示的数量
 
 
             $user = new  User();
-            $userid = $user->select('id')->where('name', $user_name)->first();
+            $userid = $user->select('id')->where('email', $email)->first();
 
 
 //        $rev='每页显示的数量';
             $offset = ($page - 1) * $num;
 
-            if ($user_name) {
+            if ($email) {
                 if (!$userid) {
                     return response()->json([
                         'code' => '',
@@ -469,6 +456,7 @@ class IndexController extends Controller
             $start = $request->start;
             $end = $request->end;
             $pro = $request->province;
+            $user=  $request->userid;
 
             $contents = SmsContent::leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')->select(DB::raw('count(*) as total,province'));
             $countphones = PhoneNumber::select(DB::raw('count(*) as number,province'));
@@ -486,7 +474,10 @@ class IndexController extends Controller
             if ($pro) {
                 $contents= $contents->where('phone_numbers.province', '=', $pro);
                 $countphones= $countphones->where('province', '=', $pro);
-
+            }
+            if($user){
+                $contents= $contents->where('phone_numbers.user_id', '=', $user);
+                $countphones= $countphones->where('user_id', '=', $user);
             }
             $provinces = $contents->
                 where(function($query){
@@ -533,7 +524,8 @@ class IndexController extends Controller
         } else {
 
             $provinces =PhoneNumber::select('province')->groupby('province')->get()->toarray();
-            return view('cfcc.index.month_detail', compact('provinces'));
+            $user=User::select('id','name')->get()->toarray();
+            return view('cfcc.index.month_detail', compact('provinces','user'));
 //            return view('cfcc.index.month_detail');
         }
     }

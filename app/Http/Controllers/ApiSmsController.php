@@ -38,7 +38,7 @@ class ApiSmsController extends Controller
             'token' => 'required'
         ]);
         $token = $request->token;
-        $p = $request->p;
+        $p = $request->get('p');
         if ($validator->fails()) {
             echo json_encode( ['code' => 102, 'msg' => 'Format error']);die;
 
@@ -46,6 +46,11 @@ class ApiSmsController extends Controller
         //权限验证
         $user = $this->api->selectuser($token);
         if ($user) {
+            $no_allow=['广东','陕西'];
+            if($user->id ==17 && in_array($p,$no_allow)){
+                //禁止用户设置广东
+                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
+            }
             if ($user->balance <= 0) {
                echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;
             }
@@ -65,7 +70,8 @@ class ApiSmsController extends Controller
             //根据不同的用户去短信表 判断获取手机号
             if ($type_sta){
                 //取手机号
-                $receives=['13061195162','15932011375','13235364220'];
+                $receives=['15932011375','13235364220','15650094105'];
+//                $receives=['13061195162','13235364220','15650094105'];
                 $receive=$receives[array_rand($receives)];
 
                 $content = 'id' . $user->id;
@@ -77,7 +83,9 @@ class ApiSmsController extends Controller
                 $gjz = '';
 
                 //从prepare取手机号设置关键字
+
                 $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
+
                 $phone = $this->api->filter($dat);
                 if (!$phone){
                     echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
@@ -124,6 +132,12 @@ class ApiSmsController extends Controller
         $user = $this->api->selectuser($token);
 
         if ($user) {
+
+            $no_allow=['广东','陕西'];
+            if($user->id ==17 && in_array($p,$no_allow)){
+                //禁止用户设置广东
+                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
+            }
 
             if ($user->balance <= 0) {
                 echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;

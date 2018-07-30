@@ -27,6 +27,18 @@
                         </select>
                     </div>
                 </div>
+                客户：
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="province" lay-verify="required" id="user" lay-search="">
+                            <option value="">请选择</option>
+
+                        @foreach($user as $u)
+                                <option value="{{$u['id']}}">{{$u['name']}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
                 <button class="layui-btn " data-type="reload">搜索</button>
 
             </div>
@@ -90,12 +102,14 @@
                     var start = $('#start').val();
                     var end = $('#end').val();
                     var province = $('#province').val();
+                    var user = $('#user').val();
 
                     table.reload('testReload', {
                         where: {
                             start:start,
                             end:end,
                             province:province,
+                            userid:user,
                         }
                     });
                 }

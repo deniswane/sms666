@@ -78,6 +78,7 @@ class Test extends Command
                              ->where('return_times','0')
                              ->where('nowtime','<=',$overdue);
                      })
+
                      ->get()->toarray();
 
              //批量更新

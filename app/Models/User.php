@@ -67,6 +67,7 @@ class User extends Authenticatable
         $extend = 1440 - date('H', time()) * 60 + date('i', time());
 
         if (empty($userid)) {
+
             if (!Cache::has('yes_phone_count')) {
                 $yes_sms_count = $this->getContentsCount([Carbon::yesterday(), Carbon::today()]);
                 Cache::put('yes_phone_count', $yes_sms_count, $extend);
@@ -76,6 +77,7 @@ class User extends Authenticatable
 
             $to_sms_count = $this->getContentsCount([Carbon::today(), Carbon::tomorrow()]);
         } else {
+
             if (!Cache::has('yes_sms_count' . $userid)) {
                 $yes_sms_count = $this->getContentsCount([Carbon::yesterday(), Carbon::today()], $userid);
                 Cache::put('yes_sms_count' . $userid, $yes_sms_count, $extend);
@@ -98,6 +100,7 @@ class User extends Authenticatable
         $extend = 1440 - date('H', time()) * 60 + date('i', time());
 
         if (!empty($userid)) {
+
             if (!Cache::has('yes_taked_' . $userid)) {
                 $yes_taked = $this->countPhone([Carbon::yesterday(), Carbon::today()], $userid);
                 Cache::put('yes_taked_' . $userid, $yes_taked, $extend);
@@ -160,23 +163,18 @@ class User extends Authenticatable
         if (!empty($userid)) {
             $datas = SmsContent::select('sms_contents.id', 'province')
                 ->leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')
-				->where('sms_contents.status','=','1')
-                ->where('phone_numbers.user_id','=',$userid )
                 ->wherebetween('sms_contents.updated_at', $arr)
-           ->orWhere(function($query) use($arr)
-           {
-             $query->where('tb_st','1')
-                 ->where('jd_st','!=','1')
-                 ->wherebetween('sms_contents.updated_at', $arr);
+                ->where('phone_numbers.user_id','=',$userid )
+                ->where(function ($query){
+                    $query->where('sms_contents.status','=','1')
+                        ->orWhere(function($que){
+                            $que->where('tb_st','1')->where('jd_st','!=','1');
+                        })
+                        ->orWhere(function($que){
+                            $que->where('jd_st','1')->where('tb_st','!=','1');
+                        });
+                })
 
-        })
-            ->orWhere(function($query) use($arr)
-            {
-                $query  ->where('tb_st','!=','1')->where('jd_st','1')
-					->wherebetween('sms_contents.updated_at', $arr)
-
-                ;
-            })
                 ->orderby('sms_contents.updated_at', 'desc')
 //                ->toSql()
 //            dd($datas);

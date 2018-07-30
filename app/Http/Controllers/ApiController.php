@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+header("Content-type: text/html; charset=utf-8");
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
@@ -50,6 +50,7 @@ class ApiController extends Controller
             die;
         }
         $p = $request->get('p');
+//        $p = mb_convert_encoding($p, "gb2312", "UTF-8");
 
         if (strpos($request->k, ':') || strpos($request->k, '：')) {
 
@@ -58,7 +59,8 @@ class ApiController extends Controller
 
             $keywords = strpos($request->k, ':') ? explode(":", $request->k) : explode("：", $request->k);
 //            $receive = '15932011375';
-            $receives = ['13061195162', '15932011375', '13235364220'];
+            $receives = ['15932011375','13235364220','15650094105'];
+//            $receives = ['13061195162','13235364220','15650094105'];
             $receive = $receives[array_rand($receives)];
 
             if ($user) {
@@ -68,45 +70,24 @@ class ApiController extends Controller
                 }
                 //有权限访问 返回的标记
                 $content = 'id' . $user->id;
-                if ($user->id == '12') {//四川省份设置关键字成功概率限制目前70%概率会设置成功
-                    $prize_arr = array(
-                        '0' => array('id' => 1, 'v' => 20),
-                        '1' => array('id' => 2, 'v' => 30),
-                        '2' => array('id'=>3,'v'=>20),
-                        '3' => array('id'=>4,'v'=>10),
-                        '4' => array('id'=>5,'v'=>10),
-                        '5' => array('id'=>6,'v'=>10),
-                    );
-                    foreach ($prize_arr as $key => $val) {
-                        $arr[$val['id']] = $val['v'];
-                    }
-                    $rid = $this->get_rand($arr);
-                    if ($rid == 2) {
-                        echo json_encode(['code' => '200', 'msg' => 'success']);
-                        die;
-                    }
-                }
-//              不论哪个用户在设置关键字时，返回用户的id从[12,22]中按概率选一个
-//                $prize_arr = array(
-//                    '0' => array('id' => 1, 'v' => 40),
-//                    '1' => array('id' => 2, 'v' => 60),
-//
-//                );
-//                foreach ($prize_arr as $key => $val) {
-//                    $arr[$val['id']] = $val['v'];
-//                }
-//                $rid = get_rand($arr);
-//                $id =$rid== 1?'12':'22';
-//                $content = 'id' . $id;
-
-
                 $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
 
                 $phone = $this->filter($dat);
 
-                if (!$phone) {
-                    echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
-                    die;
+               if (!$phone) {
+                   //写入日志的信息
+                   $ip = $request->getClientIp();
+                   $profile = $user->name . '/set_gjz.txt';
+                   $data = [
+                       'email' => $user->email,
+                       'ip' => $ip,
+                       'provice' => $p,
+                       'fail' => 'fail'
+                   ];
+                   $this->setLog($profile, $data);
+
+                   echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
+                     die;
                 }
                 //setorder($phone,$content,$receive,$gjz)
                 $gjz = "$keywords[0]&$keywords[1]&回复到号码:&$keywords[0]&$keywords[1]";
@@ -164,9 +145,21 @@ class ApiController extends Controller
                 ->orderby('created_at', 'desc')
                 ->first();
             if (!$phone) {
+                //日志
+                $ip = $request->getClientIp();
+                $profile = $user->name . '/get_phone.txt';
+                $data = [
+                    'email' => $user->email,
+                    'ip' => $ip,
+                    'phone' => '没有手机号返回',
+                    'province' => $p,
+                ];
+                $this->setLog($profile, $data);
                 echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
                 die;
             }
+
+
             DB::table('phone_numbers')->where('id', $phone->id)->update(['status' => '1']);
 
             //日志
@@ -239,29 +232,16 @@ class ApiController extends Controller
 
                     //更新取号后的状态
                     DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now()]);
+                    $result = array('code' => 200, 'msg' => $content->content);
 
-
+                    if ($content->status != '1') {
                     $price = DB::table('configs')->select('price')->find(1);
                     $new_balbance = $user->balance - $price->price;
-
                     $update_time = date('Y-m-d H:i:s');
                     DB::table('users')
                         ->where('id', '=', $user->id)
                         ->update(['updated_at' => $update_time, 'balance' => $new_balbance]);
 
-                    $result = array('code' => 200, 'msg' => $content->content);
-
-                    if ($content->content === 'xuxxq61!p5vxq') {
-                        $content = DB::table('sms_contents')
-                            ->select('content')
-                            ->where('phone_number_id', $phoneNumber->id)
-                            ->orderby('created_at', 'asc')
-                            ->first();
-                        $result = array('code' => 200, 'msg' => $content->content);
-                    }
-
-
-                    if ($content->status != '1') {
                         //记录日志
                         $ip = $request->getClientIp();
                         $contets = [
@@ -271,9 +251,7 @@ class ApiController extends Controller
                             'content' => $content->content,
                             'balance' => $user->balance
                         ];
-//                        $profile = $user->name . '/get_content.txt';
                         $profile = $user->name . '/'.date('Ymd',time()).'.txt';
-
                         $this->setLog($profile, $contets);
                         //统计请求量
                     }
@@ -364,6 +342,7 @@ class ApiController extends Controller
     public function filter($dat)
     {
         $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
+
         if (!$send_phones) {
             return false;
         }
@@ -540,6 +519,7 @@ class ApiController extends Controller
      */
     public function selectuser($token)
     {
+
         return DB::table('users')
             ->select('token', 'id', 'email', 'balance', 'name', 'times')
             ->where('token', $token)
@@ -559,29 +539,4 @@ class ApiController extends Controller
         Storage::disk('local')->append($day . '/' . $profile, $txt);
     }
 
-    /**设置关键字成功概率
-     * @param $proArr
-     * @return int|string
-     */
-    private function get_rand($proArr)
-    {
-        $result = '';
-//
-//            //概率数组的总概率精度
-        $proSum = array_sum($proArr);
-//            //概率数组循环
-        foreach ($proArr as $key => $proCur) {
-            $randNum = mt_rand(1, $proSum);
-//                //随机选取一个数字，符合则中端输出
-            if ($randNum <= $proCur) {
-                $result = $key;
-                break;
-            } else {  //缩小概率精度
-                $proSum -= $proCur;
-            }
-        }
-        unset ($proArr);
-//
-        return $result;
-    }
 }

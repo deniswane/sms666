@@ -14,7 +14,7 @@
         <div class="demoTable">
             搜索用户：
             <div class="layui-inline">
-                <input class="layui-input" name="username" placeholder="用户名" id="username" autocomplete="off">
+                <input class="layui-input" name="username" placeholder="输入邮箱" id="username" autocomplete="off">
             </div>
             <button class="layui-btn " onclick="searchContent()">搜索</button>
             搜索手机信息：
@@ -131,20 +131,21 @@
                     if (data.code == '201') {
                         layer.alert(data.msg)
                     } else {
-                        console.log(data);
+                        // console.log(data);
                         $('#today').html(function () {
                             if (data.allIds.to_phone == false) {
                                 return '无'
                             } else {
-                                console.log('666666')
-                                console.log( data.contents)
-
                                 var contents = ''
                                 var i = 1;
                                 var count = num = 0;
                                 for (var Key in data.allIds.to_phone) {
                                     contents += '<span style="width:250px; float:left; display:block; ">'
+                                    if (data.contents.to_phone[Key] ==undefined){
+                                        data.contents.to_phone[Key]=0
+                                    }
                                     contents += Key + '：' + data.contents.to_phone[Key] + ' -- ' + data.allIds.to_phone[Key].length + "&nbsp;" + '成功率：' + Math.floor((data.contents.to_phone[Key] / data.allIds.to_phone[Key].length) * 100) + "%"
+
                                     contents += '</span>'
                                     count += data.contents.to_phone[Key];
                                     num += data.allIds.to_phone[Key].length;
@@ -169,6 +170,9 @@
                                 var count = num = 0;
                                 for (var Key in data.allIds.yes_phone) {
                                     contents += '<span style="width:250px; float:left; display:block; ">'
+                                    if (data.contents.yes_phone[Key] ==undefined){
+                                        data.contents.yes_phone[Key]=0
+                                    }
                                     contents += Key + '：' + data.contents.yes_phone[Key] + ' -- ' + data.allIds.yes_phone[Key].length + "&nbsp;" + '成功率：' + Math.floor((data.contents.yes_phone[Key] / data.allIds.yes_phone[Key].length) * 100) + '%'
                                     contents += '</span>'
                                     count += data.contents.yes_phone[Key];
