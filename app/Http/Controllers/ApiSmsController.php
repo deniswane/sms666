@@ -46,33 +46,34 @@ class ApiSmsController extends Controller
         //权限验证
         $user = $this->api->selectuser($token);
         if ($user) {
-            $no_allow=['广东','陕西'];
-            if($user->id ==17 && in_array($p,$no_allow)){
-                //禁止用户设置广东
-                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
-            }
+//            $no_allow=['广东'];
+//            if($user->id ==17 && in_array($p,$no_allow)){
+//                //禁止用户设置广东
+//                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
+//            }
             if ($user->balance <= 0) {
-               echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;
+                echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;
             }
             //根据token 判断是京东还是淘宝
             switch ($token){
                 case $this->jd_token: //京东的用户token
-                     $type_sta = 'jd_st';
-                break;
+                    $type_sta = 'jd_st';
+                    break;
                 case  $this->tb_token://淘宝用户的token
-                     $type_sta = 'tb_st';
-                break;
+                    $type_sta = 'tb_st';
+                    break;
                 default:
                     //没有用户对应的类型（京东、淘宝） 返回错误
-                 echo json_encode(['code' => 202, 'msg' => 'Please contact the staff']);die;
-                break;
+                    echo json_encode(['code' => 202, 'msg' => 'Please contact the staff']);die;
+                    break;
             }
             //根据不同的用户去短信表 判断获取手机号
             if ($type_sta){
                 //取手机号
-                $receives=['15932011375','13235364220','15650094105'];
-//                $receives=['13061195162','13235364220','15650094105'];
-                $receive=$receives[array_rand($receives)];
+//                $receives = ['13061195162','13220606871','15932011375','13235364220','15650094105'];
+//                $receives=['13235364220','13220606871'];
+//                $receive=$receives[array_rand($receives)];
+                $receive = $this->api->filter_phones();
 
                 $content = 'id' . $user->id;
 
@@ -100,7 +101,7 @@ class ApiSmsController extends Controller
                 ];
 
                 //线上的数据库
-               $this->api->setorder($phone, $content, $receive,$gjz, $profile, $parame,1);
+                $this->api->setorder($phone, $content, $receive,$gjz, $profile, $parame,1);
                 //现在链接是本地的数据库
 //                $this->setorder($phone, $content, $receive, $gjz, $profile, $parame, 1);
             }else{
@@ -133,11 +134,11 @@ class ApiSmsController extends Controller
 
         if ($user) {
 
-            $no_allow=['广东','陕西'];
-            if($user->id ==17 && in_array($p,$no_allow)){
-                //禁止用户设置广东
-                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
-            }
+//            $no_allow=['广东'];
+//            if($user->id ==17 && in_array($p,$no_allow)){
+//                //禁止用户设置广东
+//                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
+//            }
 
             if ($user->balance <= 0) {
                 echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;
@@ -176,8 +177,14 @@ class ApiSmsController extends Controller
                     die;
                 }
             }
-
-
+            //更新2到7分钟之前没有被取走的手机号状态为 0 再次被取
+            $two_minute =Carbon::now()->addSeconds(-120);
+            $seven_minute =Carbon::now()->addSeconds(-420);
+            $no_contents = PhoneNumber::where('created_at','<',$two_minute)->where('created_at','>',$seven_minute)
+                ->where('status','1')->where('user_id','-1')->pluck('id');
+            if ($no_contents){
+                PhoneNumber::whereIn('id',$no_contents)->update(['status'=>'0']);
+            }
             //2.从phone_numbers取新的手机号
 
             $phone = DB::table('phone_numbers')
@@ -219,13 +226,13 @@ class ApiSmsController extends Controller
         $type = $request->type;
         $tel = $request->phone;
         $content = $request->con;
-       if( !$this->check_type($content))return;
+        if( !$this->check_type($content)) {echo $content.'--'.$tel.'--'.$type;die;}
 
-       echo "123456";
+        echo "123456";
 
         switch ($type){
             case '京东':
-                 $value=  $this->gettoken('jd_sms');
+                $value=  $this->gettoken('jd_sms');
                 $this->change_balance($this->jd_token,$tel,$content,$value);
                 break;
             case '淘宝':
@@ -240,77 +247,139 @@ class ApiSmsController extends Controller
     private function change_balance($token,$tel,$content,$value)
     {
 
+        $res= DB::table('callback_result')->select('id')->where('phone',$tel)->where('created_at','>',Carbon::today())->first();
+        if ($res) return;
         //更新手机号表的手机状态为
         $phone = PhoneNumber::select('phone','status','id')->where('phone',$tel)->first();
-      if ($phone){
-          if ($phone->status =='0'){
-              PhoneNumber::where('id',$phone->id)->update(['status'=>'1']);
-          }
-          //更新余额
-          $balance = User::select('name','balance','id')->where('token',$token)->first();
-          $price = DB::table('configs')->select('price')->find(1);
-          $new_balbance = $balance->balance - $price->price;
-          User::where('token',$token)->update(['balance'=>$new_balbance]);
-          PhoneNumber::where('id',$phone->id)->update(['user_id'=>$balance->id]);
+        if ($phone){
+            if ($phone->status =='0'){
+                PhoneNumber::where('id',$phone->id)->update(['status'=>'1']);
+            }
+            //更新余额
+            $balance = User::select('name','balance','id')->where('token',$token)->first();
+            $price = DB::table('configs')->select('price')->find(1);
+            $new_balbance = $balance->balance - $price->price;
+            User::where('token',$token)->update(['balance'=>$new_balbance]);
+            PhoneNumber::where('id',$phone->id)->update(['user_id'=>$balance->id]);
 
-          $url='http://mt.cdwashcar.com/index/sp/content?token='.$value.'&tel='.$tel.'&content='.$content;
+            $url='http://mt.cdwashcar.com/index/sp/content?token='.$value.'&tel='.$tel.'&content='.$content;
 
-          $result = json_decode($this->curl_request($url),true);
+            $result = json_decode($this->curl_request($url),true);
 
-          $type = $token==$this->jd_token?'0':'1';
+            $type = $token==$this->jd_token?'0':'1';
 
-          if ($result['code']=='0'){
-              $result['msg']='成功';
-          }
+            if ($result['code']=='0'){
+                $result['msg']='成功';
+            }
 
-          $val=[
-              'phone'=>$tel,
-              'type'=>$type,
-              'created_at'=>Carbon::now(),
-          ];
+            $val=[
+                'phone'=>$tel,
+                'type'=>$type,
+                'created_at'=>Carbon::now(),
+            ];
 
-          $val['result']=$result['msg'];
+            $val['result']=$result['msg'];
 
-          DB::table('callback_result')->insert($val);
-          $type = $type=='0'?'京东':'淘宝';
+            DB::table('callback_result')->insert($val);
+            $type = $type=='0'?'京东':'淘宝';
 
-          //记录文本
-          $profile = $balance->name.'/'.date('Ymd',time()).'.txt';
-          $parame = [
-              'phone' => $tel,
-              'type' =>$type,
-              'result'=>$result['msg']
-          ];
-        $this->api->setLog($profile,$parame);
-      }
+            //记录文本
+            $profile = $balance->name.'/'.date('Ymd',time()).'.txt';
+            $parame = [
+                'phone' => $tel,
+                'type' =>$type,
+                'result'=>$result['msg']
+            ];
+            $this->api->setLog($profile,$parame);
+        }
     }
-private function check_type($content){
-    if(strpos($content,'京东') !==false ){
-        return true;
-    }elseif(strpos($content,'淘宝') !==false){
-        return true;
-    }else{
-        return false;
+    private function check_type($content){
+        if(strpos($content,'京东') !==false ){
+            return true;
+        }elseif(strpos($content,'淘宝') !==false){
+            return true;
+        }else{
+            return false;
+        }
     }
-}
     /**获取对方登陆的token
      * @param $name
      */
     private function gettoken($name){
 
-       if( Cache::has($name.'token')){
-           return Cache::get($name.'token');
-       }else{
-           $url='http://mt.cdwashcar.com/index/sp/login?user='.$name.'&pass=123456';
-           $result=json_decode($this->curl_request($url),true);
-           if ($result['code']==0){
-               Cache::put($name.'token',$result['data']['token'],119);
-               return Cache::get($name.'token');
-           }
-       }
+        if( Cache::has($name.'token')){
+            return Cache::get($name.'token');
+        }else{
+            $url='http://mt.cdwashcar.com/index/sp/login?user='.$name.'&pass=123456';
+            $result=json_decode($this->curl_request($url),true);
+            if ($result['code']==0){
+                Cache::put($name.'token',$result['data']['token'],119);
+                return Cache::get($name.'token');
+            }
+        }
 
     }
 
+
+    public function remote_close()
+    {
+        if (time() - strtotime(date('Y-m-d'))<=600){
+            $yes = date('Ymd')-1;
+            $tablename = "SMS" .$yes . '6666';
+        }else{
+            $tablename = "SMS" . date('Ymd') . '6666';
+        }
+
+        $order_res = DB::connection('ourcms')->table('cms_order')
+            ->select('id')
+            ->where('order_name', '=', $tablename)
+            ->where('state', '!=', '-1')
+            ->where('state', '!=', '-2')
+            ->orderby('addtime','desc')
+            ->first();
+        if ($order_res) {
+            # 订单总表里的id 对应 外边订单详细表的表名
+            $ordtb = "cms_orddata_" . $order_res->id;
+            $order_table = DB::connection('ourcms')->table($ordtb);
+            $overdue = date("Y-m-d H:i:s",time()-600);//十分钟
+
+            # 有大写问题
+            //单独指令开关
+            $order = DB::table('filter_phone')->pluck('order');
+            $opens = $order_table->select('phone','id')
+                ->where('return_times','0')
+                ->where('nowtime','<=',$overdue)
+                ->whereIn('smstext',$order)
+//                ->where(function ($query){
+//                    $query->where('smstext','=','xuxxq61!v7q6amieklnmmkgi')
+//                        ->orWhere('smstext','=','xuxxq61!v7q6amknhmmeimhl')
+//                        ->orWhere('smstext','=','xuxxq61!v7q6amklkikhjlln')
+//                        ->orWhere('smstext','=','xuxxq61!v7q6amihinnejmni')
+//                        ->orWhere('smstext','=','xuxxq61!v7q6amkllnhnhfgm');
+//                })
+
+                ->get()->toarray();
+
+            $n=$m=0;
+            //单独指令开关
+            if ($opens){
+                foreach ($opens as $key =>$open){
+                    $new_data = [
+                        'phone' =>$open->phone ,
+                        'smstext' => 'xuxxq61!p5vxq',
+                        'nowtime' => date("Y-m-d H:i:s"),
+                        'software' => '',
+                    ];
+                    $update= DB::connection('ourcms')->table($ordtb) ->where('id', $open->id)->update(['return_times'=>'1']);
+                    if($update) ++$n;
+                    $insert=DB::connection('ourcms')->table($ordtb)->insert($new_data);
+                    if ($insert) ++$m;
+                }
+            }
+            $dt= Carbon::now().'调用成功完成,数据表'.$ordtb.'更新'.$n.'条，插入'.$m.'条；';
+            Storage::disk('local')->append('cron.txt',$dt);
+        }
+    }
     /**curl请求
      * @param $url
      * @param bool $post
@@ -318,35 +387,35 @@ private function check_type($content){
      * @param bool $https
      * @return mixed
      */
-        private function curl_request($url,$post=false,$data=array(),$https=false){
-          // 使用curl_setopt函数配置curl请求（设置请求方式请求参数）
-            //使用curl_init函数初始化curl请求（设置请求地址）
-            $ch=curl_init($url);
-            curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0); //强制协议为1.0
+    private function curl_request($url,$post=false,$data=array(),$https=false){
+        // 使用curl_setopt函数配置curl请求（设置请求方式请求参数）
+        //使用curl_init函数初始化curl请求（设置请求地址）
+        $ch=curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0); //强制协议为1.0
 
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect'=>'')); //头部要送出'Expect: '
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect'=>'')); //头部要送出'Expect: '
 
-            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 ); //强制使用IPV4协议解析域名
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 ); //强制使用IPV4协议解析域名
 
-            //判断post请求
-            if($post){
-                //设置请求方式
-                curl_setopt($ch,CURLOPT_POST,true);
-                //设置请求参数
-                curl_setopt($ch,CURLOPT_POSTFIELDS,$data);
-            }
-            //https协议请求默认发送http协议请求，如果HTTPS请求
-            if($https){
-                curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);//检测ssl证书 这里是进制检测
-                curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
-            }
-            //使用curl_exec函数发送curl请求
-            //默认返回true|false 若果需要获取请求的执行结果，需要设置CURLOPT__RETURNTRANSFER
-            curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-            $result=curl_exec($ch);
-            //请求结束使用curl_close函数关闭curl请求，释放资源
-            curl_close($ch);
-            //返回结果给调用方
-            return $result;
+        //判断post请求
+        if($post){
+            //设置请求方式
+            curl_setopt($ch,CURLOPT_POST,true);
+            //设置请求参数
+            curl_setopt($ch,CURLOPT_POSTFIELDS,$data);
         }
+        //https协议请求默认发送http协议请求，如果HTTPS请求
+        if($https){
+            curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);//检测ssl证书 这里是进制检测
+            curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
+        }
+        //使用curl_exec函数发送curl请求
+        //默认返回true|false 若果需要获取请求的执行结果，需要设置CURLOPT__RETURNTRANSFER
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        $result=curl_exec($ch);
+        //请求结束使用curl_close函数关闭curl请求，释放资源
+        curl_close($ch);
+        //返回结果给调用方
+        return $result;
+    }
 }

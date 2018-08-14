@@ -11,6 +11,7 @@
     <meta name="format-detection" content="telephone=no">
     <link rel="stylesheet" href="/static/cfcc/layui/css/layui.css" media="all" />
     <link rel="stylesheet" href="/static/cfcc/css/index.css" media="all" />
+
     <script type="text/javascript" src="/static/cfcc/layui/layui.js"></script>
     <script type="text/javascript" src="/static/cfcc/js/index.js"></script>
     <script type="text/javascript" src="/static/cfcc/js/cache.js"></script>

@@ -59,4 +59,9 @@ class ClientController extends Controller
         }
         return view('client.index');
     }
+
+    public function ceshi()
+    {
+        dd('666666');
+    }
 }

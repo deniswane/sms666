@@ -1,5 +1,6 @@
 @extends('cfcc.index.lay')
 {{--<meta http-equiv="refresh" content="60">--}}
+<link rel="stylesheet" href="/static/cfcc/css/formSelects.css"  />
 
 @section('content')
     <blockquote class="layui-elem-quote quoteBox">
@@ -22,8 +23,11 @@
                 <input class="layui-input" name="phone" placeholder="输入手机号" id="phone" autocomplete="off">
             </div>
             <button class="layui-btn " onclick="searchPhone()">搜索</button>
+
         </div>
+
     </blockquote>
+
     说明：省份 取走内容的手机号数量--取走的手机号 （比率大于100%手机号包含昨天的）；由于异步请求数据实时更新，总数以下边数据表总数为准。
     <div class="layui-form">
 
@@ -199,9 +203,9 @@
 
 
     <script>
-        layui.use('table', function () {
-
+        layui.use(['table'], function () {
             var table = layui.table;
+
             table.render({
                 //请求后台获取数据
                 request: {
@@ -276,7 +280,6 @@
                     });
                 }
             };
-
             $('.demoTable .layui-btn').on('click', function () {
                 var type = $(this).data('type');
                 active[type] ? active[type].call(this) : '';
@@ -286,7 +289,6 @@
         function searchPhone() {
             var phone = $('#phone').val();
             if (IsMobilePhoneNumber(phone)) {
-                console.log(phone);
                 $.ajax({
                     type: 'post',
                     url: "{{route('cfcc.searchContent')}}",
@@ -312,5 +314,12 @@
                 return false;
             }
         }
+    </script>
+
+
+    {{--<script src="/static/cfcc/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>--}}
+    <script src="/static/cfcc/js/formSelects-v4.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        var formSelects = layui.formSelects;
     </script>
 @endsection

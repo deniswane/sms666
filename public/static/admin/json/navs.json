@@ -11,7 +11,13 @@
 			"icon": "&#xe634;",
 			"href": "set_money",
 			"spread": false
-		}
+		},
+      {
+        "title": "用户管理",
+        "icon": "&#xe612;",
+        "href": "user_manager",
+        "spread": false
+      }
 	],
 	"memberCenter": [
 		{
@@ -31,6 +37,12 @@
 			"spread": false
 		},
       {
+        "title": "总筛选数据",
+        "icon": "&#xe612;",
+        "href": "all_filter_detail",
+        "spread": false
+      },
+      {
         "title": "昨日筛选数据",
         "icon": "&#xe612;",
         "href": "ye_filter_detail",
@@ -40,7 +52,13 @@
 			"icon": "&#xe612;",
 			"href": "all_return_detail",
         "spread": false
-		}
+      },{
+        "title": "短信猫开关",
+        "icon": "&#xe612;",
+        "href": "filter_phones",
+        "spread": false
+      }
+
 	]
 }
 

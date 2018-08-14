@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 header("Content-type: text/html; charset=utf-8");
+
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,20 +19,8 @@ use Mail;
  * @package App\Http\Controllers
  * 是否有新短信标记
  */
-class ApiController extends Controller
+class SmsOnlineController extends Controller
 {
-    private $database;
-
-    public function __construct()
-    {
-        $prefix = (request()->route()->getAction())['prefix'];
-        if (strpos($prefix, 'inside')) {
-            $this->database = 'mysql';
-        } else {
-            $this->database = '';
-        }
-
-    }
 
     /**设置关键字
      * @param Request $request
@@ -43,14 +32,13 @@ class ApiController extends Controller
         $get = ['k' => htmlspecialchars($request->get('k')), 'p' => $request->get('p')];
         $validator = Validator::make($get, [
             'k' => 'required|min:2|max:5',
-//            'p'=>'required'
+            'p'=>'required'
         ]);
         if ($validator->fails()) {
             echo json_encode(['code' => 102, 'msg' => 'Format error']);
             die;
         }
         $p = $request->get('p');
-//        $p = mb_convert_encoding($p, "gb2312", "UTF-8");
 
         if (strpos($request->k, ':') || strpos($request->k, '：')) {
 
@@ -68,27 +56,6 @@ class ApiController extends Controller
                 }
                 //有权限访问 返回的标记
                 $content = 'id' . $user->id;
-                $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
-
-                $phone = $this->filter($dat);
-
-                if (!$phone) {
-                    //写入日志的信息
-                    $ip = $request->getClientIp();
-                    $profile = $user->name . '/set_gjz.txt';
-                    $data = [
-                        'email' => $user->email,
-                        'ip' => $ip,
-                        'provice' => $p,
-                        'fail' => 'fail'
-                    ];
-                    $this->setLog($profile, $data);
-
-                    echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
-                    die;
-                }
-                //setorder($phone,$content,$receive,$gjz)
-                $gjz = "$keywords[0]&$keywords[1]&回复到号码:&$keywords[0]&$keywords[1]";
 
                 //写入日志的信息
                 $ip = $request->getClientIp();
@@ -97,16 +64,40 @@ class ApiController extends Controller
                     'email' => $user->email,
                     'ip' => $ip,
                     'keywords' => "$keywords[0]&$keywords[1]",
-                    'phone'=>$phone,
+                    'phone' => $receive,
                     'provice' => $p,
                     'success' => 'success'
                 ];
-                if  ($user->email =='63822405@qq.com'){
-                    $this->setorder($phone, $content, $receive, $gjz, $profile, $data,2);
-                }else{
-                    $this->setorder($phone, $content, $receive, $gjz, $profile, $data);
 
-                }
+                $sctstart = $maskkeyone = $this->transcode($keywords[0]);;
+                $sctend = $maskkeytwo = $this->transcode($keywords[1]);
+                $snumstart = 'hello';
+                $province = [
+                    '安徽' => '1', '安徽省' => '1', '福建' => '2', '福建省' => '2', '甘肃' => '3', '甘肃省' => '3', '广东' => '4', '广东省' => '4', '广西' => '5', '广西省' => '5', '贵州' => '6', '贵州省' => '6'
+                    , '海南' => '7', '海南省' => '7', '河北' => '8', '河北省' => '8', '河南' => '9', '河南省' => '9', '黑龙江' => '10', '黑龙江省' => '10', '湖北' => '11', '湖北省' => '11', '湖南' => '12', '湖南省' => '12',
+                    '吉林' => '13', '吉林省' => '13', '江苏' => '14', '江苏省' => '14', '江西' => '15', '江西省' => '15', '辽宁' => '16', '辽宁省' => '16', '内蒙古' => '17', '内蒙古省' => '17', '宁夏' => '18', '宁夏省' => '18',
+                    '青海' => '19', '青海省' => '19', '山东' => '20', '山东省' => '20', '山西' => '21', '山西省' => '21', '陕西' => '22', '陕西省' => '22', '四川' => '23', '四川省' => '24', '西藏' => '24', '西藏省' => '24',
+                    '新疆' => '25', '新疆省' => '25', '云南' => '26', '云南省' => '26', '浙江' => '27', '浙江省' => '27', '重庆' => '560', '重庆市' => '560', '北京' => '561', '北京市' => '561', '上海' => '562', '上海市' => '562'
+                    , '天津' => '563', '天津市' => '563'
+                ];
+                $provinceid = $province[$p];
+                $new_data = [
+                    'phone' => $receive,
+                    'smstext' => $content,
+                    'addtime'=>microtime(true),
+                    'stype' => '1',
+                    'sctstart' => $sctstart,
+                    'provinceid' => $provinceid,
+                    'sctend' => $sctend,
+                    'snumstart' => $snumstart,
+                    'maskkeyone' => $maskkeyone,
+                    'maskkeytwo' => $maskkeytwo,
+                    'nowtime' => date("Y-m-d H:i:s"),
+                    'software' => '',
+
+                ];
+
+                    $this->setorder($new_data,$profile, $data);
 
             } else {
                 //无权访问
@@ -127,7 +118,7 @@ class ApiController extends Controller
         $token = $request->token;
         $get_p = ['p' => $request->p];
         $validator = Validator::make($get_p, [
-//            'p' =>'required'
+            'p' =>'required'
         ]);
         if ($validator->fails()) {
             echo json_encode(['code' => 102, 'msg' => 'Format error']);
@@ -139,7 +130,6 @@ class ApiController extends Controller
         $user = $this->selectuser($token);
 
         if ($user) {
-
             $dat = empty($p) ? ['user_id' => $user->id, 'status' => '0'] : ['user_id' => $user->id, 'status' => '0', 'province' => $p];
 
             $phone = DB::table('phone_numbers')
@@ -162,7 +152,6 @@ class ApiController extends Controller
                 die;
             }
 
-
             DB::table('phone_numbers')->where('id', $phone->id)->update(['status' => '1']);
 
             //日志
@@ -178,12 +167,7 @@ class ApiController extends Controller
 
             echo json_encode(array('code' => 200, 'msg' => $phone->phone));
             die;
-//            } else {
-//                echo json_encode(array('code' => 201, 'msg' => 'Please update your text message first'));
-//                die;
-//            }
         } else {
-
             echo json_encode(array('code' => 105, 'msg' => "Sorry, sir. You have no right to visit"));
             die;
         }
@@ -254,7 +238,7 @@ class ApiController extends Controller
                             'content' => $content->content,
                             'balance' => $user->balance
                         ];
-                        $profile = $user->name . '/'.date('Ymd',time()).'.txt';
+                        $profile = $user->name . '/' . date('Ymd', time()) . '.txt';
                         $this->setLog($profile, $contets);
                         //统计请求量
                     }
@@ -275,135 +259,34 @@ class ApiController extends Controller
         }
     }
 
-    /**发送短信
-     * @param Request $request
-     * @param User $user
-     */
-    public function sendMsg(Request $request)
-    {
-        //参数验证
-        if ($request->isMethod('post')) {
-
-            $parame = $request->all();
-            $validator = Validator::make($parame, [
-                'phone' => 'required |regex:/^1[34578][0-9]{9}$/',
-                'receive' => 'required |regex:/^1[34578][0-9]{9}$/',
-                'content' => 'required',
-                'token' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                echo json_encode(['code' => 102, 'msg' => 'Format error']);
-                die;
-            }
-            $user = $this->selectuser($parame['token']);
-
-            if ($user) {
-                if ($user->balance > 0) {
-
-                    $phon = $parame['phone'];
-                    //判断手机号
-                    $phoneNumber = DB::table('phone_numbers')
-                        ->where('user_id', $user->id)
-                        ->where('phone', $phon)
-                        ->first();
-
-                    if (!$phoneNumber) {
-                        echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
-                        die;
-                    }
-
-
-                    $price = DB::table('configs')->find(1);
-                    $new_balbance = $user->balance - $price->price;
-                    $update_time = date('Y-m-d H:i:s');
-                    DB::table('users')
-                        ->where('id', '=', $user->id)
-                        ->update(['updated_at' => $update_time, 'balance' => $new_balbance]);
-
-                    $profile = $user->name . '/send_msg.txt';
-                    $data = [
-                        'ip' => $request->getClientIp(),
-                        'email' => $user->email,
-                        'content' => $parame['content']
-                    ];
-                    //统计请求量
-
-                    $receive = $parame['receive'];
-                    $content = $parame['content'];
-                    $gjz = "证码&。请&证码&。请";
-                    $this->setorder($phon, $content, $receive, $gjz, $profile, $data);
-                }
-            }
-        }
-    }
-
-    /**
-     * 筛选手机号
-     * return phone
-     */
-    public function filter($dat)
-    {
-        $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
-
-        if (!$send_phones) {
-            return false;
-        }
-        DB::table('web_sms_prepare')->where('id', $send_phones->id)->update(['send' => 5]);
-
-        return $send_phones->phone;
-    }
-
-    /*设置订单
+    /*设置订单 联网订单不加密直接插入数据表
      * phone    发送的手机号
      * content  返回的关键字
      * receive  接收的手机号
      * gjz      返回截取的位置
      */
-    public function setorder($phone, $content, $receive, $gjz, $profile, $parame, $type = 0)
+    public function setorder($new_data, $profile, $parame)
     {
 
-//        $mydata = DB::connection('jm_cms')->table('cms_device_data')->where('phone', $phone)->first();
-//         if (!$mydata)
-//         {
-//             $mydata = DB::connection('ourcms')->table('cms_device_data')->where('phone', $phone)->first();
-//         }
-        # 有大写问题
-       $key = array('a' => 'o', 'b' => '0', 'c' => 'p', 'd' => '1', 'e' => 'q', 'f' => '2', 'g' => 'r', 'h' => '3', 'i' => 's', 'j' => '4', 'k' => 't', 'l' => '5', 'm' => 'u', 'n' => '6', 'o' => 'v', 'p' => '7', 'q' => 'w', 'r' => '8', 's' => 'x', 't' => '9', 'u' => 'y', 'v' => '*', 'w' => 'z', 'x' => '#', 'y' => '&', 'z' => ',', '0' => 'n', '1' => 'm', '2' => 'l', '3' => 'k', '4' => 'j', '5' => 'i', '6' => 'h', '7' => 'g', '8' => 'f', '9' => 'e', '*' => 'd', '#' => 'c', ',' => 'b', '&' => 'a', ':' => '!');
+        /**
+         * phone    短信猫号
+         * content  老人机回复内容
+         * stype    1
+         * sctstart 关键字前半部分 Unicode码
+         * sctend   关键字后半部分 Unicode码
+         * snumstart 固定的    Unicode码
+         * maskkeyone 关键字前半部分 Unicode码
+         * maskkeytwo   关键字后半部分 Unicode码
+         */
 
 
-        if ($type == '1') {
-            //单独指令开关
-            $_smstext = 'smssend:open&' . $receive;
-            $smstxt = '';
-            for ($i = 0; $i < strlen($_smstext); $i++) {
-                $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
-            }
-
-        } else {
-            $_smstext = "second:" . $receive . "&" . $content . "&1&";
-            $smstxt = '';
-            for ($i = 0; $i < strlen($_smstext); $i++) {
-                $smstxt .= $key[$_smstext[$i]];   # 转换为 ‘密文’
-            }
-
-            # 关键字
-            $gjz = json_encode($gjz);
-            $gjz = str_replace("\u", "%u", $gjz);
-            $gjz = trim($gjz, '"');
-            # 把关键词 添加到了 ‘密文’ 后边
-            $smstxt .= $gjz;
-        }
         //短信订单状态 0暂停 1开启
         $switch = 1;
 
         //添加到订单
-        //订单存放的库
-
-        //添加到订单
-        $tablename = "SMS" . date('Ymd') . '6666';
-        $order_res = DB::connection('ourcms')->table('cms_order')
-//        $order_res = DB::table('cms_order')
+        $tablename = "SMSONLINE" . date('Ymd') . '6666';
+//        $order_res = DB::connection('ourcms')->table('cms_order')
+        $order_res = DB::table('cms_order')
             ->select('id', 'order_tnum')
             ->where('order_name', '=', $tablename)
             ->where('state', '!=', '-1')
@@ -421,28 +304,27 @@ class ApiController extends Controller
             $info['addtime'] = time();
             $info['LateSendTime'] = $info['LateReturnTime'] = date("Y-m-d H:i:s");
             $info['spnumber'] = '';
-            $info['note'] = " 接收短信订单 ";
-//            $id = DB::table('cms_order')->insertGetId($info);
-            $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
+            $info['note'] = "连网接收短信订单 ";
+            $id = DB::table('cms_order')->insertGetId($info);
+//            $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
             //创建订单详细表
             //手机号,指令,发送手机号,发送时间,发送状态(012),用户project,software,返回时间
             $ordtb = "cms_orddata_" . $id;
-            Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
-//            Schema::create($ordtb, function (Blueprint $table) {
+//            Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
+            Schema::create($ordtb, function (Blueprint $table) {
                 $table->charset = 'utf8';
                 $table->engine = 'MyISAM';
                 $table->increments('id');
                 $table->string('phone', 20)->default('')->comment('订单电话号');
-                $table->string('smstext', 255)->comment('指令回复内容');
-                $table->string('ordimsi', 50)->default('')->comment('订单imsi');
+                $table->string('smstext', 100)->comment('指令回复内容');
                 $table->string('addtime', 30)->default('')->comment('访问时间');
                 $table->string('userphone', 20)->default('')->comment('访问手机号');
                 $table->string('imsi', 50)->default('')->comment('访问imsi');
                 $table->integer('state')->default(0)->comment('1发送0未发送');
                 $table->string('provinceid', 3)->default('0')->comment('省份id');
+                $table->string('software', 200)->default('')->comment('软件名');
                 $table->string('cityid', 3)->default('0')->comment('城市id');
                 $table->string('projectid', 4)->default('0')->comment('项目号');
-                $table->string('software', 200)->default('')->comment('项目号');
                 $table->tinyInteger('is_return')->default(0)->comment('0未返回1返回');
                 $table->string('return_times', 3)->default('0')->comment('返回时长');
                 $table->string('backtime', 30)->default('')->comment('返回时间');
@@ -457,31 +339,16 @@ class ApiController extends Controller
                 $table->string('maskkeyone', 100)->default('')->comment('关键字1');
                 $table->string('maskkeytwo', 100)->default('')->comment('关键字2');
             });
-            $new_data = [
-                'phone' => $phone,
-                'smstext' => $smstxt,
-//                        'ordimsi'=>$mydata['imsi'],
-//                        'projectid'=>$mydata['projectid'],
-//                        'provinceid'=>$mydata['provinceid'],
-                'nowtime' => date("Y-m-d H:i:s"),
-                'software' => '',
 
-            ];
-            DB::connection('ourcms')->table($ordtb)->insert($new_data);
-//            DB::table($ordtb)->insert($new_data);
+//            DB::connection('ourcms')->table($ordtb)->insert($new_data);
+            DB::table($ordtb)->insert($new_data);
 
             //记录日志
             $this->setLog($profile, $parame);
-            if($type ==2 ){
-                echo json_encode(['code' => '200', 'phone' => $phone]);
-                die;
-            }else{
-                echo json_encode(['code' => '200', 'msg' => 'success']);
-                die;
-            }
+            echo json_encode(['code' => '200', 'msg' => 'success']);
+            die;
 
         } else {
-
             //追加
             # 订单总表不是空 追加进去
             $info = array();
@@ -492,34 +359,20 @@ class ApiController extends Controller
             # 订单总表里的id 对应 外边订单详细表的表名
             $ordtb = "cms_orddata_" . $order_res->id;
             # 成功之后的订单不管了
-            $new_data = [
-                'phone' => $phone,
-                'smstext' => $smstxt,
-//                        'ordimsi'=>$mydata['imsi'],
-//                        'projectid'=>$mydata['projectid'],
-//                        'provinceid'=>$mydata['provinceid'],
-                'nowtime' => date("Y-m-d H:i:s"),
-                'software' => '',
 
-            ];
-            $res = DB::connection('ourcms')->table($ordtb)->insert($new_data);
-//            $res = DB::table($ordtb)->insert($new_data);
+//            $res = DB::connection('ourcms')->table($ordtb)->insert($new_data);
+            $res = DB::table($ordtb)->insert($new_data);
             if ($res) {
-                DB::connection('ourcms')->table('cms_order')
-//                DB::table('cms_order')
+//                DB::connection('ourcms')->table('cms_order')
+                DB::table('cms_order')
                     ->where('id', '=', "$order_res->id")
                     ->update(['order_tnum' => $info['order_tnum'], 'state' => $info['state'], 'addtime' => $info['addtime']]);
             }
             //记录日志
             $this->setLog($profile, $parame);
 
-            if($type ==2 ){
-                echo json_encode(['code' => '200', 'phone' => $phone]);
-                die;
-            }else{
-                echo json_encode(['code' => '200', 'msg' => 'success']);
-                die;
-            }
+            echo json_encode(['code' => '200', 'msg' => 'success']);
+            die;
 
         }
     }
@@ -550,6 +403,13 @@ class ApiController extends Controller
         Storage::disk('local')->append($day . '/' . $profile, $txt);
     }
 
+    private function transcode($gjz)
+    {
+        $gjz = json_encode($gjz);
+        $gjz = str_replace("\u", "%u", $gjz);
+        $gjz = trim($gjz, '"');
+        return $gjz;
+    }
     public function filter_phones()
     {
         $filter_phones= DB::table('filter_phone')->select('phone')->where('status','1')->get()->toarray();
