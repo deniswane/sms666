@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Schema\Blueprint;
-
-use Illuminate\Support\Facades\Schema;
 
 class ApiSmsController extends Controller
 {
@@ -46,181 +43,210 @@ class ApiSmsController extends Controller
         //权限验证
         $user = $this->api->selectuser($token);
         if ($user) {
-//            $no_allow=['广东'];
-//            if($user->id ==17 && in_array($p,$no_allow)){
-//                //禁止用户设置广东
-//                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
-//            }
-            if ($user->balance <= 0) {
-                echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;
-            }
-            //根据token 判断是京东还是淘宝
-            switch ($token){
-                case $this->jd_token: //京东的用户token
-                    $type_sta = 'jd_st';
-                    break;
-                case  $this->tb_token://淘宝用户的token
-                    $type_sta = 'tb_st';
-                    break;
-                default:
-                    //没有用户对应的类型（京东、淘宝） 返回错误
-                    echo json_encode(['code' => 202, 'msg' => 'Please contact the staff']);die;
-                    break;
-            }
-            //根据不同的用户去短信表 判断获取手机号
-            if ($type_sta){
-                //取手机号
-//                $receives = ['13061195162','13220606871','15932011375','13235364220','15650094105'];
-//                $receives=['13235364220','13220606871'];
-//                $receive=$receives[array_rand($receives)];
-                $receive = $this->api->filter_phones();
 
-                $content = 'id' . $user->id;
+            $this->api->check_user($user,2);
 
+            //短信猫
+            $receive = $this->api->filter_phones();
 
-                $ip = $request->getClientIp();
-                $profile = $user->name . '/key.txt';
+            $content = 'id' . $user->id;
 
-                $gjz = '';
-
-                //从prepare取手机号设置关键字
-
-                $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
-
-                $phone = $this->api->filter($dat);
-                if (!$phone){
-                    echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
-                }
-
-                $parame = [
-                    'email' => $user->email,
-                    'ip' => $ip,
-                    'phone' => $phone,
-                    'province' => $p,
-                    'type_sta'=>$type_sta
-                ];
-
-                //线上的数据库
-                $this->api->setorder($phone, $content, $receive,$gjz, $profile, $parame,1);
-                //现在链接是本地的数据库
-//                $this->setorder($phone, $content, $receive, $gjz, $profile, $parame, 1);
-            }else{
-                //没有用户对应的类型（京东、淘宝） 返回错误
-                echo json_encode(array('code' => 202, 'msg' => 'Please contact the staff.'));
-                die;
-            }
-
-        } else {
-            echo  json_encode( ['code' => 105, 'msg' => "Sorry, sir. You have no right to visit"]);die;
-        }
-
-    }
-
-    public function phone(Request $request)
-    {
-        //验证数据
-        $token = $request->token;
-        $get_p= ['p'=>$request->p];
-        $validator = Validator::make($get_p, [
-//            'p' =>'required'
-        ]);
-        if ($validator->fails()) {
-            echo json_encode(['code'=>102,'msg'=>'Format error']);die;
-        }
-
-        $p=$request->p;
-
-        $user = $this->api->selectuser($token);
-
-        if ($user) {
-
-//            $no_allow=['广东'];
-//            if($user->id ==17 && in_array($p,$no_allow)){
-//                //禁止用户设置广东
-//                echo  json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);die;
-//            }
-
-            if ($user->balance <= 0) {
-                echo json_encode(['code' => 106, 'msg' => 'You need to charge money']);die;
-            }
-            //根据token 判断是京东还是淘宝
-            switch ($token){
-                case $this->jd_token: //京东的用户token
-                    $type_sta = 'jd_st';
-                    break;
-                case  $this->tb_token://淘宝用户的token
-                    $type_sta = 'tb_st';
-                    break;
-                default:
-                    //没有用户对应的类型（京东、淘宝） 返回错误
-                    echo json_encode(['code' => 202, 'msg' => 'Please contact the staff']);die;
-                    break;
-            }
-
-            $dat=empty($p) ? ['user_id'=>'-1','status'=>'0']:['user_id'=>'-1','status'=>'0','province'=>$p];
-
-
-            //1.从sms_contents表链表 phone_numbers取当天最新的做判断
-            $province = empty($p) ?'':$p;
-            $phones = SmsContent::select('sms_contents.id','phone')->leftjoin('phone_numbers','phone_number_id','=','phone_numbers.id');
-            if ($province){
-                $phones = $phones->where('province',$province);
-            }
-            $three =date('Y-m-d H:i:s',time()-600);//十分钟内最新的
-
-            $phone = $phones->where($type_sta,'0')->where('phone_numbers.created_at','>=',$three)->orderby('phone_numbers.created_at','desc')->first();
-
-            if ($phone){
-                if ($phone->phone){
-                    SmsContent::where('id',$phone->id)->update([$type_sta=>'2']);
-                    echo json_encode(array('code' => 200, 'msg' => $phone->phone));
-                    die;
-                }
-            }
-            //更新2到7分钟之前没有被取走的手机号状态为 0 再次被取
-            $two_minute =Carbon::now()->addSeconds(-120);
-            $seven_minute =Carbon::now()->addSeconds(-420);
-            $no_contents = PhoneNumber::where('created_at','<',$two_minute)->where('created_at','>',$seven_minute)
-                ->where('status','1')->where('user_id','-1')->pluck('id');
-            if ($no_contents){
-                PhoneNumber::whereIn('id',$no_contents)->update(['status'=>'0']);
-            }
-            //2.从phone_numbers取新的手机号
-
-            $phone = DB::table('phone_numbers')
-                ->select('phone','id')
-                ->where($dat)
-                ->orderby('created_at', 'desc')
-                ->first();
-            if (!$phone) {
-                echo json_encode(['code' => 107, 'msg' => 'No mobile phone number for the time being']);
-                die;
-            }
-            DB::table('phone_numbers')->where('id', $phone->id)->update(['status' => '1']);
-
-
-
-            //日志
             $ip = $request->getClientIp();
-            $profile = $user->name.'/phone.txt';
-            $data = [
+            $profile = $user->name . '/key.txt';
+
+            $gjz = '';
+
+            //从prepare取手机号设置关键字
+
+            $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
+            if ($user->percentum){
+                $old_new = strpos($user->percentum, ':') ? explode(":", $user->percentum) : explode("：",$user->percentum);
+                $old= $this->api->rand_number($old_new[0],$old_new[1]);
+                if ($old ==2){
+                    $phone = $this->api->filter($dat,$user->id,1);
+                }else{
+                    $phone = $this->api->filter($dat,$user->id);
+                }
+            }else{
+                $phone = $this->api->filter($dat,$user->id);
+            }
+
+            if (!$phone) {
+                echo json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);
+                die;
+            }
+            DB::table('user_filter_phone')->insert(['user_id'=>$user->id,'phone'=>$phone,'created_at'=>Carbon::now()]);
+            $parame = [
                 'email' => $user->email,
                 'ip' => $ip,
-                'phone' => $phone->phone,
-                'province'=>$p,
+                'phone' => $phone,
+                'province' => $p,
             ];
-            $this->api->setLog($profile, $data);
 
-            echo json_encode(array('code' => 200, 'msg' => $phone->phone));
+            //线上的数据库
+            $this->api->setorder($phone, $content, $receive, $gjz, $profile, $parame, 1);
+            //现在链接是本地的数据库
+//            $this->setorder($phone, $content, $receive, $gjz, $profile, $parame, 1);
+
+        } else {
+            //无权访问
+            echo json_encode(array('code' => 105, 'msg' => "Sorry, sir. You have no right to visit"));
             die;
+        }
+    }
+
+    /**获取手机号
+     * @param Request $request
+     */
+    public function phone(Request $request)
+    {
+        $this->api->getPhoneNumber($request);
+    }
+    /**获取短信内容
+     * @param Request $request
+     */
+    public function getSmsContent(Request $request)
+    {
+        // 验证数据
+        $token = $request->token;
+
+        $get_phone = ['phone' => $request->phone,'con'=>$request->con];
+
+        $validator = Validator::make($get_phone, [
+            'phone' => 'required |regex:/^1[34578][0-9]{9}$/',
+            'con'=>'required'
+        ]);
+
+        if ($validator->fails()) {
+            echo json_encode(['code' => 102, 'msg' => 'Format error']);
+            die;
+        }
+        // 拿手机号的最新短信
+        $phone = $request->phone;
+        $user = $this->api->selectuser($token);
+        if ($user) {
+
+            if ($user->balance > 0) {
+                $phoneNumber = DB::table('phone_numbers')
+                    ->select('id')
+                    ->where(['user_id' => $user->id, 'status' => '1', 'phone' => $phone])
+                    ->orWhere(['phone' => $phone])
+                    ->first();
+
+                if ($phoneNumber) {
+                    //获取短信内容
+                    // 1.截取短信 status=0,jd_st=1,tb_st=1;
+                    //2.京东或淘宝短信 status=0,jd_st=1,tb_st=0或status=0,jd_st=0,tb_st=1
+                    //3.其它短信，排除垃圾短信   状态 status=0,jd_st=1,tb_st=1;
+
+                    $type =$request->con;
+                    $type1='%'.$type.'%码%';
+                    $type2='%码%'.$type.'%';
+                    //20分钟内
+                    $sminute =Carbon::now()->addSeconds(-1200);
+                    $content = DB::table('sms_contents')
+                        ->select('id', 'content', 'status','phone_number_id')
+                        ->where('phone_number_id', $phoneNumber->id)
+                        ->where('created_at','>',$sminute)
+
+                        ->where(function ($query)use($type1,$type2){
+                            $query->where('content','like',$type1)
+                                ->orWhere('content','like',$type2);
+                        })
+                        ->orderby('created_at', 'desc')
+
+                        ->first();
+
+                    if (!$content) {
+                        echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
+                        die;
+                    }
+                    //取走号后查询有没有注册过另一个京东或者淘宝的，如果都注册过把同时将另一个更新为2
+                    if ($type=='京东'){
+                        $tb= SmsContent::select('id')->where('phone_number_id',$content->phone_number_id)->where('content','like','%淘宝%')->get()->toarray();
+                        if ($tb){
+
+                            foreach ($tb as $t){
+                                SmsContent::where('id',$t['id'])->update(['jd_st'=>'2']);
+                                SmsContent::where('id',$content->id)->update(['tb_st'=>'2','status'=>'1','updated_at'=>Carbon::now()]);
+                            }
+                        }else{
+                            SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
+
+                        }
+                    }elseif ($type=='淘宝'){
+                        $jd= SmsContent::select('id')->where('phone_number_id',$content->phone_number_id)->where('content','like','%京东%')->get()->toarray();
+
+                        if ($jd){
+                            foreach ($jd as $t){
+                                SmsContent::where('id',$t['id'])->update(['tb_st'=>'2']);
+                                SmsContent::where('id',$content->id)->update(['jd_st'=>'2','status'=>'1','updated_at'=>Carbon::now()]);
+                            }
+                        } else{
+                            SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
+                        }
+                    }else{
+                        SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
+
+                    }
+
+                    //更新取号后的状态
+//                    DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now()]);
+
+                    $result = array('code' => 200, 'msg' => $content->content);
+
+                    if ($content->status != '1') {
+
+                        //根据不同用户不同短信内容更新余额，没有单价的默认按1结算
+                        $price=  $this->check_balance($content->content,$user->id);
+                        if ($price){
+                            $new_balbance = $user->balance - $price;
+                        }else{
+                            $new_balbance=$user->balance-1;
+                        }
+
+                        $update_time = date('Y-m-d H:i:s');
+                        DB::table('users')
+                            ->where('id', '=', $user->id)
+                            ->update(['updated_at' => $update_time, 'balance' => $new_balbance]);
+
+                        //记录日志
+                        $ip = $request->getClientIp();
+                        $contets = [
+                            'email' => $user->email,
+                            'ip' => $ip,
+                            'phone' => $phone,
+                            'content' => $content->content,
+                            'balance' => $user->balance
+                        ];
+                        $profile = $user->name . '/'.date('Ymd',time()).'.txt';
+                        $this->api->setLog($profile, $contets);
+                        //统计请求量
+                    }
+
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                    die;
+                } else {
+                    echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
+                    die;
+                }
+
+            } else {
+                echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
+                die;
+            }
         } else {
             echo json_encode(array('code' => 105, 'msg' => "Sorry, sir. You have no right to visit"));
             die;
         }
     }
 
+    /**主动返回短信内容
+     * @param Request $request
+     */
     public function content(Request $request)
     {
+        if ($request->isMethod('post')){
 
         //接收红良的请求
         $type = $request->type;
@@ -241,14 +267,12 @@ class ApiSmsController extends Controller
                 $this->change_balance($this->tb_token,$tel,$content,$value);
                 break;
         };
-
+        }
     }
 
     private function change_balance($token,$tel,$content,$value)
     {
 
-        $res= DB::table('callback_result')->select('id')->where('phone',$tel)->where('created_at','>',Carbon::today())->first();
-        if ($res) return;
         //更新手机号表的手机状态为
         $phone = PhoneNumber::select('phone','status','id')->where('phone',$tel)->first();
         if ($phone){
@@ -257,11 +281,16 @@ class ApiSmsController extends Controller
             }
             //更新余额
             $balance = User::select('name','balance','id')->where('token',$token)->first();
-            $price = DB::table('configs')->select('price')->find(1);
-            $new_balbance = $balance->balance - $price->price;
-            User::where('token',$token)->update(['balance'=>$new_balbance]);
-            PhoneNumber::where('id',$phone->id)->update(['user_id'=>$balance->id]);
 
+            //根据不同用户不同短信内容更新余额，没有单价的默认按1结算
+            $price=  $this->check_balance($content,$balance->id);
+            if ($price){
+                $new_balbance = $balance->balance - $price;
+            }else{
+                $new_balbance=$balance->balance-1;
+            }
+
+            User::where('token',$token)->update(['balance'=>$new_balbance]);
             $url='http://mt.cdwashcar.com/index/sp/content?token='.$value.'&tel='.$tel.'&content='.$content;
 
             $result = json_decode($this->curl_request($url),true);
@@ -320,9 +349,12 @@ class ApiSmsController extends Controller
 
     }
 
-
+    /**
+     * 远程关闭
+     */
     public function remote_close()
     {
+
         if (time() - strtotime(date('Y-m-d'))<=600){
             $yes = date('Ymd')-1;
             $tablename = "SMS" .$yes . '6666';
@@ -331,7 +363,7 @@ class ApiSmsController extends Controller
         }
 
         $order_res = DB::connection('ourcms')->table('cms_order')
-            ->select('id')
+            ->select('id','order_tnum')
             ->where('order_name', '=', $tablename)
             ->where('state', '!=', '-1')
             ->where('state', '!=', '-2')
@@ -350,17 +382,14 @@ class ApiSmsController extends Controller
                 ->where('return_times','0')
                 ->where('nowtime','<=',$overdue)
                 ->whereIn('smstext',$order)
-//                ->where(function ($query){
-//                    $query->where('smstext','=','xuxxq61!v7q6amieklnmmkgi')
-//                        ->orWhere('smstext','=','xuxxq61!v7q6amknhmmeimhl')
-//                        ->orWhere('smstext','=','xuxxq61!v7q6amklkikhjlln')
-//                        ->orWhere('smstext','=','xuxxq61!v7q6amihinnejmni')
-//                        ->orWhere('smstext','=','xuxxq61!v7q6amkllnhnhfgm');
-//                })
-
                 ->get()->toarray();
 
             $n=$m=0;
+            $info = array();
+            $info['order_tnum'] = $order_res->order_tnum + 1; # 订单 总表 里的订单数据 自增 1
+            $info['state'] = 1;//1 open
+            $info['addtime'] = time();
+
             //单独指令开关
             if ($opens){
                 foreach ($opens as $key =>$open){
@@ -373,11 +402,27 @@ class ApiSmsController extends Controller
                     $update= DB::connection('ourcms')->table($ordtb) ->where('id', $open->id)->update(['return_times'=>'1']);
                     if($update) ++$n;
                     $insert=DB::connection('ourcms')->table($ordtb)->insert($new_data);
-                    if ($insert) ++$m;
+                    if ($insert) {
+                        //更新订单总表数据
+                        DB::connection('ourcms')->table('cms_order')
+                            ->where('id', '=', "$order_res->id")
+                            ->update(['order_tnum' => $info['order_tnum'], 'state' => $info['state'], 'addtime' => $info['addtime']]);
+                        ++$m;
+                    }
                 }
             }
             $dt= Carbon::now().'调用成功完成,数据表'.$ordtb.'更新'.$n.'条，插入'.$m.'条；';
             Storage::disk('local')->append('cron.txt',$dt);
+        }
+    }
+
+    public function update_date_times(Request $request)
+    {
+        if ($request->isMethod('post')){
+            $name =$request->name;
+            if ($name =='byebye2018'){
+                Db::table('users')->update(['times'=>0]);
+            }
         }
     }
     /**curl请求
@@ -417,5 +462,29 @@ class ApiSmsController extends Controller
         curl_close($ch);
         //返回结果给调用方
         return $result;
+    }
+
+    //更新余额
+    private function find_type($content='')
+    {
+        $types= DB::table('type_config')->get()->toarray();
+
+        foreach ($types as $type){
+          $res=  @str_contains($content, $type->type_name);
+            if ($res){
+                return $type->id;
+            }
+        }
+    }
+    //查询单价
+    public function check_balance($content,$user_id)
+    {
+        $type_id=$this->find_type($content);
+
+        $user_price=   DB::table('configs')->where('user_id',$user_id)->where('type_id',$type_id)->value('price');
+        if (!$user_price){
+            $user_price= DB::table('configs')->where('user_id',0)->where('type_id',$type_id)->value('price');
+        }
+        return $user_price;
     }
 }

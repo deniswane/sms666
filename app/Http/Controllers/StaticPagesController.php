@@ -68,11 +68,11 @@ class StaticPagesController extends Controller
     }
     //下载数据
     public function download(Request $request ){
+//        dd($request->all());
         $user =Auth::user();
 
-        $data= $request->data;
-        if ($data =='001')  $day=date('Ymd',time());
-        if ($data =='002')  $day=date('Ymd',time()-86400);
+        $day= $request->date;
+
         $ip =$request->getClientIp();
         $dt= Carbon::now().'  '.$user->name.'下载了数据记录 , ip为'.$ip;
         Storage::disk('local')->append('download_data.txt',$dt);

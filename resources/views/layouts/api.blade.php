@@ -48,9 +48,11 @@
 
     <div class="laydate-box">
 
-        <form action="download">
+        <form action="download" method="post">
             Download data：
             <input type="text" id="laydateInput" placeholder="date"/>
+            {{csrf_field()}}
+            <input type="text" hidden name="time" value="{{time()}}">
             <input type="text" hidden id="date" name='date' value="{{date('Ymd',time())}}"/>
 
             <button >Download</button>

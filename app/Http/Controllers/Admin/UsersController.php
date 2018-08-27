@@ -6,6 +6,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
@@ -74,6 +75,11 @@ class UsersController extends Controller
         $id =$request->id;
         if ($id){
             $res=$user->where('id',$id)->delete();
+            //删除用户后删除configs表对应的单价配置
+            $type_config=DB::table('configs')->select('id')->where('user_id',$id)->get();
+            if ($type_config){
+                DB::table ('configs')->where('user_id',$id)->delete();
+            }
             if ($res){
                 return ['code' => 200, 'msg' => '删除成功！'];
             }else{

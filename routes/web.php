@@ -22,7 +22,7 @@ Route::get('/', 'StaticPagesController@home')->name('home');
 
 Route::get('/private-numbers', 'StaticPagesController@privateNumbers')->name('private_numbers');
 Route::get('/api', 'StaticPagesController@api')->name('api');
-Route::get('/download', 'StaticPagesController@download')->name('download');
+Route::post('/download', 'StaticPagesController@download')->name('download');
 Route::get('/inactive-numbers', 'StaticPagesController@inactiveNumbers')->name('inactive_numbers');
 Route::get('/contact', 'StaticPagesController@contact')->name('contact');
 Route::get('/signup', 'UsersController@create')->name('signup');
@@ -53,8 +53,8 @@ Route::group(['prefix' => 'manager/api'], function () {
 Route::group(['prefix' => 'manager/api/inside'], function () {
     Route::get('key', 'ApiSmsController@key');
     Route::get('phone', 'ApiSmsController@phone');
-});
-Route::group(['prefix' => 'manager/api/inside'], function () {
+    Route::get('acn', 'ApiSmsController@getSmsContent');
+
     Route::get('getPhoneNumber', 'ApiController@getPhoneNumber')->name('get.number');
     Route::get('getSmsContent', 'ApiController@getSmsContent')->name('get.content');
 });
@@ -86,6 +86,9 @@ Route::group(['prefix' => 'ceshi', 'middleware' => 'throttle:100,1'], function (
     Route::get('ck', 'SmsOnlineController@setKeyword');
     Route::get('cp', 'SmsOnlineController@getPhoneNumber')->name('get.number');
     Route::get('cn', 'SmsOnlineController@getSmsContent')->name('get.content');
+    Route::get('ack', 'ApiCeshiController@key');
+    Route::get('acp', 'ApiCeshiController@phone')->name('get.number');
+    Route::get('acn', 'ApiCeshiController@getSmsContent')->name('get.content');
 });
 
 
@@ -100,6 +103,15 @@ Route::group(['prefix' => 'cfcc', 'namespace' => 'Admin'], function ($router) {
     $router->post('test', 'IndexController@test')->name('cfcc.test');
     $router->post('set_bal', 'IndexController@set_bal')->name('cfcc.set_bal');
     $router->any('set_money', 'IndexController@set_money')->name('cfcc.set_money');
+    $router->any('set_money_add', 'IndexController@set_money_add')->name('cfcc.set_money_add');
+    $router->any('set_money_user_add', 'IndexController@set_money_user_add')->name('cfcc.set_money_user_add');
+    $router->any('set_money_user_delete', 'IndexController@set_money_user_delete')->name('cfcc.set_money_user_delete');
+
+    $router->any('set_price', 'IndexController@set_price')->name('cfcc.set_price');
+
+    $router->post('change_switch', 'IndexController@change_switch')->name('cfcc.change_switch');
+
+
     $router->post('searchContent', 'IndexController@search_content')->name('cfcc.searchContent');
     $router->post('searchUserContent', 'IndexController@searchUserContent')->name('cfcc.searchUserContent');
     $router->any('showContents', 'IndexController@showContents')->name('cfcc.showContents');
@@ -123,16 +135,7 @@ Route::group(['prefix' => 'cfcc', 'namespace' => 'Admin'], function ($router) {
 
 });
 
-Route::group(['prefix' => 'client', 'namespace' => 'Admin'], function () {
-    Route::any('/', 'ClientController@index')->name('client.index');
-    Route::any('/ceshi', 'ClientController@ceshi')->name('client.ceshi');
-
-});
-Route::group(['prefix' => 'ceshi/api'], function () {
-    Route::get('key', 'ApiSmsController@key');
-    Route::get('content', 'ApiSmsController@transfer');
-});
-
 //远程关闭指令
 Route::any('manager/api/remote_close', 'ApiSmsController@remote_close');
+Route::any('manager/api/update_date_times', 'ApiSmsController@update_date_times');
 

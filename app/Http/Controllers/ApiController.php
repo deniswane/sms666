@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 header("Content-type: text/html; charset=utf-8");
+
+use App\Models\PhoneNumber;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
@@ -20,17 +22,11 @@ use Mail;
  */
 class ApiController extends Controller
 {
-    private $database;
+    private  $online;
 
     public function __construct()
     {
-        $prefix = (request()->route()->getAction())['prefix'];
-        if (strpos($prefix, 'inside')) {
-            $this->database = 'mysql';
-        } else {
-            $this->database = '';
-        }
-
+        $this->online = new SmsOnlineController();
     }
 
     /**设置关键字
@@ -50,7 +46,6 @@ class ApiController extends Controller
             die;
         }
         $p = $request->get('p');
-//        $p = mb_convert_encoding($p, "gb2312", "UTF-8");
 
         if (strpos($request->k, ':') || strpos($request->k, '：')) {
 
@@ -62,30 +57,29 @@ class ApiController extends Controller
             $receive = $this->filter_phones();
 
             if ($user) {
-                if ($user->balance <= 0) {
-                    echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
-                    die;
-                }
+
+
+                $this->check_user($user,1);
+
                 //有权限访问 返回的标记
                 $content = 'id' . $user->id;
                 $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
 
-                $phone = $this->filter($dat);
+                if ($user->percentum){
+                    $old_new = strpos($user->percentum, ':') ? explode(":", $user->percentum) : explode("：",$user->percentum);
+                    $old= $this->rand_number($old_new[0],$old_new[1]);
+                    if ($old ==2){
+                        $phone = $this->filter($dat,$user->id,1);
+                    }else{
+                        $phone = $this->filter($dat,$user->id);
+                    }
+                }else{
+                    $phone = $this->filter($dat,$user->id);
+                }
 
                 if (!$phone) {
-                    //写入日志的信息
-                    $ip = $request->getClientIp();
-                    $profile = $user->name . '/set_gjz.txt';
-                    $data = [
-                        'email' => $user->email,
-                        'ip' => $ip,
-                        'provice' => $p,
-                        'fail' => 'fail'
-                    ];
-                    $this->setLog($profile, $data);
-
-                    echo json_encode(['code' => '107', 'msg' => 'No mobile phone number for the time being']);
-                    die;
+                    //没有手机号，发联网订单
+                    $this->online->online_phone($user,$keywords,$receive,$p);
                 }
                 //setorder($phone,$content,$receive,$gjz)
                 $gjz = "$keywords[0]&$keywords[1]&回复到号码:&$keywords[0]&$keywords[1]";
@@ -101,7 +95,8 @@ class ApiController extends Controller
                     'provice' => $p,
                     'success' => 'success'
                 ];
-                if  ($user->email =='63822405@qq.com'){
+                //直接返回手机号
+                if  ($user->email=='godaddy1210@gmail.com'){
                     $this->setorder($phone, $content, $receive, $gjz, $profile, $data,2);
                 }else{
                     $this->setorder($phone, $content, $receive, $gjz, $profile, $data);
@@ -140,6 +135,8 @@ class ApiController extends Controller
 
         if ($user) {
 
+           $this->check_user($user);
+
             $dat = empty($p) ? ['user_id' => $user->id, 'status' => '0'] : ['user_id' => $user->id, 'status' => '0', 'province' => $p];
 
             $phone = DB::table('phone_numbers')
@@ -162,7 +159,7 @@ class ApiController extends Controller
                 die;
             }
 
-
+            DB::table('users')->where('id',$user->id)->increment('times', 1);
             DB::table('phone_numbers')->where('id', $phone->id)->update(['status' => '1']);
 
             //日志
@@ -223,7 +220,7 @@ class ApiController extends Controller
 
                 if ($phoneNumber) {
 
-                    $content = DB::table('sms_contents')
+                    $content= DB::table('sms_contents')
                         ->select('id', 'content', 'status')
                         ->where('phone_number_id', $phoneNumber->id)
                         ->orderby('created_at', 'desc')
@@ -238,8 +235,8 @@ class ApiController extends Controller
                     $result = array('code' => 200, 'msg' => $content->content);
 
                     if ($content->status != '1') {
-                        $price = DB::table('configs')->select('price')->find(1);
-                        $new_balbance = $user->balance - $price->price;
+                        //截取的每次减1
+                        $new_balbance = $user->balance - 1;
                         $update_time = date('Y-m-d H:i:s');
                         DB::table('users')
                             ->where('id', '=', $user->id)
@@ -342,10 +339,33 @@ class ApiController extends Controller
      * 筛选手机号
      * return phone
      */
-    public function filter($dat)
+    public function filter($dat,$id,$old='')
     {
-        $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
+        if ($old){
+            $start_time=Carbon::today()->modify('-3 days');
+            $end_time=Carbon::today()->modify('-2 days');
+            $send_phones =PhoneNumber::select('phone','phone_numbers.id')->leftjoin('sms_contents','phone_numbers.id','=','sms_contents.phone_number_id')
+                ->where('user_id',$id)
+                ->where('phone_numbers.created_at','>',$start_time)
+                ->where('phone_numbers.created_at','<',$end_time)
+                ->where('phone_numbers.status','<>','2')
+                ->whereNull('sms_contents.phone_number_id')
+                ->first();
+            if ($send_phones){
+                PhoneNumber::where('id',$send_phones->id)->update(['status'=>'2']);
 
+                return $send_phones->phone;
+
+            }else{
+                $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
+                if (!$send_phones) {
+                    return false;
+                }
+                DB::table('web_sms_prepare')->where('id', $send_phones->id)->update(['send' => 5]);
+                return $send_phones->phone;
+            }
+        }
+        $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
         if (!$send_phones) {
             return false;
         }
@@ -402,8 +422,8 @@ class ApiController extends Controller
 
         //添加到订单
         $tablename = "SMS" . date('Ymd') . '6666';
-        $order_res = DB::connection('ourcms')->table('cms_order')
-//        $order_res = DB::table('cms_order')
+//        $order_res = DB::connection('ourcms')->table('cms_order')
+        $order_res = DB::table('cms_order')
             ->select('id', 'order_tnum')
             ->where('order_name', '=', $tablename)
             ->where('state', '!=', '-1')
@@ -422,13 +442,13 @@ class ApiController extends Controller
             $info['LateSendTime'] = $info['LateReturnTime'] = date("Y-m-d H:i:s");
             $info['spnumber'] = '';
             $info['note'] = " 接收短信订单 ";
-//            $id = DB::table('cms_order')->insertGetId($info);
-            $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
+            $id = DB::table('cms_order')->insertGetId($info);
+//            $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
             //创建订单详细表
             //手机号,指令,发送手机号,发送时间,发送状态(012),用户project,software,返回时间
             $ordtb = "cms_orddata_" . $id;
-            Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
-//            Schema::create($ordtb, function (Blueprint $table) {
+//            Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
+            Schema::create($ordtb, function (Blueprint $table) {
                 $table->charset = 'utf8';
                 $table->engine = 'MyISAM';
                 $table->increments('id');
@@ -467,8 +487,8 @@ class ApiController extends Controller
                 'software' => '',
 
             ];
-            DB::connection('ourcms')->table($ordtb)->insert($new_data);
-//            DB::table($ordtb)->insert($new_data);
+//            DB::connection('ourcms')->table($ordtb)->insert($new_data);
+            DB::table($ordtb)->insert($new_data);
 
             //记录日志
             $this->setLog($profile, $parame);
@@ -502,11 +522,11 @@ class ApiController extends Controller
                 'software' => '',
 
             ];
-            $res = DB::connection('ourcms')->table($ordtb)->insert($new_data);
-//            $res = DB::table($ordtb)->insert($new_data);
+//            $res = DB::connection('ourcms')->table($ordtb)->insert($new_data);
+            $res = DB::table($ordtb)->insert($new_data);
             if ($res) {
-                DB::connection('ourcms')->table('cms_order')
-//                DB::table('cms_order')
+//                DB::connection('ourcms')->table('cms_order')
+                DB::table('cms_order')
                     ->where('id', '=', "$order_res->id")
                     ->update(['order_tnum' => $info['order_tnum'], 'state' => $info['state'], 'addtime' => $info['addtime']]);
             }
@@ -532,7 +552,7 @@ class ApiController extends Controller
     {
 
         return DB::table('users')
-            ->select('token', 'id', 'email', 'balance', 'name', 'times')
+            ->select('token', 'id', 'email', 'balance', 'name', 'times','switch','date_times','percentum')
             ->where('token', $token)
             ->first();
 
@@ -550,6 +570,9 @@ class ApiController extends Controller
         Storage::disk('local')->append($day . '/' . $profile, $txt);
     }
 
+    /**短信猫
+     * @return mixed
+     */
     public function filter_phones()
     {
         $filter_phones= DB::table('filter_phone')->select('phone')->where('status','1')->get()->toarray();
@@ -559,4 +582,94 @@ class ApiController extends Controller
         }
         return $phones[array_rand($phones)];
     }
+
+    /**检查用户
+     * @param $user
+     * @param int $type
+     */
+    public function check_user($user,$type=1)
+    {
+        if ($user->switch == 0){
+            if (empty($p)){
+                echo json_encode(['code' => 102, 'msg' => 'Format error']);
+                die;
+            }
+        }
+        if ($user->times >= $user->date_times){
+            echo json_encode(['code' => 107, 'msg' => 'No mobile phone number for the time being']);
+            die;
+        }
+        if ($user->balance <= 0) {
+            echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
+            die;
+        }
+        if ($user->id == 17 || $user->id ==18){
+            $tim='time'.$user->id;
+            if (!Cache::has($tim)){
+                Cache::put($tim,time(),1);
+            };
+            $extim = time()- Cache::get($tim);
+            if ($extim <1){
+                if ($type==1){
+                    echo json_encode(['code' => 107, 'msg' => 'No mobile phone number for the time being']);
+                    die;
+                }else{
+                    echo json_encode(['code' => 200, 'msg' => 'success']);
+                    die;
+                }
+
+            }else{
+                Cache::put($tim,time(),1);
+            }
+        }
+    }
+
+    /**新旧数据比例
+     * @param $new
+     * @param $old
+     * @return mixed
+     */
+    public function rand_number($new,$old)
+    {
+        $prize_arr = array(
+            '0' => array('id'=>1,'v'=>$new),
+            '1' => array('id'=>2,'v'=>$old),
+        );
+
+        foreach ($prize_arr as $key => $val) {
+            $arr[$val['id']] = $val['v']; //将$prize_arr放入数组下标为$prize_arr的id元素，值为v元素的数组中
+        }
+
+        $rid = $this->get_rand($arr); //根据概率获取奖项id
+
+        $res['phone'] = $prize_arr[$rid-1]['id']; //获取中奖项
+
+        unset($prize_arr[$rid-1]); //将中奖项从数组中剔除，剩下未中奖项
+        shuffle($prize_arr); //打乱数组顺序
+        for($i=0;$i<count($prize_arr);$i++){
+            $pr[] = $prize_arr[$i];
+        }
+         return $res['phone'];
+    }
+    private function get_rand($proArr) {
+        $result = '';
+        //概率数组的总概率精度
+        $proSum = array_sum($proArr); //计算数组中元素的和
+
+        //概率数组循环
+        foreach ($proArr as $key => $proCur) {
+            $randNum = mt_rand(1, $proSum);
+            if ($randNum <= $proCur) { //如果这个随机数小于等于数组中的一个元素，则返回数组的下标
+                $result = $key;
+                break;
+            } else {
+                $proSum -= $proCur;
+            }
+        }
+
+        unset ($proArr);
+
+        return $result;
+    }
+
 }

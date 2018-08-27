@@ -32,8 +32,8 @@ class IndexController extends Controller
 
     public function ceshi()
     {
-//        $order = DB::table('filter_phone')->pluck('order');
-//        dd($order);
+        echo Carbon::today()->modify('-2 days'); //2016-10-13 14:00:01
+
     }
 
     /**首页
@@ -78,58 +78,130 @@ class IndexController extends Controller
 
         if ($request->isMethod('post')) {
 
-            $post = $request->post();
-            if (isset($post['prices'])) {
-                $validator = Validator::make($post, [
-                    'prices' => 'numeric|required',
-                ]);
+            $page = $request->curr ? $request->curr : 1;//当前页
+            $num = $request->nums ? $request->nums : 10;//每页显示的数量
+            $offset = ($page - 1) * $num;
 
-                if ($validator->fails()) {
-                    return Y::error($validator->errors());
-                }
-                $data = [
-                    'price' => $post['prices'],
-                    'created_at' => date('Y-m-d H:i:s', time()),
-                ];
+            $nums=DB::table('configs')->count();
+         $datas= DB::table('configs')
+             ->select('users.name','configs.id','configs.type_name','price','configs.user_id')
+             ->leftjoin('users','users.id','=','configs.user_id')->orderby('configs.user_id')
+             ->limit($num)->offset($offset)
+             ->get()->toarray();
+            return response()->json([
+                'code' => '',
+                'msg' => '',
+                'count' => $nums,
+                'data' => $datas,
+            ]);
 
-            } else {
-                $validator = Validator::make($post, [
-                    'price_min' => 'numeric|required',
-                    'price_max' => 'numeric|required',
-                    'num_min' => 'numeric|required',
-                    'num_max' => 'numeric|required',
-                ]);
-
-                if ($validator->fails()) {
-                    return Y::error($validator->errors());
-                }
-                $data = [
-                    'price_i' => $post['price_min'],
-                    'price_a' => $post['price_max'],
-                    'num_a' => $post['num_max'],
-                    'num_i' => $post['num_min'],
-                    'num_updated_at' => date('Y-m-d H:i:s', time()),
-                ];
-            }
-            if (Admin\Config::where('id', '1')->update($data) > 0) {
-
-                return Y::success('修改成功');
-            }
-            return Y::error('修改失败');
-        } else {
-            $price = DB::table('configs')->select('price', 'price_i', 'price_a', 'num_a', 'num_i')->find(1);
+        }  else if($request->isMethod('get')) {
+            $price = DB::table('configs')->select('price')->find(1);
             return view('cfcc.index.set_money', ['price' => $price])->__toString();
         }
 
     }
 
+    /**添加类别
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function set_money_add(Request $request)
+    {
+        if ($request->isMethod('post')){
+            $type_name=$request->type_name;
+            $price =$request->price;
+            try {
+                $res=DB::table('type_config')->insertGetId(['type_name'=>$type_name]);
+                if ($res){
+                    DB::table('configs')->insertGetId(['type_name'=>$type_name,'type_id'=>$res,'price'=>$price]);
+                    return ['code' => 200, 'msg' => '添加成功！'];
+                }
+
+            } catch (\Exception $e) {
+                return ['code' => 202, 'msg' => '添加失败，请检查输入的是否有重复！'];
+            }
+
+        }
+        $types =DB::table('type_config')->pluck('type_name');
+        return view('cfcc.index.set_money_add',compact('types'));
+    }
+
+    /**添加用户类别
+     * @param Request $request
+     * @return array|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function set_money_user_add(Request $request)
+    {
+        if ($request->isMethod('post')){
+            $type=$request->type;
+            $uesr =$request->user;
+            $price =$request->price;
+            $type_name=DB::table('type_config')->where('id',$type)->value('type_name');
+
+            try {
+
+                $res=  DB::table('configs')->insertGetId(['type_name'=>$type_name,'type_id'=>$type,'price'=>$price,'user_id'=>$uesr]);
+            } catch (\Exception $e) {
+                return ['code' => 202, 'msg' => '请检查是否已经存在'];
+            }
+
+
+            if ($res){
+                return ['code'=>200,'msg'=>'添加成功'];
+            }else{
+                return ['code'=>201,'添加失败'];
+            }
+        }
+        $users=User::select('name','id','email')->get();
+        $types =DB::table('type_config')->select('id','type_name')->get();
+        return view('cfcc.index.set_money_user_add',compact('types','users'));
+}
+
+    /**删除用户类别
+     * @param Request $request
+     * @return array
+     */
+    public function set_money_user_delete(Request $request)
+    {
+        if ($request->isMethod('post')){
+            $id=$request->id;
+           $res= DB::table('configs')->where('id',$id)->delete();
+           if ($res){
+               return ['code'=>200,'msg'=>'删除成功'];
+           }else{
+               return ['code'=>201,'msg'=>'删除失败'];
+           }
+        }
+    }
+
+    /**更新单价
+     * @param Request $request
+     * @return array|\Illuminate\Http\JsonResponse
+     */
+    public function set_price(Request $request)
+    {
+        if ($request->isMethod('post'))
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'price' => 'numeric|required',
+        ]);
+        if ($validator->fails()) {
+            return Y::error($validator->errors());
+        }
+        $price=$request->price;
+        $id=$request->id;
+       $res= DB::table('configs')->where('id',$id)->update(['price'=>$price]);
+        if ($res){
+            return ['code'=>200,'msg'=>'更新成功'];
+        }
+    }
     /**搜索及分页
      * @param Request $request
      * @return
      */
     public function test(Request $request)
     {
-
         $page = $request->curr ? $request->curr : 1;//当前页
         $num = $request->nums ? $request->nums : 10;//每页显示的数量
 
@@ -141,23 +213,21 @@ class IndexController extends Controller
 //        $to_datas = User::select(DB::raw('min(sms_contents.id),ANY_VALUE(name) as name,ANY_VALUE(email) as email,ANY_VALUE(sms_contents.content) as content'))
             ->leftjoin('phone_numbers', 'phone_numbers.user_id', '=', 'users.id')
             ->leftjoin('sms_contents', 'phone_numbers.id', '=', 'sms_contents.phone_number_id')
-            ->where('sms_contents.status', '1')
-            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()])
-            ->orWhere(function ($query) {
-                $query->where(['sms_contents.status' => '0'])
+            -> whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()])
+            ->where(function($query){
+                $query->where('sms_contents.status', '1')
+                ->orWhere(function($qua){
+                    $qua->where(['sms_contents.status' => '0'])
                     ->where('tb_st', '1')
-                    ->where('jd_st', '!=', '1')
-                    ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
-
-            })
-            ->orWhere(function ($query) {
-                $query->where(['sms_contents.status' => '0'])
-                    ->where('tb_st', '!=', '1')
+                    ->where('jd_st', '!=', '1');
+                })
+                ->orWhere(function($qua){
+                    $qua->where(['sms_contents.status' => '0'])
                     ->where('jd_st', '1')
-                    ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
+                    ->where('tb_st', '!=', '1');
+                });;
 
             })
-//            ->groupby('phone')
             ->get()
             ->toArray();
         $abc = [];
@@ -169,26 +239,23 @@ class IndexController extends Controller
             }
         }
             $ye_datas = User::select('name', 'email','sms_contents.content')
-//        $ye_datas = User::select(DB::raw('min(sms_contents.id),ANY_VALUE(name) as name,ANY_VALUE(email) as email,ANY_VALUE(sms_contents.content) as content'))
             ->leftjoin('phone_numbers', 'phone_numbers.user_id', '=', 'users.id')
             ->leftjoin('sms_contents', 'phone_numbers.id', '=', 'sms_contents.phone_number_id')
-            ->where('sms_contents.status', '1')
-            ->whereBetween('sms_contents.updated_at', [Carbon::yesterday(), Carbon::today()])
-            ->orWhere(function ($query) {
-                $query->where(['sms_contents.status' => '0'])
-                    ->where('tb_st', '1')
-                    ->where('jd_st', '!=', '1')
-                    ->whereBetween('sms_contents.updated_at', [Carbon::yesterday(), Carbon::today()]);
+                -> whereBetween('sms_contents.updated_at', [Carbon::yesterday(), Carbon::today()])
+                ->where(function($query){
+                    $query->where('sms_contents.status', '1')
+                        ->orWhere(function($qua){
+                            $qua->where(['sms_contents.status' => '0'])
+                                ->where('tb_st', '1')
+                                ->where('jd_st', '!=', '1');
+                        })
+                        ->orWhere(function($qua){
+                            $qua->where(['sms_contents.status' => '0'])
+                                ->where('jd_st', '1')
+                                ->where('tb_st', '!=', '1');
+                        });;
 
-            })
-            ->orWhere(function ($query) {
-                $query->where(['sms_contents.status' => '0'])
-                    ->where('tb_st', '!=', '1')
-                    ->where('jd_st', '1')
-                    ->whereBetween('sms_contents.updated_at', [Carbon::yesterday(), Carbon::today()]);
-
-            })
-//            ->groupby('phone')
+                })
             ->get()
             ->toArray();
         $abcd = [];
@@ -199,7 +266,7 @@ class IndexController extends Controller
                 $abcd[$data['email']] = [];
             }
         }
-        $datas = User::select('email', 'name', 'balance', 'created_at')
+        $datas = User::select('email', 'name', 'balance', 'created_at','switch','date_times','percentum')
             ->limit($num)->offset($offset)->get()->toarray();
         foreach ($datas as &$user) {
             if (isset($abc[$user['email']])) {
@@ -614,7 +681,7 @@ class IndexController extends Controller
             if (isset($type)) {
                 $datas = $datas->where('type', '=', "$type");
             }
-            $datas = $datas->orderby('created_at', 'desc')->groupby('phone');
+            $datas = $datas->orderby('created_at', 'desc');
 //            $datas = $datas->orderby(DB::raw('ANY_VALUE(created_at)'), 'desc')->groupby('phone', 'type');
             $nums = $datas->count();
             $success_rate = $datas->get()->toarray();
@@ -710,6 +777,51 @@ class IndexController extends Controller
                 }
             }
             return view('cfcc.index.filter_phone_add');
+        }
+    }
+
+
+    public function change_switch(Request $request)
+    {
+        if ($request->isMethod('post')){
+            $met=$request->met ;
+            $code =$request->code;
+
+            switch ($met){
+                case 'switch' :
+                    $status=$request->status;
+                    $res= User::where('email',$code)->update(['switch'=>$status]);
+                    if ($res){
+                        return ['code'=>200,'msg'=>'更新成功'];
+                    }else{
+                        return ['code'=>201,'msg'=>'更新失败'];
+                    }
+                    break;
+                case 'date_times':
+                    $status=$request->date_times;
+                    $res= User::where('email',$code)->update(['date_times'=>$status]);
+                    if ($res){
+                        return ['code'=>200,'msg'=>'更新成功'];
+                    }else{
+                        return ['code'=>201,'msg'=>'更新失败'];
+                    }
+                    break;
+                case 'set_rate':
+                    $percentum=$request->percentum;
+                    if (!empty($percentum)){
+                        if( !str_contains($percentum,[':','：'])  ){
+                            return ['code'=>202,'msg'=>'请检查参数'];
+                        }
+                    }
+
+                   $res =User::where('email',$code)->update(['percentum'=>$percentum]);
+                    if ($res){
+                        return ['code'=>200,'msg'=>'更新成功'];
+                    }else{
+                        return ['code'=>201,'msg'=>'更新失败'];
+                    }
+            }
+
         }
     }
     //清空缓存

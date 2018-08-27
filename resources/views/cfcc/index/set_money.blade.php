@@ -1,69 +1,183 @@
 @extends('cfcc.index.lay')
 @section('content')
-    <div class="panel panel-default panel-intro">
-        <div class="panel-body">
-            <div class="layui-tab layui-tab-brief" >
-                <div class="layui-tab-content" style="padding: 20px 0;">
-                    <div class="layui-form layui-form-pane layui-tab-item layui-show">
-                        <form method="post" action="">
-                            {{ csrf_field() }}
-
-                            <div class="layui-form-item" style="margin-left: 40px;">
-                                <label for="prices" class="layui-form-label">请设置</label>
-                                <div class="layui-input-inline">
-                                    <input type="text" name="prices"  value="{{$price->price}}" autocomplete="off" lay-verify="number" class="layui-input">
-                                </div>
-                                <div class="layui-form-mid">$/ 次 (可以有两位小数)</div>
-                            </div>
-
-                            <div class="layui-form-item" style="margin-left: 40px;">
-                                <button class="layui-btn layui-btn-sm layui-btn-normal" lay-submit lay-filter="layform">&nbsp;&nbsp;确认修改</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    {{--<div class="layui-form layui-form-pane layui-tab-item ">--}}
-                        {{--<form method="post" action="">--}}
-                            {{--{{ csrf_field() }}--}}
-
-                            {{--<div class="layui-form-item">--}}
-                                {{--<div class="layui-inline">--}}
-                                    {{--<label class="layui-form-label">价格1</label>--}}
-                                    {{--<div class="layui-input-inline" style="width: 100px;">--}}
-                                        {{--<input type="text" name="price_min" value="{{$price->price_i}}" autocomplete="off" lay-verify="number" class="layui-input">--}}
-                                    {{--</div>--}}
-                                    {{--<div class="layui-form-mid">￥</div>--}}
-                                    {{--<div class="layui-input-inline" style="width: 100px;">--}}
-                                        {{--<input type="text" name="num_min" value="{{$price->num_i}}" lay-verify="number" autocomplete="off" class="layui-input">--}}
-                                    {{--</div>--}}
-                                    {{--<div class="layui-form-mid">次</div>--}}
-
-                                {{--</div>--}}
-                            {{--</div>--}}
-
-                            {{--<div class="layui-form-item">--}}
-                                {{--<div class="layui-inline">--}}
-                                    {{--<label class="layui-form-label">价格2</label>--}}
-                                    {{--<div class="layui-input-inline" style="width: 100px;">--}}
-                                        {{--<input type="text" name="price_max" value="{{$price->price_a}}" lay-verify="number" autocomplete="off" class="layui-input">--}}
-                                    {{--</div>--}}
-                                    {{--<div class="layui-form-mid">￥</div>--}}
-                                    {{--<div class="layui-input-inline" style="width: 100px;">--}}
-                                        {{--<input type="text" name="num_max" value="{{$price->num_a}}" lay-verify="number"  autocomplete="off" class="layui-input">--}}
-                                    {{--</div>--}}
-                                    {{--<div class="layui-form-mid">次</div>--}}
-
-                                {{--</div>--}}
-                            {{--</div>--}}
-                            {{--<div class="layui-form-item">--}}
-                                {{--<button class="layui-btn layui-btn-sm layui-btn-normal" lay-submit lay-filter="layform">确认修改</button>--}}
-                            {{--</div>--}}
-                        {{--</form>--}}
-                    {{--</div>--}}
-
-                </div>
+    <blockquote class="layui-elem-quote quoteBox">
+        <form class="layui-form">
+            <div class="layui-inline">
+                <a class="layui-btn layui-btn-normal addUserLink_btn">添加用户及类型</a>
             </div>
+            <div class="layui-inline">
+                <a class="layui-btn layui-btn-normal addLink_btn">添加分类</a>
+            </div>
+        </form>
+    </blockquote>
+    <blockquote>
+        <div class="layui-inline" style="padding-left:20px ">
+        注：没有默认的类别单价，一律按 1/次 扣除
+        </div>
+    </blockquote>
+    <div style="text-align: center;">
+
+
+        <div class="layui-inline">
+            <table id="test" lay-filter="test" ></table>
         </div>
     </div>
+    <script type="text/html" id="switchTpl">
+        <input type="checkbox" name="status"  value="@{{d.code}}" lay-skin="switch" lay-text="开|关" lay-filter="sexDemo" @{{ d.status =='1' ? 'checked' : '' }}>
+    </script>
 
+    <script>
+        layui.use(['table'] ,function () {
+            var table = layui.table;
+            form=   layui.form;
+            $ = layui.jquery
+
+            var tableIns=table.render({
+                //请求后台获取数据
+                request: {
+                    pageName: 'curr' //页码的参数名称，默认：page
+                    , limitName: 'nums' //每页数据量的参数名，默认：limit
+                }
+                ,page: true
+                ,limits: ['25', '30']
+                ,limit: 25
+                ,elem: '#test',
+                done :function(res){
+                },
+                width:'1000'
+                ,align:'center'
+                ,id: 'testReload'
+                ,url: "{{route('cfcc.set_money')}}"
+                ,method:'post'
+                ,where:{'_token':"{{ csrf_token() }}"}
+                ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+                , cols: [[
+                     {field: 'name', align: 'center', title: '用户',templet:'#statusTpl'}
+                    , {field: 'type_name', align: 'center', title: '类型'}
+                    , {field: 'price', align: 'center', title: '单价（点击数字修改单价）',event: 'setSign',style:"cursor:pointer "}
+                    ,{fixed: 'right', title:'操作',width:178, align:'center', templet: '#barDemo'}
+                ]]
+            });
+            //列表操作
+            table.on('tool(test)', function(obj){
+                var layEvent = obj.event,
+                    data = obj.data;
+
+                if(layEvent === 'edit'){ //编辑
+                    addLink(data);
+                } else if(layEvent === 'del'){ //删除
+                    var id = data.id
+                    console.log(id);
+                    if (id=='0'){
+                        layer.alert('默认的请不要删除');
+                    }else{
+                        layer.confirm('确定删除该用户吗？',{icon:3, title:'提示信息'},function(index){
+
+                            $.post( "{{route('cfcc.set_money_user_delete')}}",{
+                                id : id,
+                                _token:"{{csrf_token()}}"
+                            },function(res){
+                                layer.msg(res.msg);
+                                tableIns.reload();
+                                layer.close(index);
+                            })
+
+                        });
+                    }
+
+                }else if(layEvent =='setSign'){
+                    layer.prompt({
+                        formType: 2
+                        ,title: '设置单次请求金额'
+                        ,value:data.price
+                    }, function(value, index){
+                        layer.close(index);
+                        //这里一般是发送修改的Ajax请求
+                        $.ajax({
+                            type: 'post',
+                            url: "{{route('cfcc.set_price')}}",
+                            cache: false,
+                            data: {price:value,id:data.id,_token:"{{csrf_token()}}"},
+                            success: function (dan) {
+                                //同步更新表格和缓存对应的值
+                                if(dan.code != 200){
+                                    layer.alert('请填写数字')
+                                }else{
+                                    obj.update({
+                                        price: value
+                                    });
+                                }
+                            },
+                            error:function (data) {
+                                layer.alert('错误')
+                            }
+                        });
+                        obj.update({
+                            sign: value
+                        });
+                    });
+                }
+            });
+
+
+            //添加分类
+            function addLink(edit){
+                var title;
+                if (edit){
+                    title= '修改用户信息'
+                } else{
+                    title ='添加分类'
+                }
+                var index = layer.open({
+                    title :title,
+                    type : 2,
+                    area : ["40%","50%"],
+                    content : "{{route('cfcc.set_money_add')}}",
+                    success : function(){
+                        var body = $($(".layui-layer-iframe",parent.document).find("iframe")[0].contentWindow.document.body);
+                    }
+                })
+            }
+            //添加用户及分类
+            function addUserLink(edit){
+                var title;
+                if (edit){
+                    title= '修改用户信息'
+                } else{
+                    title ='添加分类'
+                }
+                var index = layer.open({
+                    title :title,
+                    type : 2,
+                    area : ["40%","50%"],
+                    content : "{{route('cfcc.set_money_user_add')}}",
+                    success : function(){
+                        var body = $($(".layui-layer-iframe",parent.document).find("iframe")[0].contentWindow.document.body);
+                    }
+                })
+            }
+            $(".addLink_btn").click(function(){
+                addLink();
+            })
+            $(".addUserLink_btn").click(function(){
+                addUserLink();
+            })
+        });
+
+    </script>
+    <script type="text/html" id="barDemo">
+        @{{#  if(d.name == undefined){ }}
+
+        @{{#  } else { }}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" >删除</a>
+        @{{#  } }}
+    </script>
+
+    <script type="text/html" id="statusTpl">
+        @{{#  if(d.name == undefined){ }}
+        默认
+        @{{#  } else { }}
+        @{{ d.name }}
+        @{{#  } }}
+    </script>
 @endsection
