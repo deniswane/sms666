@@ -32,7 +32,8 @@ class IndexController extends Controller
 
     public function ceshi()
     {
-        echo Carbon::today()->modify('-2 days'); //2016-10-13 14:00:01
+//        echo date('Ymd' , strtotime("-3 day")).'235959';
+
 
     }
 
@@ -110,11 +111,9 @@ class IndexController extends Controller
     {
         if ($request->isMethod('post')){
             $type_name=$request->type_name;
-            $price =$request->price;
             try {
                 $res=DB::table('type_config')->insertGetId(['type_name'=>$type_name]);
                 if ($res){
-                    DB::table('configs')->insertGetId(['type_name'=>$type_name,'type_id'=>$res,'price'=>$price]);
                     return ['code' => 200, 'msg' => '添加成功！'];
                 }
 
@@ -145,7 +144,6 @@ class IndexController extends Controller
             } catch (\Exception $e) {
                 return ['code' => 202, 'msg' => '请检查是否已经存在'];
             }
-
 
             if ($res){
                 return ['code'=>200,'msg'=>'添加成功'];
@@ -253,8 +251,7 @@ class IndexController extends Controller
                             $qua->where(['sms_contents.status' => '0'])
                                 ->where('jd_st', '1')
                                 ->where('tb_st', '!=', '1');
-                        });;
-
+                        });
                 })
             ->get()
             ->toArray();

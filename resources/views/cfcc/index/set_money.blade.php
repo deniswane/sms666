@@ -12,7 +12,8 @@
     </blockquote>
     <blockquote>
         <div class="layui-inline" style="padding-left:20px ">
-        注：没有默认的类别单价，一律按 1/次 扣除
+        注：针对全返回的：如果此处没有设置单价，用户将不能应用接口获取数据，返回105错误码。
+            对于截取的：如果没有设置个人用户截取单价，会按1/次扣除。
         </div>
     </blockquote>
     <div style="text-align: center;">

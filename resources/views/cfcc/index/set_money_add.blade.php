@@ -19,15 +19,6 @@
                 <input type="text" class="layui-input type-name" lay-verify="required" placeholder="输入新类别" />
             </div>
         </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">默认单价</label>
-            <div class="layui-input-inline">
-                <input type="number" class="layui-input price" lay-verify="required" placeholder="输入单价" />
-            </div>
-        </div>
-        <div class="layui-input-inline">
-
-        </div>
         <div class="layui-form-item" style="text-align:center; ">
             <button class="layui-btn layui-block" lay-filter="addLink" lay-submit>提交</button>
         </div>
@@ -45,7 +36,6 @@
                 // 实际使用时的提交信息
                 $.post("{{route('cfcc.set_money_add')}}",{
                     type_name : $(".type-name").val(),
-                    price : $(".price").val(),
                     _method:$('#_method').val(),
                     _token:"{{csrf_token()}}"
                 },function(res){

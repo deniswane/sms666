@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div class="layui-form-item">
+        <div class="layui-form-item" >
             <label class="layui-form-label">输入单价</label>
             <div class="layui-input-inline">
                 <input type="number" class="layui-input price"   lay-verify="required" placeholder="输入单价" />

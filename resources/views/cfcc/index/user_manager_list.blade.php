@@ -8,12 +8,34 @@
                 <input type="text" class="layui-input name" lay-verify="required" placeholder="输入用户名" />
             </div>
         </div>
+
+
         <div class="layui-form-item">
             <label class="layui-form-label">邮箱</label>
             <div class="layui-input-inline">
                 <input type="text" class="layui-input email" lay-verify="required|email" placeholder="输入邮箱" />
             </div>
         </div>
+
+        <div class="layui-form-item" id="fenlei">
+            <label class="layui-form-label">分类</label>
+            <div class="layui-input-inline">
+                <select name="type" id="type" class="type">
+                    @foreach($types as $type)
+
+                        <option value="{{$type->id}} ">{{$type->type_name}}</option>
+
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item" id="danjia">
+            <label class="layui-form-label">单价</label>
+            <div class="layui-input-inline">
+                <input type="number" class="layui-input price" id="price" value="1" lay-verify="required|password" placeholder="输入单价" />
+            </div>
+        </div>
+
         <div class="layui-form-item">
             <label class="layui-form-label">密码</label>
             <div class="layui-input-inline">
@@ -45,6 +67,8 @@
                 $.post("{{route('cfcc.user_manager_list')}}",{
                     name : $(".name").val(),
                     email : $(".email").val(),
+                    price : $(".price").val(),
+                    type : $(".type").val(),
                     password : $(".password").val(),
                     re_password : $(".re_password").val(),
                     _method:$('#_method').val(),

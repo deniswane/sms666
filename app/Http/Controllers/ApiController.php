@@ -116,7 +116,7 @@ class ApiController extends Controller
     /**获取手机号
      * @param Request $request
      */
-    public function getPhoneNumber(Request $request)
+    public function getPhoneNumber(Request $request,$type_check='')
     {
         //验证数据
         $token = $request->token;
@@ -131,13 +131,25 @@ class ApiController extends Controller
 
         $p = $request->p;
 
+        $con=empty($request->type)?'京东':$request->type;
+
         $user = $this->selectuser($token);
 
         if ($user) {
 
            $this->check_user($user);
+            if (!empty($type_check)){
+                //查询配置
+                $type=   DB::table('configs')->select('type_id','type_name')->where(['type_name'=>$con,'user_id'=>$user->id])->first();
+                if (!$type){
+                    echo json_encode( ['code' => 105, 'msg' => "Sorry, sir. You have no right to visit"]);die;
+                }
+                $dat = empty($p) ? ['user_id' => $user->id, 'status' => '0','type_id'=>$type->type_id] : ['user_id' => $user->id, 'status' => '0', 'province' => $p,'type_id'=>$type->type_id];
+            }else{
+                $dat = empty($p) ? ['user_id' => $user->id, 'status' => '0'] : ['user_id' => $user->id, 'status' => '0', 'province' => $p];
+            }
 
-            $dat = empty($p) ? ['user_id' => $user->id, 'status' => '0'] : ['user_id' => $user->id, 'status' => '0', 'province' => $p];
+
 
             $phone = DB::table('phone_numbers')
                 ->select('phone', 'id')
@@ -236,7 +248,12 @@ class ApiController extends Controller
 
                     if ($content->status != '1') {
                         //截取的每次减1
-                        $new_balbance = $user->balance - 1;
+                        $price =DB::table('configs')->where(['user_id'=>$user->id,'type_name'=>'截取'])->first();
+                        if($price){
+                            $new_balbance=$user->balance-$price->price;
+                        }else{
+                            $new_balbance = $user->balance - 1;
+                        }
                         $update_time = date('Y-m-d H:i:s');
                         DB::table('users')
                             ->where('id', '=', $user->id)
@@ -339,8 +356,9 @@ class ApiController extends Controller
      * 筛选手机号
      * return phone
      */
-    public function filter($dat,$id,$old='')
+    public function filter($dat,$id,$type_id='',$old='')
     {
+        //三天前的数据
         if ($old){
             $start_time=Carbon::today()->modify('-3 days');
             $end_time=Carbon::today()->modify('-2 days');
@@ -365,13 +383,39 @@ class ApiController extends Controller
                 return $send_phones->phone;
             }
         }
-        $send_phones = DB::table('web_sms_prepare')->select('phone', 'id')->where($dat)->orderby('addtime', 'desc')->first();
-        if (!$send_phones) {
-            return false;
+        $sql= DB::table('web_sms_prepare')->select('phone', 'type_id','id')->where($dat);
+        if ($dat['send']==5){
+            //三天前
+            $end=date('Ymd' , strtotime("-3 day")).'235959';
+            $sql = $sql->whereRaw("locate($type_id,type_id)=0")
+            ->where('addtime','<',$end);
         }
-        DB::table('web_sms_prepare')->where('id', $send_phones->id)->update(['send' => 5]);
+            $send_phones =$sql->orderby('addtime', 'desc')->first();
 
-        return $send_phones->phone;
+        if (!$send_phones && $dat['send']==5 ){
+            $dat['send']=0;
+            $send_phones =DB::table('web_sms_prepare')->select('phone', 'type_id','id')->where($dat)->orderby('addtime', 'desc')->first();
+            if (!$send_phones) {
+                return false;
+            }
+            DB::table('web_sms_prepare')->where('id', $send_phones->id)->update(['send'=>5,'type_id'=>$type_id]);
+            return $send_phones->phone;
+        }else{
+            if (!$send_phones) {
+                return false;
+            }
+
+            if ($dat['send']==5){
+                $type_id=$send_phones->type_id.','.$type_id;
+                $data=['type_id'=>$type_id];
+            }else{
+                $data=['send'=>5,'type_id'=>1];
+            }
+            DB::table('web_sms_prepare')->where('id', $send_phones->id)->update($data);
+            return $send_phones->phone;
+        }
+
+
     }
 
     /*设置订单
@@ -422,8 +466,8 @@ class ApiController extends Controller
 
         //添加到订单
         $tablename = "SMS" . date('Ymd') . '6666';
-//        $order_res = DB::connection('ourcms')->table('cms_order')
-        $order_res = DB::table('cms_order')
+        $order_res = DB::connection('ourcms')->table('cms_order')
+//        $order_res = DB::table('cms_order')
             ->select('id', 'order_tnum')
             ->where('order_name', '=', $tablename)
             ->where('state', '!=', '-1')
@@ -442,13 +486,13 @@ class ApiController extends Controller
             $info['LateSendTime'] = $info['LateReturnTime'] = date("Y-m-d H:i:s");
             $info['spnumber'] = '';
             $info['note'] = " 接收短信订单 ";
-            $id = DB::table('cms_order')->insertGetId($info);
-//            $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
+//            $id = DB::table('cms_order')->insertGetId($info);
+            $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
             //创建订单详细表
             //手机号,指令,发送手机号,发送时间,发送状态(012),用户project,software,返回时间
             $ordtb = "cms_orddata_" . $id;
-//            Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
-            Schema::create($ordtb, function (Blueprint $table) {
+            Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
+//            Schema::create($ordtb, function (Blueprint $table) {
                 $table->charset = 'utf8';
                 $table->engine = 'MyISAM';
                 $table->increments('id');
@@ -487,8 +531,8 @@ class ApiController extends Controller
                 'software' => '',
 
             ];
-//            DB::connection('ourcms')->table($ordtb)->insert($new_data);
-            DB::table($ordtb)->insert($new_data);
+            DB::connection('ourcms')->table($ordtb)->insert($new_data);
+//            DB::table($ordtb)->insert($new_data);
 
             //记录日志
             $this->setLog($profile, $parame);
@@ -522,11 +566,11 @@ class ApiController extends Controller
                 'software' => '',
 
             ];
-//            $res = DB::connection('ourcms')->table($ordtb)->insert($new_data);
-            $res = DB::table($ordtb)->insert($new_data);
+            $res = DB::connection('ourcms')->table($ordtb)->insert($new_data);
+//            $res = DB::table($ordtb)->insert($new_data);
             if ($res) {
-//                DB::connection('ourcms')->table('cms_order')
-                DB::table('cms_order')
+                DB::connection('ourcms')->table('cms_order')
+//                DB::table('cms_order')
                     ->where('id', '=', "$order_res->id")
                     ->update(['order_tnum' => $info['order_tnum'], 'state' => $info['state'], 'addtime' => $info['addtime']]);
             }

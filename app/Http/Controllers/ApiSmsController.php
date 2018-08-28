@@ -32,10 +32,12 @@ class ApiSmsController extends Controller
         //数据验证
         $parames = $request->all();
         $validator = Validator::make($parames, [
-            'token' => 'required'
+            'token' => 'required',
         ]);
         $token = $request->token;
         $p = $request->get('p');
+        $con=empty($request->type)?'京东':$request->type;
+
         if ($validator->fails()) {
             echo json_encode( ['code' => 102, 'msg' => 'Format error']);die;
 
@@ -46,6 +48,11 @@ class ApiSmsController extends Controller
 
             $this->api->check_user($user,2);
 
+            //查询配置
+            $type=   DB::table('configs')->select('type_id','type_name')->where(['type_name'=>$con,'user_id'=>$user->id])->first();
+            if (!$type){
+                echo json_encode( ['code' => 105, 'msg' => "Sorry, sir. You have no right to visit"]);die;
+            }
             //短信猫
             $receive = $this->api->filter_phones();
 
@@ -57,25 +64,30 @@ class ApiSmsController extends Controller
             $gjz = '';
 
             //从prepare取手机号设置关键字
+            if ($con=='京东'){
+                $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
+            }else{
+                $dat = empty($p) ? ['send' => 5] : ['send' => 5, 'province' => $p];
+            }
 
-            $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
             if ($user->percentum){
                 $old_new = strpos($user->percentum, ':') ? explode(":", $user->percentum) : explode("：",$user->percentum);
                 $old= $this->api->rand_number($old_new[0],$old_new[1]);
                 if ($old ==2){
-                    $phone = $this->api->filter($dat,$user->id,1);
+                    $phone = $this->api->filter($dat,$user->id,$type->type_id,1);
                 }else{
-                    $phone = $this->api->filter($dat,$user->id);
+                    $phone = $this->api->filter($dat,$user->id,$type->type_id);
                 }
             }else{
-                $phone = $this->api->filter($dat,$user->id);
+                $phone = $this->api->filter($dat,$user->id,$type->type_id);
             }
 
             if (!$phone) {
                 echo json_encode(['code' => 107, 'msg' => "No mobile phone number for the time being"]);
                 die;
             }
-            DB::table('user_filter_phone')->insert(['user_id'=>$user->id,'phone'=>$phone,'created_at'=>Carbon::now()]);
+
+            DB::table('user_filter_phone')->insert(['user_id'=>$user->id,'phone'=>$phone,'type_id'=>$type->type_id,'created_at'=>Carbon::now()]);
             $parame = [
                 'email' => $user->email,
                 'ip' => $ip,
@@ -100,7 +112,7 @@ class ApiSmsController extends Controller
      */
     public function phone(Request $request)
     {
-        $this->api->getPhoneNumber($request);
+        $this->api->getPhoneNumber($request,'666666');
     }
     /**获取短信内容
      * @param Request $request
@@ -114,7 +126,7 @@ class ApiSmsController extends Controller
 
         $validator = Validator::make($get_phone, [
             'phone' => 'required |regex:/^1[34578][0-9]{9}$/',
-            'con'=>'required'
+//            'con'=>'required'
         ]);
 
         if ($validator->fails()) {
@@ -123,9 +135,15 @@ class ApiSmsController extends Controller
         }
         // 拿手机号的最新短信
         $phone = $request->phone;
+        $type =empty($request->con)?'京东':$request->con;
+
         $user = $this->api->selectuser($token);
         if ($user) {
-
+//查询配置
+            $types=   DB::table('configs')->select('type_id','type_name')->where(['type_name'=>$type,'user_id'=>$user->id])->first();
+            if (!$types){
+                echo json_encode( ['code' => 105, 'msg' => "Sorry, sir. You have no right to visit"]);die;
+            }
             if ($user->balance > 0) {
                 $phoneNumber = DB::table('phone_numbers')
                     ->select('id')
@@ -139,7 +157,7 @@ class ApiSmsController extends Controller
                     //2.京东或淘宝短信 status=0,jd_st=1,tb_st=0或status=0,jd_st=0,tb_st=1
                     //3.其它短信，排除垃圾短信   状态 status=0,jd_st=1,tb_st=1;
 
-                    $type =$request->con;
+
                     $type1='%'.$type.'%码%';
                     $type2='%码%'.$type.'%';
                     //20分钟内
@@ -161,34 +179,7 @@ class ApiSmsController extends Controller
                         echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
                         die;
                     }
-                    //取走号后查询有没有注册过另一个京东或者淘宝的，如果都注册过把同时将另一个更新为2
-                    if ($type=='京东'){
-                        $tb= SmsContent::select('id')->where('phone_number_id',$content->phone_number_id)->where('content','like','%淘宝%')->get()->toarray();
-                        if ($tb){
-
-                            foreach ($tb as $t){
-                                SmsContent::where('id',$t['id'])->update(['jd_st'=>'2']);
-                                SmsContent::where('id',$content->id)->update(['tb_st'=>'2','status'=>'1','updated_at'=>Carbon::now()]);
-                            }
-                        }else{
-                            SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
-
-                        }
-                    }elseif ($type=='淘宝'){
-                        $jd= SmsContent::select('id')->where('phone_number_id',$content->phone_number_id)->where('content','like','%京东%')->get()->toarray();
-
-                        if ($jd){
-                            foreach ($jd as $t){
-                                SmsContent::where('id',$t['id'])->update(['tb_st'=>'2']);
-                                SmsContent::where('id',$content->id)->update(['jd_st'=>'2','status'=>'1','updated_at'=>Carbon::now()]);
-                            }
-                        } else{
-                            SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
-                        }
-                    }else{
                         SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
-
-                    }
 
                     //更新取号后的状态
 //                    DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now()]);
@@ -202,7 +193,7 @@ class ApiSmsController extends Controller
                         if ($price){
                             $new_balbance = $user->balance - $price;
                         }else{
-                            $new_balbance=$user->balance-1;
+                            $new_balbance=$user->balance-10;
                         }
 
                         $update_time = date('Y-m-d H:i:s');
@@ -422,6 +413,19 @@ class ApiSmsController extends Controller
             $name =$request->name;
             if ($name =='byebye2018'){
                 Db::table('users')->update(['times'=>0]);
+
+                $start_time=Carbon::yesterday();
+                $end_time=Carbon::today();
+                $send_phones =PhoneNumber::select('phone')->leftjoin('sms_contents','phone_numbers.id','=','sms_contents.phone_number_id')
+                    ->where('phone_numbers.created_at','>',$start_time)
+                    ->where('phone_numbers.created_at','<',$end_time)
+                    ->whereNull('sms_contents.phone_number_id')
+                    ->get();
+                if ($send_phones){
+                    foreach ($send_phones as $phone){
+                        DB::table('web_sms_prepare')->where('phone',$phone->phone)->update(['send'=>'0']);
+                    }
+                }
             }
         }
     }

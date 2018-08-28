@@ -91,7 +91,8 @@
             function addLink(edit){
                 var title;
                 if (edit){
-                    title= '修改用户信息'
+                    title= '修改用户信息';
+                    $('#type').hide()
                 } else{
                     title ='添加用户'
                 }
@@ -103,12 +104,16 @@
                     success : function(){
                         var body = $($(".layui-layer-iframe",parent.document).find("iframe")[0].contentWindow.document.body);
                         if(edit){
+
                             body.find(".name").val(edit.name);
                             body.find(".email").val(edit.email);
                             body.find(".password").val(edit.password);
                             body.find(".re_password").val(edit.re_password);
-                            body.find("#_method").val('PUT');
+                            body.find("#fenlei").hide();
+                            body.find("#danjia").hide();
 
+
+                            body.find("#_method").val('PUT');
                             form.render();
                         }
                     }
