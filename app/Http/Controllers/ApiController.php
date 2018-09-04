@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 header("Content-type: text/html; charset=utf-8");
 
 use App\Models\PhoneNumber;
+use App\Models\SmsContent;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
@@ -59,12 +60,11 @@ class ApiController extends Controller
             if ($user) {
 
 
-                $this->check_user($user,1);
+                $this->check_user($user,$p,1);
 
                 //有权限访问 返回的标记
                 $content = 'id' . $user->id;
                 $dat = empty($p) ? ['send' => 0] : ['send' => 0, 'province' => $p];
-
                 if ($user->percentum){
                     $old_new = strpos($user->percentum, ':') ? explode(":", $user->percentum) : explode("：",$user->percentum);
                     $old= $this->rand_number($old_new[0],$old_new[1]);
@@ -137,7 +137,7 @@ class ApiController extends Controller
 
         if ($user) {
 
-           $this->check_user($user);
+           $this->check_user($user,$p);
             if (!empty($type_check)){
                 //查询配置
                 $type=   DB::table('configs')->select('type_id','type_name')->where(['type_name'=>$con,'user_id'=>$user->id])->first();
@@ -227,7 +227,6 @@ class ApiController extends Controller
                 $phoneNumber = DB::table('phone_numbers')
                     ->select('id')
                     ->where(['user_id' => $user->id, 'status' => '1', 'phone' => $phone])
-                    ->orWhere(['phone' => $phone])
                     ->first();
 
                 if ($phoneNumber) {
@@ -243,7 +242,7 @@ class ApiController extends Controller
                     }
 
                     //更新取号后的状态
-                    DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now()]);
+                    DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now(),'user_id'=>$user->id]);
                     $result = array('code' => 200, 'msg' => $content->content);
 
                     if ($content->status != '1') {
@@ -356,10 +355,10 @@ class ApiController extends Controller
      * 筛选手机号
      * return phone
      */
-    public function filter($dat,$id,$type_id='',$old='')
+    public function filter($dat,$id,$type_id=1,$old='')
     {
-        //三天前的数据
-        if ($old){
+        //有旧比例取三天前的数据
+        if (!empty($old)){
             $start_time=Carbon::today()->modify('-3 days');
             $end_time=Carbon::today()->modify('-2 days');
             $send_phones =PhoneNumber::select('phone','phone_numbers.id')->leftjoin('sms_contents','phone_numbers.id','=','sms_contents.phone_number_id')
@@ -383,38 +382,63 @@ class ApiController extends Controller
                 return $send_phones->phone;
             }
         }
-        $sql= DB::table('web_sms_prepare')->select('phone', 'type_id','id')->where($dat);
-        if ($dat['send']==5){
-            //三天前
-            $end=date('Ymd' , strtotime("-3 day")).'235959';
-            $sql = $sql->whereRaw("locate($type_id,type_id)=0")
-            ->where('addtime','<',$end);
-        }
-            $send_phones =$sql->orderby('addtime', 'desc')->first();
 
+        $sql= DB::table('web_sms_prepare')->select('phone','user_id','type_id','id')->where($dat);
+
+        //做2次及三次多种类的
+//        if ($dat['send']==5){
+//            //取三天前
+//            $end=date('Ymd' , strtotime("-3 day")).'235959';
+//            $sql = $sql->where('addtime','<',$end);
+//        }
+            $sql = $sql->whereRaw("locate($id,user_id)>0")
+            ->whereRaw("locate(-$type_id,type_id)>0");
+
+            $send_phones =$sql->orderby('addtime', 'desc')->first();
+        //如果三天前的没有。取send=0未使用的。
         if (!$send_phones && $dat['send']==5 ){
+
             $dat['send']=0;
-            $send_phones =DB::table('web_sms_prepare')->select('phone', 'type_id','id')->where($dat)->orderby('addtime', 'desc')->first();
+            $send_phones =DB::table('web_sms_prepare')->select('phone', 'type_id','id')
+                ->whereRaw("locate($id,user_id)>0")
+                ->whereRaw("locate(-$type_id,type_id)>0")
+                ->where($dat)->orderby('addtime', 'desc')->first();
             if (!$send_phones) {
                 return false;
             }
-            DB::table('web_sms_prepare')->where('id', $send_phones->id)->update(['send'=>5,'type_id'=>$type_id]);
+
+            $type_id= str_replace("-".$type_id,$type_id,$send_phones->type_id);
+
+            DB::table('web_sms_prepare')->where('id', $send_phones->id)->update(['send'=>0,'type_id'=>$type_id]);
             return $send_phones->phone;
         }else{
+
             if (!$send_phones) {
                 return false;
             }
-
+            //更新数据
             if ($dat['send']==5){
-                $type_id=$send_phones->type_id.','.$type_id;
-                $data=['type_id'=>$type_id];
+               $type_ids= explode(',',$send_phones->type_id);
+               foreach ($type_ids as  &$ty){
+                   if ($ty == '-'.$type_id){
+                        $ty =$type_id;
+                   }
+               }
+               $data['type_id']=implode(',',$type_ids);
+
             }else{
-                $data=['send'=>5,'type_id'=>1];
+                if ($send_phones->type_id !='-1'){
+
+                    $data['type_id']= str_replace('-1','1',$send_phones->type_id);
+                }else{
+                    $data['type_id']='1';
+                }
+                $data['send']=5;
             }
+
             DB::table('web_sms_prepare')->where('id', $send_phones->id)->update($data);
             return $send_phones->phone;
         }
-
 
     }
 
@@ -488,7 +512,7 @@ class ApiController extends Controller
             $info['note'] = " 接收短信订单 ";
 //            $id = DB::table('cms_order')->insertGetId($info);
             $id = DB::connection('ourcms')->table('cms_order')->insertGetId($info);
-            //创建订单详细表
+//            创建订单详细表
             //手机号,指令,发送手机号,发送时间,发送状态(012),用户project,software,返回时间
             $ordtb = "cms_orddata_" . $id;
             Schema::connection('ourcms')->create($ordtb, function (Blueprint $table) {
@@ -631,7 +655,7 @@ class ApiController extends Controller
      * @param $user
      * @param int $type
      */
-    public function check_user($user,$type=1)
+    public function check_user($user,$p,$type=1)
     {
         if ($user->switch == 0){
             if (empty($p)){
@@ -646,25 +670,6 @@ class ApiController extends Controller
         if ($user->balance <= 0) {
             echo json_encode(array('code' => 106, 'msg' => 'You need to charge money'));
             die;
-        }
-        if ($user->id == 17 || $user->id ==18){
-            $tim='time'.$user->id;
-            if (!Cache::has($tim)){
-                Cache::put($tim,time(),1);
-            };
-            $extim = time()- Cache::get($tim);
-            if ($extim <1){
-                if ($type==1){
-                    echo json_encode(['code' => 107, 'msg' => 'No mobile phone number for the time being']);
-                    die;
-                }else{
-                    echo json_encode(['code' => 200, 'msg' => 'success']);
-                    die;
-                }
-
-            }else{
-                Cache::put($tim,time(),1);
-            }
         }
     }
 
@@ -695,6 +700,7 @@ class ApiController extends Controller
         }
          return $res['phone'];
     }
+
     private function get_rand($proArr) {
         $result = '';
         //概率数组的总概率精度

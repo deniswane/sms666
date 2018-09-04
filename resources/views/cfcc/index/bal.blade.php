@@ -44,7 +44,7 @@
                     , {field: 'yes_num', align: 'center', width:100,title: '昨天的统计数量', sort: true}
 
                     ,{field:'switch', title:'全国', width:85, toolbar: '#switchTpl', unresize: true}
-                    ,{field:'date_times', title:'日限', width:85, event: 'setDateTimes', sort: true,style:"cursor:pointer "}
+                    ,{field:'date_times', title:'日限', align: 'center', event: 'setDateTimes', sort: true,style:"cursor:pointer",templet: '#date_times'}
                     ,{field:'percentum', title:'新旧比', width:85,event: 'setRate',style:"cursor:pointer "}
                 ]]
             });
@@ -71,9 +71,8 @@
                                 if(data.code != 200){
                                     layer.alert('请填写数字')
                                 }else{
-                                    obj.update({
-                                        balance: value
-                                    });
+                                    layer.msg('成功');
+                                  location.reload()
                                 }
                             },
                             error:function (data) {
@@ -206,5 +205,14 @@
 
     <script type="text/html" id="indexTpl">
     @{{d.LAY_TABLE_INDEX+1}}
+    </script>
+
+    <script type="text/html" id="date_times">
+
+        @{{#  if(d.times >= d.date_times && d.date_times !=0){ }}
+        <span style="color: red;">手机号达到上限</span>
+        @{{#  } else{ }}
+        @{{d.date_times  }}
+        @{{#  } }}
     </script>
 @endsection

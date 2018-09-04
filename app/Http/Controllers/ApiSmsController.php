@@ -46,7 +46,7 @@ class ApiSmsController extends Controller
         $user = $this->api->selectuser($token);
         if ($user) {
 
-            $this->api->check_user($user,2);
+            $this->api->check_user($user,$p,2);
 
             //查询配置
             $type=   DB::table('configs')->select('type_id','type_name')->where(['type_name'=>$con,'user_id'=>$user->id])->first();
@@ -163,7 +163,7 @@ class ApiSmsController extends Controller
                     //20分钟内
                     $sminute =Carbon::now()->addSeconds(-1200);
                     $content = DB::table('sms_contents')
-                        ->select('id', 'content', 'status','phone_number_id')
+                        ->select('id', 'content','created_at', 'status','phone_number_id')
                         ->where('phone_number_id', $phoneNumber->id)
                         ->where('created_at','>',$sminute)
 
@@ -179,12 +179,12 @@ class ApiSmsController extends Controller
                         echo json_encode(array('code' => 401, 'msg' => 'No new text messages'));
                         die;
                     }
-                        SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now()]);
+                        SmsContent::where('id',$content->id)->update(['status'=>'1','updated_at'=>Carbon::now(),'user_id'=>$user->id]);
 
                     //更新取号后的状态
 //                    DB::table('sms_contents')->where('id', $content->id)->update(['status' => '1', 'updated_at' => Carbon::now()]);
 
-                    $result = array('code' => 200, 'msg' => $content->content);
+                    $result = array('code' => 200, 'msg' => $content->content,'time'=>$content->created_at);
 
                     if ($content->status != '1') {
 
@@ -272,6 +272,7 @@ class ApiSmsController extends Controller
             }
             //更新余额
             $balance = User::select('name','balance','id')->where('token',$token)->first();
+            SmsContent::where('phone_number_id',$phone->id)->limit(1)->update(['user_id'=>$balance->id,'status'=>'1']);
 
             //根据不同用户不同短信内容更新余额，没有单价的默认按1结算
             $price=  $this->check_balance($content,$balance->id);
@@ -406,29 +407,54 @@ class ApiSmsController extends Controller
             Storage::disk('local')->append('cron.txt',$dt);
         }
     }
-
+    //更新日限
     public function update_date_times(Request $request)
     {
-        if ($request->isMethod('post')){
+//        if ($request->isMethod('post')){
             $name =$request->name;
             if ($name =='byebye2018'){
                 Db::table('users')->update(['times'=>0]);
+            }
+//        }
+    }
+    //自动分配手机号
+    public function auto_allot_phones(Request $request)
+    {
+        if ($request->eme =='hebezheke2018'){
+            $switch =DB::table('all_configs')->where('id',1)->value('switch');
+            if ($switch ===0){
+                echo 'sorry';
+                return;
+            }
 
-                $start_time=Carbon::yesterday();
-                $end_time=Carbon::today();
-                $send_phones =PhoneNumber::select('phone')->leftjoin('sms_contents','phone_numbers.id','=','sms_contents.phone_number_id')
-                    ->where('phone_numbers.created_at','>',$start_time)
-                    ->where('phone_numbers.created_at','<',$end_time)
-                    ->whereNull('sms_contents.phone_number_id')
-                    ->get();
-                if ($send_phones){
-                    foreach ($send_phones as $phone){
-                        DB::table('web_sms_prepare')->where('phone',$phone->phone)->update(['send'=>'0']);
-                    }
+            //截取或京东
+            $type_id=DB::table('type_config')->whereIn('type_name',['京东','截取'])->pluck('id')->toarray();
+
+            $types=   DB::table('configs')->select('user_id','percent')->whereIn('type_id',$type_id)->get()->toarray();
+            //日限清零
+            foreach ($types as $type){
+                $times = User::select('times','date_times')->find($type->user_id);
+                if ($times->times > $times->date_times){
+                    $type->percent =0;
                 }
             }
+
+            $jd= DB::table  ('web_sms_prepare')->where('send',0)->where('type_id','1')->pluck('id')->toarray();
+            $num =count($jd);
+            if ($num <100){return;}
+
+            $txt=Carbon::now()."总共条{$num}：";
+            foreach ($types as $type){
+
+                $limt=  round($num*($type->percent)/100 );
+                $res=  DB::table('web_sms_prepare')->whereIn('id',$jd)->where('user_id','0')->where('type_id','1')->limit($limt)->update(['user_id'=>$type->user_id,'type_id'=>'-1']);
+                $txt .= 'id为'.$type->user_id.'--'.$res.'条,';
+            };
+            Storage::disk('local')->append('fenpei.txt',$txt);
         }
     }
+
+
     /**curl请求
      * @param $url
      * @param bool $post

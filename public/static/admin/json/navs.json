@@ -57,6 +57,16 @@
         "icon": "&#xe612;",
         "href": "filter_phones",
         "spread": false
+      },{
+        "title": "分配手机号",
+        "icon": "&#xe612;",
+        "href": "allot_phones",
+        "spread": false
+      },{
+        "title": "自动分配手机号",
+        "icon": "&#xe612;",
+        "href": "auto_allot_phones",
+        "spread": false
       }
 
 	]

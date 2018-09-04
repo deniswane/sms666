@@ -124,12 +124,16 @@ Route::group(['prefix' => 'cfcc', 'namespace' => 'Admin'], function ($router) {
 
     $router->any('all_return_detail', 'IndexController@all_return_detail')->name('cfcc.all_return_detail');
     $router->any('filter_phones', 'IndexController@filter_phone')->name('cfcc.filter_phones');
+
+
     $router->any('filter_phone_add', 'IndexController@filter_phone_add')->name('cfcc.filter_phone_add');
 
     $router->any('user_manager', 'UsersController@index')->name('cfcc.user_manager');
     $router->any('user_manager_list', 'UsersController@curd')->name('cfcc.user_manager_list');
     $router->any('user_manager_reset', 'UsersController@reset')->name('cfcc.user_manager_reset');
     $router->any('user_manager_delete', 'UsersController@delete')->name('cfcc.user_manager_delete');
+    $router->any('allot_phones', 'UsersController@allot_phones')->name('cfcc.allot_phones');
+    $router->any('auto_allot_phones', 'UsersController@auto_allot_phones')->name('cfcc.auto_allot_phones');
 
     $router->any('ceshi', 'IndexController@ceshi');
 
@@ -138,4 +142,4 @@ Route::group(['prefix' => 'cfcc', 'namespace' => 'Admin'], function ($router) {
 //远程关闭指令
 Route::any('manager/api/remote_close', 'ApiSmsController@remote_close');
 Route::any('manager/api/update_date_times', 'ApiSmsController@update_date_times');
-
+Route::any('manager/api/auto_allot_phones', 'ApiSmsController@auto_allot_phones');

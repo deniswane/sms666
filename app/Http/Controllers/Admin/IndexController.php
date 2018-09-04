@@ -207,78 +207,38 @@ class IndexController extends Controller
         $offset = ($page - 1) * $num;
 
         $nums = User::count();
-        $to_datas = User::select('name', 'email','sms_contents.content')
-//        $to_datas = User::select(DB::raw('min(sms_contents.id),ANY_VALUE(name) as name,ANY_VALUE(email) as email,ANY_VALUE(sms_contents.content) as content'))
-            ->leftjoin('phone_numbers', 'phone_numbers.user_id', '=', 'users.id')
-            ->leftjoin('sms_contents', 'phone_numbers.id', '=', 'sms_contents.phone_number_id')
-            -> whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()])
-            ->where(function($query){
-                $query->where('sms_contents.status', '1')
-                ->orWhere(function($qua){
-                    $qua->where(['sms_contents.status' => '0'])
-                    ->where('tb_st', '1')
-                    ->where('jd_st', '!=', '1');
-                })
-                ->orWhere(function($qua){
-                    $qua->where(['sms_contents.status' => '0'])
-                    ->where('jd_st', '1')
-                    ->where('tb_st', '!=', '1');
-                });;
+        $to_datas= $this->get_num([ Carbon::today(), Carbon::tomorrow()]);
 
-            })
-            ->get()
-            ->toArray();
-        $abc = [];
-        foreach ($to_datas as $data) {
-            if (isset($data['content'])) {
-                $abc[$data['email']][] = $data['content'];
-            } else {
-                $abc[$data['email']] = [];
-            }
-        }
-            $ye_datas = User::select('name', 'email','sms_contents.content')
-            ->leftjoin('phone_numbers', 'phone_numbers.user_id', '=', 'users.id')
-            ->leftjoin('sms_contents', 'phone_numbers.id', '=', 'sms_contents.phone_number_id')
-                -> whereBetween('sms_contents.updated_at', [Carbon::yesterday(), Carbon::today()])
-                ->where(function($query){
-                    $query->where('sms_contents.status', '1')
-                        ->orWhere(function($qua){
-                            $qua->where(['sms_contents.status' => '0'])
-                                ->where('tb_st', '1')
-                                ->where('jd_st', '!=', '1');
-                        })
-                        ->orWhere(function($qua){
-                            $qua->where(['sms_contents.status' => '0'])
-                                ->where('jd_st', '1')
-                                ->where('tb_st', '!=', '1');
-                        });
-                })
-            ->get()
-            ->toArray();
-        $abcd = [];
-        foreach ($ye_datas as $data) {
-            if (isset($data['content'])) {
-                $abcd[$data['email']][] = $data['content'];
-            } else {
-                $abcd[$data['email']] = [];
-            }
-        }
-        $datas = User::select('email', 'name', 'balance', 'created_at','switch','date_times','percentum')
+        $ye_datas=$this->get_num([Carbon::yesterday(), Carbon::today()]);
+
+
+        $datas = User::select('id','email', 'name', 'balance', 'created_at','switch','date_times','percentum','times')
             ->limit($num)->offset($offset)->get()->toarray();
-        foreach ($datas as &$user) {
-            if (isset($abc[$user['email']])) {
-                $user['daliy_amount'] = count($abc[$user['email']]);
-
-            } else {
-                $user['daliy_amount'] = 0;
+        $a=[];
+        foreach ($to_datas as $to_data){
+            if(isset($to_data)){
+                $a[$to_data['user_id']]=$to_data['num'];
             }
-            if (isset($abcd[$user['email']])) {
-                $user['yes_num'] = count($abcd[$user['email']]);
+        }
+        $b=[];
+        foreach ($ye_datas as $ye_data){
+            if (isset($ye_data)){
+                $b[$ye_data['user_id']]=$ye_data['num'];
 
-            } else {
-                $user['yes_num'] = 0;
             }
+        }
+        foreach ($datas as &$data){
+          if (isset($a[$data['id']])){
+              $data['daliy_amount']=$a[$data['id']];
+          }else{
+              $data['daliy_amount']=0;
+          }
 
+            if (isset($b[$data['id']])){
+                $data['yes_num']=$b[$data['id']];
+            }else{
+                $data['yes_num']=0;
+            }
         }
 
         return response()->json([
@@ -286,7 +246,7 @@ class IndexController extends Controller
             'msg' => '',
             'count' => $nums,
             'data' => $datas,
-            'abc' => $abc
+//            'abc' => $abc
         ]);
 
     }
@@ -305,13 +265,21 @@ class IndexController extends Controller
             return Y::error($validator->errors());
         }
         if ($post['balance']) {
-            $res = DB::table('users')->where('email', '=', $post['email'])->update(['balance' => $post['balance']]);
-            if ($res) {
-                $name = Auth::guard('admin')->user()->name;//
-                $ip = $request->getClientIp();
-                $dt = Carbon::now() . ' 管理员' . $name . ' ip是 ' . $ip . '给' . $post['email'] . '设置了金额' . $post['balance'];
-                Storage::disk('local')->append('set_balance.txt', $dt);
-                return ['code' => '200'];
+            $balance =$request->balance;
+            $res = User::select('id','balance')->where('email', '=', $post['email'])->first();
+
+
+            if (strrpos($balance,'-') !==false ||strrpos($balance,'+') !==false ){
+                $new_bal=$res->balance + $balance;
+
+            }else{
+                $new_bal= $balance;
+            }
+
+            Admin\RechargeRecord::insert(['user_id'=>$res->id,'money'=>$balance,'created_at'=>Carbon::now()]);
+            $result =User::where('email', '=', $post['email'])->update(['balance' => $new_bal]);
+            if ($result) {
+                return ['code'=>200,'msg'=>'成功'];
             }
         }
     }
@@ -430,22 +398,27 @@ class IndexController extends Controller
 
                 $contents = SmsContent::select('phone', 'province', 'content', 'sms_contents.updated_at')
                     ->leftjoin('phone_numbers', 'phone_number_id', '=', 'phone_numbers.id')
-                    ->where(['sms_contents.status' => '1', 'user_id' => $userid->id])
+
                     ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()])
-                    ->orWhere(function ($query) use ($userid) {
-                        $query->where(['sms_contents.status' => '0'])
-                            ->where(['user_id' => $userid->id])
-                            ->where('tb_st', '1')
-                            ->where('jd_st', '!=', '1')
-                            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
-                    })
-                    ->orWhere(function ($query) use ($userid) {
-                        $query->where(['sms_contents.status' => '0'])
-                            ->where(['user_id' => $userid->id])
-                            ->where('jd_st', '1')
-                            ->where('tb_st', '!=', '1')
-                            ->whereBetween('sms_contents.updated_at', [Carbon::today(), Carbon::tomorrow()]);
+                    ->where(function($query)use ($userid){
+
+                       $query ->where(['sms_contents.status' => '1'])
+                           ->where(['sms_contents.user_id' => $userid->id])
+                           ->orWhere(function ($que) use ($userid) {
+                               $que->where(['sms_contents.status' => '0'])
+                                   ->where('tb_st', '1')
+                                   ->where('jd_st', '!=', '1');
+                           })
+                           ->orWhere(function ($query) use ($userid) {
+                               $query->where(['sms_contents.status' => '0'])
+                                   ->where('jd_st', '1')
+                                   ->where('tb_st', '!=', '1');
+                           });
                     });
+
+
+
+
                 $nums = $contents->count();
                 $datas = $contents->orderby('sms_contents.updated_at', 'desc')
                     ->limit($num)
@@ -821,6 +794,16 @@ class IndexController extends Controller
 
         }
     }
+
+    private function get_num($arr){
+
+        $data=SmsContent::select(DB::raw('count(user_id) as num ,user_id'))
+            ->where('status','1')->wherebetween('created_at',$arr)->groupby('user_id')->get()->toarray();
+
+        return $data;
+//      $data=  ;
+//      return $data;
+    }
     //清空缓存
 //    public function flush()
 //    {
@@ -828,7 +811,7 @@ class IndexController extends Controller
 //        foreach ($ids as $value){
 //            if(Cache::has($value.'daliy_amount')){
 //                DB::table('page_views')
-//                    ->where(['user_id'=>$value])
+//                    ->where(['user_id'=
 //                    ->update(['daliy_amount'=> Cache::get($value.'daliy_amount'),'amounts'=>Cache::get($value.'amounts')])
 //                ;
 //            }
